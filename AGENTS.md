@@ -52,7 +52,7 @@ The message must describe what was actually changed, not only what the plan pred
 ### Phase 1: Planning (when a task is given)
 
 1. Check that `PLAN.md` is blank. If it holds another task, stop and ask the user how to proceed. Never overwrite an active plan.
-2. Don't assume anything. Read the relevant code, config, tests and docs to understand the current state.
+2. Don't assume anything. Read the relevant code, config, tests and docs to understand the current state, including the project docs: `docs/vision.md`, `docs/concepts.md` and the relevant `docs/features/*.md`.
 3. Ask the user about anything the code doesn't answer: requirements, edge cases, naming, behavior, the task branch name (it must follow the work branch scheme in Branching and Versioning), and the target branch (the `release/<N>.x` branch it starts from and merges into). Keep asking until no open questions remain.
 4. Write the plan into `PLAN.md` using the format below. Split the work into **steps that can each be validated and committed on their own**:
    - Each step leaves the package working, with tests passing.

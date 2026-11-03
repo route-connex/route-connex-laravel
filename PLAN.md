@@ -11,11 +11,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
 
 ## Implementation
 
-- [ ] **1. Scaffold `docs/`**
+- [x] **1. Scaffold `docs/`**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038` (gandalf)
   - **Why:** Creating files from a structure already agreed in the planning session, plus a one-line `.gitattributes` change. The planning session has the structure loaded.
   - **Prompt:** Implement Step 1 of PLAN.md: Scaffold `docs/`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The structure, file purposes, status labels and feature template fields are in PLAN.md → Decisions. Create headings and short placeholder comments only: no vision or feature content, which later steps write with the user. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. Write `docs/vision.md` with the user**
@@ -100,18 +100,20 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 ## Steps
 
 ### Step 1: Scaffold `docs/`
-**Status:** todo
-- [ ] `docs/README.md`: index of every file with a one-line purpose, the status labels and the lifecycle (see Decisions)
-- [ ] `docs/vision.md`, `docs/concepts.md`, `docs/roadmap.md`, `docs/ideas.md`: title, section headings from Decisions and a short placeholder comment per section
-- [ ] `docs/features/_template.md` with the feature template fields
-- [ ] `docs/decisions/_template.md` with the ADR fields
-- [ ] `.gitattributes`: add `/docs export-ignore`
-- [ ] `AGENTS.md` → Phase 1 step 2: tell planning agents to read the project docs
-- [ ] `README.md`: link to `docs/README.md`
-- [ ] `CHANGELOG.md`: add `# docs/project` with this step's items, above a `---` and `# v0.1.0-rc`
+**Status:** done
+- [x] `docs/README.md`: index of every file with a one-line purpose, the status labels and the lifecycle (see Decisions)
+- [x] `docs/vision.md`, `docs/concepts.md`, `docs/roadmap.md`, `docs/ideas.md`: title, section headings from Decisions and a short placeholder comment per section
+- [x] `docs/features/_template.md` with the feature template fields
+- [x] `docs/decisions/_template.md` with the ADR fields
+- [x] `.gitattributes`: add `/docs export-ignore`
+- [x] `AGENTS.md` → Phase 1 step 2: tell planning agents to read the project docs
+- [x] `README.md`: link to `docs/README.md`
+- [x] `CHANGELOG.md`: add `# docs/project` with this step's items, above a `---` and `# v0.1.0-rc`
 
-**Validate:** `git check-attr export-ignore docs/README.md` prints `export-ignore: set`; `make test`
+**Validate:** `git check-attr export-ignore docs` prints `export-ignore: set`; `make test`
 **Commit:** `Scaffold the project documentation in docs/`
+
+**Note:** the validate command checks `docs`, not `docs/README.md`: `git check-attr` doesn't apply a directory pattern like `/docs` to the files inside it, though `git archive` does exclude them.
 
 ### Step 2: Write `docs/vision.md` with the user
 **Status:** todo

@@ -1,5 +1,7 @@
 # docs/project
 
+- Project documentation scaffold in `docs/` (vision, concepts, roadmap, ideas, feature and decision templates), kept out of the Composer dist archive and linked from the README and AGENTS.md.
+
 ---
 
 # v0.1.0-rc
