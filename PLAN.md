@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in review (waiting for the user to review the diff and commit)
+**Status:** in progress (step 6 added from review; waiting for the user to approve and commit the plan)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 
 > **Progress notes**
@@ -125,6 +125,46 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - [x] `.gitignore`: the skeleton ignores `vendor/`, `composer.lock`, `.phpunit.cache`, and `workbench` build artifacts; check those and add any missing entries.
 - [x] Add a short "Development with Docker" section to `README.md` listing the `make` targets.
 - [ ] Review the whole diff. Don't commit until you've looked at it.
+
+#### 6. Minimum database versions and CI database fix (from review)
+**Status:** todo
+
+**Why:**
+- The first CI run failed in the `databases` job: `mongo:8` refuses to start on `ubuntu-latest` (Ubuntu 26.04), whose kernel is in the range MongoDB 8.x can't run on (6.19 up to 7.0.13; see [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
+- `fail-fast` then cancelled the other database jobs.
+- The package will be installed in elementtime, which runs MongoDB 7.0.40 (`mongo:7.0`) and MySQL 8.0.32 (`mysql/mysql-server:8.0`).
+- Another target project runs PostgreSQL 18. The suite was checked locally against `postgres:18` (18.6), and all tests pass.
+- The `postgres:18` image moved its data directory and won't start with a mount at `/var/lib/postgresql/data`. Mounting `/var/lib/postgresql` works for all versions (14–17 keep their data in a subfolder).
+
+**Decisions:**
+- Minimum supported versions: MySQL 8.0, PostgreSQL 14, MongoDB 7.0.
+- Test the minimum and the latest version of each. PostgreSQL also tests 17, so it covers 14, 17 and 18.
+- Local default stays on the latest versions.
+
+- [ ] `docker-compose.yml`: make the database image tags configurable, with the latest versions as defaults:
+  - `mysql:${MYSQL_VERSION:-8.4}`
+  - `postgres:${POSTGRES_VERSION:-18}`, with the pgsql tmpfs mount moved from `/var/lib/postgresql/data` to `/var/lib/postgresql`
+  - `mongo:${MONGO_VERSION:-8}`
+
+  This allows e.g. `MONGO_VERSION=7.0 make test-mongodb`. Changing a version recreates the container (tmpfs data, so nothing is lost).
+- [ ] `.github/workflows/tests.yml`, `databases` job:
+  - one generic `db` service, with its image, port and health check taken from the matrix, so each job starts only the database it tests
+  - matrix: Laravel 12/13 × {mysql 8.0, mysql 8.4, pgsql 14, pgsql 17, pgsql 18, mongodb 7.0, mongodb 8}, 14 jobs
+  - `runs-on: ubuntu-24.04` (kernel older than 6.19), with a comment linking SERVER-121912; switch back to `ubuntu-latest` once its kernel is ≥ 7.0.14
+  - `fail-fast: false`, so one database failing doesn't cancel the others
+- [ ] `README.md`: add a "Requirements" section:
+  - PHP ^8.3
+  - Laravel 12 or 13
+  - MySQL ≥ 8.0, PostgreSQL ≥ 14, MongoDB ≥ 7.0 (needs `mongodb/laravel-mongodb` ^5.12 and `ext-mongodb`), SQLite
+  - mention `MYSQL_VERSION` / `POSTGRES_VERSION` / `MONGO_VERSION` in the Development section
+- [ ] `AGENTS.md`: note the supported database versions, so that new code isn't checked only against the latest ones.
+
+**Validate:**
+- `make test-all` (latest versions)
+- `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `POSTGRES_VERSION=17 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb` (minimum versions)
+- after the user pushes, the `databases` CI job is green for all 14 combinations
+
+**Commit:** `Set minimum database versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0), test PostgreSQL 18, and fix CI database jobs`
 
 ### Expected key files afterwards
 - `composer.json` (name `route-connex/route-connex-laravel`, PSR-4 `RouteConnex\Laravel\` → `src/`, provider `RouteConnex\Laravel\RouteConnexServiceProvider`, alias `RouteConnex`)
