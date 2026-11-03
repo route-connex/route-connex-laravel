@@ -23,6 +23,12 @@ When no task is active, `PLAN.md` is **blank**: it contains only this line:
 
 Agents never commit, push or merge. The user does all of that. Each phase ends by stopping and waiting for the user.
 
+Whenever an agent stops for the user to commit (a plan, a step, a review, or the close), it ends its message with a **suggested commit message** in a code block:
+- a subject line in the imperative mood, at most ~72 characters
+- a short body listing what changed and why
+
+The message must describe what was actually changed, not only what the plan predicted.
+
 ### Phase 1: Planning (when a task is given)
 
 1. Check that `PLAN.md` is blank. If it holds another task, stop and ask the user how to proceed. Never overwrite an active plan.
@@ -32,7 +38,20 @@ Agents never commit, push or merge. The user does all of that. Each phase ends b
    - Each step leaves the package working, with tests passing.
    - Each step is small enough to review in one commit.
    - Each step lists the commands that validate it.
-5. Stop. The user reviews the plan, asks for changes if needed, and commits it. Don't start development until the plan is committed. Check with `git log -- PLAN.md` and `git status`.
+5. At the top of the plan, fill the **Implementation** table: one row per step, with the model, effort level and prompt for the agent that will implement it.
+   - **Done:** first column, starts as `[ ]`. The implementing agent changes it to `[x]` when it finishes the step (see Phase 2).
+   - **Model:** use a Claude Code model alias, e.g. `haiku`, `sonnet` or `opus`. Pick the cheapest model that will do the step reliably:
+     - `haiku` for mechanical edits (renames, config values, docs)
+     - `sonnet` for typical feature work with tests
+     - `opus` for steps that need design judgement, cross-cutting changes, tricky database or compatibility work, or debugging
+   - **Effort:** `low`, `medium`, `high` or `xhigh`, matching how much reasoning the step needs. Recommend `max` only for steps that are unusually hard and high-risk.
+   - **Why:** one short reason for the choice.
+   - **Prompt:** a self-contained prompt the user can paste into a fresh session. It must:
+     - name the step (`Implement Step N of PLAN.md: <title>`)
+     - point to `AGENTS.md` and the step's section in `PLAN.md` instead of repeating them
+     - mention any context the step depends on (e.g. code added by an earlier step)
+     - restate the rules: tick boxes as you go, keep the plan aligned with what was implemented, ask before unplanned changes, run the step's validation, tick the step's **Done** box in the Implementation table, stop and suggest a commit message, don't start the next step
+6. Stop. The user reviews the plan, asks for changes if needed, and commits it. Don't start development until the plan is committed. Check with `git log -- PLAN.md` and `git status`.
 
 ### Phase 2: Development (after the plan is committed)
 
@@ -40,10 +59,13 @@ Agents never commit, push or merge. The user does all of that. Each phase ends b
 2. While working on a step, tick its checkboxes (`- [x]`) in `PLAN.md` as each item is done. Add short notes under the step for anything the reviewer should know, such as deviations or surprises.
 3. When a step is finished:
    - run its validation commands and report the results honestly
-   - set the step to done in `PLAN.md`
-   - stop and wait for the user to commit
+   - set the step to done in `PLAN.md`, and tick its **Done** box (`[x]`) in the Implementation table. This happens before the user validates the step; it's fine, because nothing is committed until the user has validated it.
+   - stop, give the suggested commit message (start from the step's **Commit** line and adjust it to what was actually done), and wait for the user to commit
    - don't start the next step until the previous one is committed
-4. If the plan turns out to be wrong or incomplete, stop and ask the user. Change the plan only with the user's agreement, and record the change in `PLAN.md`.
+4. Keep the plan aligned with the implementation:
+   - **The work differs from what the plan says** (a different file, approach, command or detail, within the step's scope): update the step in `PLAN.md` so it describes what was actually implemented, and add a short note under the step saying what changed and why. The plan must never describe something the code doesn't do.
+   - **A change isn't covered by the plan at all** (extra behavior, files, dependencies, refactors, or anything outside the step's scope): stop and ask the user before making it. If the user agrees, add it to the plan (to the current step, or as a new step with an Implementation row), then implement it.
+   - **The plan turns out to be wrong or incomplete in a way that affects other steps:** stop and ask the user before continuing.
 
 ### Phase 3: Review (after all steps are committed)
 
@@ -53,11 +75,12 @@ An agent, preferably one that didn't do the development, validates the whole tas
 - Do a full review looking for gaps and errors: missing behavior, edge cases, untested paths, broken publish tags or config, documentation that doesn't match the code, and compatibility with Laravel 12/13 and every supported database.
 - Run the full validation: `make test` and `make test-all`.
 - Write the findings in the plan's **Review** section. Fixes for any findings get added as new steps, with the user's agreement, and then go through Phase 2.
-- Stop and wait for the user to validate.
+  - New steps also get a row in the **Implementation** table.
+- Stop, give the suggested commit message for the review, and wait for the user to validate.
 
 ### Phase 4: Close
 
-Once the user has validated the task, blank `PLAN.md` again (back to the single line above) as the last commit on the task branch. The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
+Once the user has validated the task, blank `PLAN.md` again (back to the single line above) as the last commit on the task branch, and give the suggested commit message (e.g. `Close task: <task title>`). The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
 
 ### `PLAN.md` format
 
@@ -66,6 +89,13 @@ Once the user has validated the task, blank `PLAN.md` again (back to the single 
 
 **Status:** planning | approved | in progress | in review | done
 **Branch:** <task branch> → **Target:** <main | release branch>
+
+## Implementation
+
+| Done | Step | Model | Effort | Why | Prompt |
+|------|------|-------|--------|-----|--------|
+| [ ] | 1. <title> | `sonnet` | `medium` | <short reason> | Implement Step 1 of PLAN.md: <title>. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. <any context it depends on>. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this row's Done to [x], then stop and give a suggested commit message. Don't start Step 2. |
+| [ ] | 2. ... | | | | |
 
 ## Context
 Why this task exists, what problem it solves, and the intended outcome.

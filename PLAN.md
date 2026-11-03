@@ -1,7 +1,16 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in review (all steps done and CI is green; next is the Phase 3 full review, then close)
+**Status:** in progress (step 7 added from review; waiting for the user to approve and commit the plan)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
+
+### Implementation
+
+Steps 0–6 were done before this table was part of the workflow, so they have no rows.
+
+| Done | Step | Model | Effort | Why | Prompt |
+|------|------|-------|--------|-----|--------|
+| [ ] | 7. Skip CI for documentation-only changes | `sonnet` | `low` | Small, contained YAML change. It only needs care so that the ignore list never covers files CI depends on. | Implement Step 7 of PLAN.md: Skip CI for documentation-only changes. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `.github/workflows/tests.yml` and `AGENTS.md` change: keep the existing `push`/`pull_request` triggers and jobs as they are, and run `actionlint` through Docker (`docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:1.7.7 .github/workflows/tests.yml`). Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. When it's validated, set this row's Done to [x], then stop and give a suggested commit message. Don't start the review. |
+| [ ] | Review (Phase 3) | `opus` | `high` | A full review across Docker, the skeleton, the multi-database tests and CI needs broad judgement. It should be a fresh agent that didn't build Task 1. | Do the Phase 3 review of Task 1 in PLAN.md. Follow AGENTS.md (Task Plan Workflow → Phase 3). Check every step against the actual code, not the ticked boxes. Look for gaps and errors in the Docker setup, Makefile, composer.json, the service provider and skeleton wiring, tests/TestCase.php and the database tests, the CI workflow, and whether the docs match the code. Run `make test` and `make test-all`, plus the minimum database versions (`MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`). Write the findings in a **Review** section of PLAN.md, propose fixes as new steps (each with an Implementation row) without implementing them, set this row's Done to [x], then stop and give a suggested commit message. |
 
 > **Progress notes**
 > - The host's Docker networking was fixed outside the repo: NetworkManager no longer manages `docker0`/`br-*`/`veth*` (`/etc/NetworkManager/conf.d/99-docker-unmanaged.conf`). No compose overrides are needed.
@@ -177,6 +186,34 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - after the user pushes, the `databases` CI job is green for all 14 combinations (re-run after the `mongo:8.2` fix). ✅ Run `41567523964` (`270bbc7`): all 38 jobs passed
 
 **Commit:** `Set minimum database versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0), test PostgreSQL 18, and fix CI database jobs`
+
+#### 7. Skip CI for documentation-only changes (from review)
+**Status:** todo
+
+**Why:** changes that touch only plan or docs files (e.g. `PLAN.md` status updates, README edits) currently run the full CI, which is 38 jobs.
+
+**Decisions:**
+- Use `paths-ignore` on both `push` and `pull_request`. CI is skipped only when **every** changed file matches; mixed commits still run.
+- Ignore docs, license and agent files only. Docker/Makefile files aren't ignored for now, even though CI doesn't use them.
+- Add `workflow_dispatch` so CI can be started by hand from the Actions tab.
+- Nothing on `main` is a required check today. If branch protection adds required checks later, docs-only PRs would wait forever for checks that never start, and an always-passing job would then be needed.
+
+- [ ] `.github/workflows/tests.yml`: add the same `paths-ignore` list under `push` and `pull_request`:
+  - `'**.md'`: `PLAN.md`, `README.md`, `AGENTS.md`, `.github/CONTRIBUTING.md`, and the `SKILL.md` files under `.agents/` and `resources/boost/`
+  - `'LICENSE'`
+  - `'CLAUDE.md'` (symlink to `AGENTS.md`)
+  - `'.agents/**'`
+  - `'.claude'` (symlink to `.agents`)
+- [ ] `.github/workflows/tests.yml`: add a `workflow_dispatch:` trigger.
+- [ ] `AGENTS.md`: one line noting that docs-only changes don't run CI, and that new ignore entries must never cover files the tests or build depend on.
+
+**Validate:**
+- `actionlint` (via Docker) passes on `.github/workflows/tests.yml`.
+- After the user pushes this step: CI **runs**, because the workflow file itself changed.
+- Next push that changes only `PLAN.md` (e.g. ticking this step): **no** CI run appears in `gh run list`.
+- The "Run workflow" button shows up on the Actions tab (`workflow_dispatch`).
+
+**Commit:** `Skip CI for documentation-only changes`
 
 ### Expected key files afterwards
 - `composer.json` (name `route-connex/route-connex-laravel`, PSR-4 `RouteConnex\Laravel\` → `src/`, provider `RouteConnex\Laravel\RouteConnexServiceProvider`, alias `RouteConnex`)
