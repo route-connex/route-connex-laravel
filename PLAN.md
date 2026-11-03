@@ -1,6 +1,6 @@
 # Branching model, branch-aware CHANGELOG and `version`
 
-**Status:** in review
+**Status:** in progress
 **Branch:** `docs/init` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -32,6 +32,20 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
   - **Resume:** `claude --ide --resume aafaac91-2d16-4d42-bfcd-901475cfed55` (gandalf)
   - **Why:** Small GitHub Actions change. The Step 2 session already knows the `version` rules and the test that enforces its format.
   - **Prompt:** Implement Step 3 of PLAN.md: Run CI on release branches and check `version` on tag pushes. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 documented the branching model and `version`, and Step 2 added `tests/Unit/VersionFileTest.php` for its format; use the `package-release` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
+- [ ] **4. Release candidate versions in the docs, and the close against the target's current state**
+  - **Model:** `sonnet`
+  - **Effort:** `high`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** Docs only, but it rewrites the close procedure (with a branch on whether an `-rc` exists) in AGENTS.md, CONTRIBUTING and the release skill, which have to stay consistent. The review session that planned it has every decision loaded.
+  - **Prompt:** Implement Step 4 of PLAN.md: Release candidate versions in the docs, and the close against the target's current state. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the rules to write down are in PLAN.md → Decisions (the entries marked "changed after review") and the review findings 1–4 it fixes. Steps 1–3 wrote the current branching docs, the `version` test and the tag workflow; this step changes only docs and `CHANGELOG.md`. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 5.
+- [ ] **5. Accept `-rc` versions in the test and reject `-rc` tags in CI**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** A small regex and dataset change plus a few lines of shell in the workflow. The rules are fully written in PLAN.md → Decisions, so a fresh session doesn't need the planning context.
+  - **Prompt:** Implement Step 5 of PLAN.md: Accept `-rc` versions in the test and reject `-rc` tags in CI. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 added `tests/Unit/VersionFileTest.php` and Step 3 added `.github/workflows/version.yml`; Step 4 documented the `vX.Y.Z-rc` value and the plain-tag rule in AGENTS.md (see PLAN.md → Decisions). Use the `package-testing` and `package-release` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
 ## Context
 
@@ -44,6 +58,8 @@ This task:
 - adds a `version` file at the repo root that names the tag (on a tagged commit) or the branch the code is on
 - checks the file's format in Pest, and checks it against the tag in CI on tag pushes
 
+After the review, the user replaced `# Unreleased` and the release branch name with a release candidate version: on a release branch, unreleased work sits under `# vX.Y.Z-rc` and `version` holds the same `vX.Y.Z-rc`. Steps 4 and 5 make that change and fix review findings 1–4.
+
 ## Decisions
 
 - **Release branches:** every major has a long-lived `release/<major>.x` branch (pre-1.0: `release/0.x`). Releases are cut and tagged there.
@@ -51,18 +67,25 @@ This task:
 - **No `develop` branch:** the user dropped it ("not necessary").
 - **Work branches:** `feature/<origin_major>/<quick-description>`, `hotfix/<origin_major>/<quick-description>` and `docs/<origin_major>/<quick-description>` (e.g. `feature/1/add-route-cache`). `<origin_major>` is the major of the release branch the work branch starts from, written as a bare number (`1`, not `1.x`). It's left out when that is the latest major: `feature/add-route-cache`. A work branch starts from a release branch and merges back into the same one. `<quick-description>` is lowercase kebab-case.
 - **Latest major:** the highest-numbered `release/<N>.x`. A new major starts when the user creates `release/<N+1>.x` from `release/<N>.x`. `main` stays on the newest `N` tag until `v<N+1>.0.0` is tagged.
-- **Tags:** `v<major>.<minor>.<patch>` (SemVer), made on a release branch. They match the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`.
-- **CHANGELOG on a work branch:** the top H1 is the branch name (e.g. `# docs/init`), followed by only that branch's items, then `---` and the sections the branch started from (`# Unreleased`, older releases). Each step's commit adds its own items under `# <branch>`, creating the section on the first item, so the heading always lists what the branch has done so far.
-- **CHANGELOG on `main` / `release/<N>.x`:** unreleased work sits under `# Unreleased`, as before.
-- **Close commit:** moves the `# <branch>` items under the target's `# Unreleased`, creating it above a `---` if it's missing, removes the `# <branch>` heading and its `---`, sets `version` to the target branch name, and blanks `PLAN.md`.
-- **Release:** on `release/<N>.x`, rename `# Unreleased` to `# vX.Y.Z (YYYY-MM-DD)`, set `version` to `vX.Y.Z`, then (with the user's approval) tag `vX.Y.Z`. If `N` is the latest major, fast-forward `main` to it.
+- **Tags:** `v<major>.<minor>.<patch>` (SemVer), made on a release branch. They match the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`. *Changed after review:* only plain `vX.Y.Z` tags are allowed. `-rc` versions are never tagged, and the tag workflow fails on any other tag that its `v*.*.*` filter lets through (e.g. `v0.1.0-rc`).
+- **CHANGELOG on a work branch:** the top H1 is the branch name (e.g. `# docs/init`), followed by only that branch's items, then `---` and the sections the branch started from (*changed after review:* `# vX.Y.Z-rc` if the target has one, then older releases). Each step's commit adds its own items under `# <branch>`, creating the section on the first item, so the heading always lists what the branch has done so far.
+- **CHANGELOG on `release/<N>.x`** (*changed after review*, was `# Unreleased`): unreleased work sits under `# vX.Y.Z-rc`, the version it will be released as, with no date. `# Unreleased` is no longer used anywhere. `main` only holds tagged commits, so its top section is always `# vX.Y.Z (YYYY-MM-DD)`.
+- **Close commit** (*changed after review*):
+  1. First, the target branch must be in the work branch (`git merge-base --is-ancestor <target> HEAD`). If it isn't, the agent stops and asks the user to merge or rebase the target into the work branch, because agents don't merge. This fixes review finding 1: the close then sees the target's current sections and `version`.
+  2. If the first section below `# <branch>` and its `---` is a `# vX.Y.Z-rc`, the branch's items are added to it and `version` is set to that `vX.Y.Z-rc`. No new rc is created.
+  3. Otherwise (the target's top section is a released `# vX.Y.Z (YYYY-MM-DD)`, or there is none), the agent asks the user for the version to target, suggesting one from the branch's changes: a patch bump for fixes and docs, a minor bump for new behavior, a major bump for breaking changes. It creates `# vX.Y.Z-rc` with the items above a `---`, and sets `version` to `vX.Y.Z-rc`.
+  4. It removes the `# <branch>` heading and its `---`, and blanks `PLAN.md`.
+- **Release** (*changed after review*): on `release/<N>.x`, whose `version` is `vX.Y.Z-rc`, rename `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)`, set `version` to `vX.Y.Z`, then (with the user's approval) tag `vX.Y.Z`. If `N` is the latest major, fast-forward `main` to the tag (`git merge --ff-only vX.Y.Z`, review finding 3). The next close then asks for the next version.
 - **`version`:** one line (plus a trailing newline) at the repo root, with no extension:
   - on a tagged commit: the tag name, e.g. `v0.1.0`
   - on a work branch: the branch name, e.g. `docs/init`. Phase 1 writes it together with `PLAN.md`, so the plan commit sets it.
-  - on an untagged `release/<N>.x` commit (after a close, before the next release): the release branch name, e.g. `release/0.x`
+  - on an untagged `release/<N>.x` commit (after a close, before the next release): *changed after review*, was the release branch name. Now the release candidate, e.g. `v0.1.0-rc`, the same string as the top CHANGELOG heading. `release/<N>.x` is no longer a valid value.
   - For this task it is `docs/init` (written in Step 1, because the Phase 1 rule doesn't exist yet).
+- **`-rc` format:** exactly `vX.Y.Z-rc`, with no number (`v0.1.0-rc.1`, `v0.1.0-rc1` and `v0.1.0-RC` are invalid). One rc collects every branch merged until the release.
+- **This task's rc:** the target has no tag yet, so Step 4 renames the existing `# Unreleased` in `CHANGELOG.md` to `# v0.1.0-rc`. This task's close adds the `# docs/init` items to it and sets `version` to `v0.1.0-rc`.
+- **External pull requests** (review finding 2): the maintainer does the close for them (fold the items into the rc, set `version`), on the PR branch before merging.
 - **Dist archive:** `version` stays in the Composer dist archive. Dist archives come from tags, so it holds the tag name there.
-- **Automated checks:** a Pest test for the file's format, and a CI check on tag pushes that `version` equals the tag.
+- **Automated checks:** a Pest test for the file's format, and a CI check on tag pushes that `version` equals the tag (*changed after review:* and that the tag is a plain `vX.Y.Z`).
 - **This task's target:** `release/0.x`. The user creates it from `main` before committing this plan. `main` is updated when `v0.1.0` is tagged.
 - **Out of scope:** Composer sees `release/1.x` as `dev-release/1.x`, not `1.x-dev`. A `branch-alias` in `composer.json` can map it later if dev installs of a release branch are wanted. Forward-porting hotfixes to newer majors isn't defined; it's done with a separate branch per major when needed.
 
@@ -117,13 +140,43 @@ This task:
 **Validate:** `make test`. Lint both workflows with `docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest`. Run the check's shell script by hand with `GITHUB_REF_NAME=v0.1.0` (expect a failure on this branch) and against a temp copy with matching files (expect a pass).
 **Commit:** `Run CI on release branches and check the version file on tag pushes`
 
+### Step 4: Release candidate versions in the docs, and the close against the target's current state
+**Status:** todo
+- [ ] `AGENTS.md` → Branching and Versioning: `version` on an untagged release branch commit is `vX.Y.Z-rc` (the same string as the top CHANGELOG heading), set by the close commit. Tags are plain `vX.Y.Z` only, and `-rc` versions are never tagged.
+- [ ] `AGENTS.md` → Phase 4: rewrite the close as in PLAN.md → Decisions → Close commit: check that the target is merged into the work branch (otherwise stop and ask the user to merge or rebase it), add the items to an existing `# vX.Y.Z-rc` or ask the user for the version (with a patch/minor/major suggestion) and create one, set `version` to the rc, remove `# <branch>` and its `---`, blank `PLAN.md`.
+- [ ] `AGENTS.md` → the `CHANGELOG.md` paragraph and its example: `# vX.Y.Z-rc` (no date) replaces `# Unreleased` on release branches. The example shows `# docs/init`, `---`, `# v0.2.0-rc`, `---`, `# v0.1.0 (2026-01-01)`. The release renames the rc heading.
+- [ ] `.github/CONTRIBUTING.md` → Branching: contributors keep their items under `# <branch>`. The maintainer does the close on the PR branch before merging (folds the items into the rc, sets `version`). Review finding 2.
+- [ ] `.agents/skills/package-release/SKILL.md`:
+  - step 3: say that Composer versions come from the Git tag and the `version` file must match it (step 5). Review finding 4.
+  - step 4: rename `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)`. The release version is the rc's `vX.Y.Z`.
+  - step 7: fast-forward `main` with `git merge --ff-only vX.Y.Z`. After the release, the next close asks for the next version. Review finding 3.
+  - the example (`v0.1.0` from `release/0.x`, starting from `# v0.1.0-rc`) and an anti-pattern for tagging an `-rc` version.
+- [ ] `CHANGELOG.md`: rename `# Unreleased` to `# v0.1.0-rc`, and add this step's item under `# docs/init`.
+- [ ] No `# Unreleased` or release-branch `version` value is left in the docs: `git grep -n -E "Unreleased|version.*release/<N>\.x|release branch name" -- ':!PLAN.md'` finds nothing that describes the old rules.
+
+**Validate:** `make test`. Check by hand that AGENTS.md, CONTRIBUTING and the skill describe the same rules as PLAN.md → Decisions, and run the `git grep` above.
+**Commit:** `Use release candidate versions on release branches and close against the target's current state`
+
+### Step 5: Accept `-rc` versions in the test and reject `-rc` tags in CI
+**Status:** todo
+- [ ] `tests/Unit/VersionFileTest.php`: `VERSION_PATTERN` accepts `vX.Y.Z`, `vX.Y.Z-rc` and work branch names, and no longer accepts `release/<N>.x`.
+  - valid dataset: add `v0.1.0-rc` and `v12.34.56-rc`, and remove the two release branch values
+  - invalid dataset: add `release/0.x`, `v0.1.0-rc.1`, `v0.1.0-rc1`, `v0.1.0-RC`, `0.1.0-rc`, `v0.1-rc` and `v0.1.0-rc-1`
+- [ ] `.github/workflows/version.yml`: before the existing checks, fail unless `$GITHUB_REF_NAME` matches `^v[0-9]+\.[0-9]+\.[0-9]+$`, with an `::error::` that says only plain `vX.Y.Z` tags are allowed.
+- [ ] `AGENTS.md` → Branching and Versioning → Tags and the `package-release` skill (step 5): mention that the workflow rejects other tags.
+- [ ] `CHANGELOG.md`: add this step's item under `# docs/init`.
+
+**Validate:** `make test`, `make test-unit ARGS="--filter=VersionFile"`. Lint the workflows with `docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest`. Run the check's shell script by hand against a temp copy: `GITHUB_REF_NAME=v0.1.0-rc` with `version` = `v0.1.0-rc` and a `# v0.1.0-rc` heading (expect a failure on the tag format), and `GITHUB_REF_NAME=v0.1.0` with `version` = `v0.1.0` and a `# v0.1.0 (…)` heading (expect a pass).
+**Commit:** `Accept release candidate versions in the version test and reject rc tags in CI`
+
 ## Acceptance Criteria
 - [x] AGENTS.md documents the release branches, `main` = latest stable tag, the `feature/` `hotfix/` `docs/` names (with the optional origin major), tags `vX.Y.Z`, and no `develop` branch.
-- [x] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and folds them into `# Unreleased` at close. CONTRIBUTING and the `package-release` skill agree with it.
-- [x] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags, release branches and work branches.
-- [x] A Pest test fails for a malformed `version`.
-- [x] CI runs on pushes to `main` and `release/*.x`. A tag push fails when `version` or the CHANGELOG heading doesn't match the tag.
-- [x] `make test` and `make test-all` pass.
+- [ ] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and, at close, folds them into the target's `# vX.Y.Z-rc` (creating it with a user-chosen version when there is none). CONTRIBUTING and the `package-release` skill agree with it, and `# Unreleased` is no longer used.
+- [ ] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags (`vX.Y.Z`), untagged release branch commits (`vX.Y.Z-rc`) and work branches.
+- [ ] The close checks that the target is merged into the work branch before it runs (review finding 1).
+- [ ] A Pest test fails for a malformed `version`, including `release/<N>.x` and numbered or uppercase `-rc` values.
+- [ ] CI runs on pushes to `main` and `release/*.x`. A tag push fails when the tag isn't a plain `vX.Y.Z`, or when `version` or the CHANGELOG heading doesn't match the tag.
+- [ ] `make test` and `make test-all` pass.
 
 ## Review
 
@@ -148,3 +201,5 @@ Reviewed on `gandalf` against commits `317f000`, `7a77b28` and `eb7b91b`, checki
 - `v*.*.*` also matches pre-release tags like `v1.0.0-beta`. Their `version` value would fail the Pest regex, which is consistent with the decision to use plain `vX.Y.Z` tags only.
 - Pushes to work branches don't run CI; only pull requests do. That was already the case and it's unchanged.
 - The README's Tests badge (`branch=main`) now shows the status of the latest release, not the latest work, because `main` only moves on releases.
+
+**Follow-up:** after the review, the user replaced `# Unreleased` and the release branch `version` value with a `vX.Y.Z-rc` release candidate (see Decisions, "changed after review"). Steps 4 and 5 implement that and fix findings 1–4. Finding 5 needs no change: Step 5's tag format check doesn't change it, and the Pest test still catches extra blank lines. After Step 5, the task goes through a new Phase 3 review in a fresh session.
