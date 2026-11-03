@@ -7,9 +7,23 @@ For significant changes, please open an issue first so we can discuss the approa
 ## Process
 
 1. Fork the project
-2. Create a new branch
+2. Create a branch from the release branch you are changing, named by the [branching model](#branching)
 3. Code, test, commit, and push
-4. Open a pull request detailing your changes
+4. Open a pull request against that release branch, detailing your changes
+
+## Branching
+
+There is one long-lived `release/<major>.x` branch per major version (`release/0.x` until 1.0), and `main` always holds the latest stable release. Releases are tagged `v<major>.<minor>.<patch>` on their release branch. Start your branch from, and open your pull request against, the release branch you are changing (usually the highest-numbered one).
+
+Name your branch `<type>/<origin_major>/<quick-description>`:
+
+- `<type>` is `feature` (new behavior), `hotfix` (a fix) or `docs` (documentation only)
+- `<origin_major>` is the major of the release branch you started from, as a bare number (`1`, not `1.x`). Leave it out when that is the latest major.
+- `<quick-description>` is lowercase kebab-case
+
+For example, `feature/add-route-cache` for the latest major, or `hotfix/1/fix-cache-key` for a fix to `release/1.x`.
+
+In `CHANGELOG.md`, add your items (one line each) under a `# <your-branch-name>` heading at the top, above the existing sections. The maintainer folds them into `# Unreleased` when the branch is merged. Set the `version` file at the repo root to your branch name.
 
 ## Guidelines
 

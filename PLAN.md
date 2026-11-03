@@ -1,6 +1,6 @@
 # Branching model, branch-aware CHANGELOG and `version`
 
-**Status:** planning
+**Status:** in progress
 **Branch:** `docs/init` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -11,11 +11,11 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
 
 ## Implementation
 
-- [ ] **1. Document the branching model, the branch-aware CHANGELOG and `version`**
+- [x] **1. Document the branching model, the branch-aware CHANGELOG and `version`**
   - **Model:** `sonnet`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33` (gandalf)
   - **Why:** Docs only, but it rewrites parts of the Task Plan Workflow that have to stay consistent with each other. The planning session already has every decision loaded.
   - **Prompt:** Implement Step 1 of PLAN.md: Document the branching model, the branch-aware CHANGELOG and `version`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the rules to write down are in PLAN.md → Decisions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. Test the `version` format**
@@ -69,19 +69,24 @@ This task:
 ## Steps
 
 ### Step 1: Document the branching model, the branch-aware CHANGELOG and `version`
-**Status:** todo
-- [ ] `AGENTS.md`: add a **Branching and Versioning** section (before Task Plan Workflow) with the release branches, `main`, the work branch names with the origin-major rule and examples, where each branch starts and merges, tags, and the `version` values.
-- [ ] `AGENTS.md` → Task Plan Workflow:
+**Status:** done
+- [x] `AGENTS.md`: add a **Branching and Versioning** section (before Task Plan Workflow) with the release branches, `main`, the work branch names with the origin-major rule and examples, where each branch starts and merges, tags, and the `version` values.
+- [x] `AGENTS.md` → Task Plan Workflow:
   - Phase 1: the branch name must follow the scheme, the target is a `release/<N>.x` branch, and the planning agent writes `version` (the branch name) together with `PLAN.md`
   - Phase 2: each step adds its CHANGELOG items under `# <branch>`
   - Phase 3: the review checks the CHANGELOG items and `version`
   - Phase 4: the close folds the items into `# Unreleased` and sets `version` to the target branch
   - the `CHANGELOG.md` paragraph: describe the branch heading
   - the `PLAN.md` format: `**Target:** <release/<N>.x>`
-- [ ] `.github/CONTRIBUTING.md`: in the Process section, contributors pick a branch name from the scheme, start from the right `release/<N>.x` and open the PR against it. Mention the `# <branch>` CHANGELOG section and `version`.
-- [ ] `.agents/skills/package-release/SKILL.md`: releases happen on `release/<N>.x`. Set `version` to the tag, fast-forward `main` when `N` is the latest major, and include the steps for starting a new major. Update the examples.
-- [ ] `version`: create it with `docs/init`.
-- [ ] `CHANGELOG.md`: add `# docs/init` with this step's item(s) above a `---` and the existing `# Unreleased`.
+- [x] `.github/CONTRIBUTING.md`: in the Process section, contributors pick a branch name from the scheme, start from the right `release/<N>.x` and open the PR against it. Mention the `# <branch>` CHANGELOG section and `version`.
+- [x] `.agents/skills/package-release/SKILL.md`: releases happen on `release/<N>.x`. Set `version` to the tag, fast-forward `main` when `N` is the latest major, and include the steps for starting a new major. Update the examples.
+- [x] `version`: create it with `docs/init`.
+- [x] `CHANGELOG.md`: add `# docs/init` with this step's item(s) above a `---` and the existing `# Unreleased`.
+**Notes:**
+- `.github/CONTRIBUTING.md` got a new **Branching** section (linked from the Process list) instead of only a change to the Process list, so contributors have the full naming rules in one place. It also tells contributors to put their CHANGELOG items under `# <branch>` and set `version`.
+- `AGENTS.md` Phase 1 step 7 now says the plan commit includes `version`. This task's plan commit predates that rule, so Step 1 created `version`.
+- `CHANGELOG.md`: `# docs/init` holds one item for this step. Steps 2 and 3 add their own lines.
+
 **Validate:** `make test`. Check by hand that AGENTS.md, CONTRIBUTING and the skill describe the same rules as PLAN.md → Decisions.
 **Commit:** `Document the branching model, branch-aware CHANGELOG and version file`
 

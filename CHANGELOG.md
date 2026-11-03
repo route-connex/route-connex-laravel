@@ -1,3 +1,9 @@
+# docs/init
+
+- Branching model documented (`release/<major>.x` branches, `main` as the latest stable release, `feature/`, `hotfix/` and `docs/` work branches, `v<major>.<minor>.<patch>` tags), with branch-named CHANGELOG sections for work in progress and a `version` file at the repo root naming the tag or branch the code is on.
+
+---
+
 # Unreleased
 
 - Docker toolchain for PHP 8.4 with Composer, driven by `make` targets (`make help` lists them): tests, lint, static analysis, the workbench server, Testbench and per-database test runs. No local PHP is needed.
