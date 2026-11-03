@@ -17,7 +17,7 @@ Prove package behavior with Pest 4/5, Orchestra Testbench, and the local `tests/
 1. Start with TDD: write the smallest failing package test for the requested behavior, then implement the smallest change that makes it pass.
 2. Cover happy-path, unhappy-path, and edge-case behavior when the feature has meaningful failure modes.
 3. Prefer focused feature tests for package integration behavior and arch tests for broad constraints.
-4. Use `composer test:unit -- --filter ...` while iterating, `composer test:types` when type-sensitive tests or code changed, and `composer test` before finishing.
+4. Use `make test-unit ARGS="--filter ..."` while iterating, `make composer ARGS="test:types"` when type-sensitive tests or code changed, and `make test` and `make test-all` before finishing. `make test` runs PHPStan, Pint, type coverage and Pest on SQLite; `make test-all` runs Pest on all four databases. For one database, use `make test-mysql ARGS="..."` (or `make test-pgsql` / `make test-mongodb`).
 5. Keep real package tests in the suite and remove only throwaway tests that were explicitly created for local scaffolding experiments.
 
 ## References

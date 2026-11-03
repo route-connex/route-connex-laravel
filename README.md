@@ -81,13 +81,14 @@ No local PHP is needed: everything runs in Docker through `make` (run `make help
 make build      # build the PHP 8.4 image
 make install    # composer install
 make test       # PHPStan, Pint, type coverage and Pest (SQLite)
+make test-unit ARGS="--filter=Foo"   # Pest only (SQLite); ARGS are passed to Pest
 make test-all   # Pest against SQLite, MySQL, PostgreSQL and MongoDB
 make serve      # workbench app on http://localhost:8000
 make testbench ARGS="route:list"   # artisan for the package
 make shell      # shell inside the container
 ```
 
-MySQL, PostgreSQL and MongoDB run as Compose services (the `databases` profile). `make test-mysql`, `make test-pgsql` and `make test-mongodb` start them as needed, and `make db-down` stops and removes them.
+MySQL, PostgreSQL and MongoDB run as Compose services (the `databases` profile). `make test-mysql`, `make test-pgsql` and `make test-mongodb` start them as needed and accept `ARGS` too (e.g. `make test-mysql ARGS="--filter=DatabaseTest"`), and `make db-down` stops and removes them.
 
 By default they run the latest tested versions (MySQL 8.4, PostgreSQL 18, MongoDB 8). Set `MYSQL_VERSION`, `POSTGRES_VERSION` or `MONGO_VERSION` to test another version, e.g. the minimum supported ones:
 

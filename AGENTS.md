@@ -151,7 +151,7 @@ Findings from Phase 3 (filled in by the reviewing agent).
 
 ## Quick Commands
 
-There is no local PHP: run everything through Docker with `make` (see `make help`). The equivalents are `make test`, `make lint`, `make analyse`, `make test-unit`, `make serve`, and `make composer ARGS="..."`. For database-specific runs, use `make test-mysql`, `make test-pgsql`, `make test-mongodb` or `make test-all`.
+There is no local PHP: run everything through Docker with `make` (see `make help`). The equivalents are `make test`, `make lint`, `make analyse`, `make test-unit ARGS="--filter=..."`, `make serve`, and `make composer ARGS="..."`. For database-specific runs, use `make test-mysql`, `make test-pgsql`, `make test-mongodb` or `make test-all`; the single-database targets accept `ARGS` too.
 
 Composer scripts (run inside the container):
 

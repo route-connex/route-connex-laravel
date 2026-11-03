@@ -48,11 +48,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Small Makefile/Compose change, but it touches how every test target picks its database, so it needs a careful check of each target. Independent of Step 9's test work.
   - **Prompt:** Implement Step 10 of PLAN.md: Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `Makefile` and `docker-compose.yml` change (README/AGENTS docs follow in Step 11). Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 11.
-- [ ] **11. Align CONTRIBUTING, README and the agent skills with the Docker workflow**
+- [x] **11. Align CONTRIBUTING, README and the agent skills with the Docker workflow**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Docs-only edits. It documents the `ARGS` support from Step 10, so it follows it in the same session.
   - **Prompt:** Implement Step 11 of PLAN.md: Align CONTRIBUTING, README and the agent skills with the Docker workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 10 added `ARGS` to `make test-unit` and the `make test-<db>` targets; describe what the Makefile actually does. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 12.
 - [x] **12. Bring Task 1's steps in line with what was built**
@@ -319,17 +319,17 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 > Note: the passthrough was dropped (TestCase defaults to `sqlite`); `make test` and `make test-unit` also pass `-e DB_CONNECTION=sqlite` explicitly, so they ignore the host variable.
 
 #### 11. Align CONTRIBUTING, README and the agent skills with the Docker workflow (from Phase 3 review)
-**Status:** todo
+**Status:** done
 
 **Why:** Review finding R5.
 - `.github/CONTRIBUTING.md` tells contributors to run `composer install`, `composer lint` and `composer test`, but the documented setup has no local PHP, and it never mentions the database targets.
 - `.agents/skills/package-release/SKILL.md` points to `CHANGELOG.md`, `.github/release.yml` and `.github/workflows/update-changelog.yml`, which Step 3 deleted on purpose.
 - `.agents/skills/package-testing/SKILL.md` only mentions `composer` commands.
 
-- [ ] `.github/CONTRIBUTING.md`: Setup/Lint/Tests use `make build`, `make install`, `make lint`, `make test`, and `make test-all` (with the minimum-version commands) for database-related changes. Mention that the `composer` scripts work too for contributors with local PHP 8.3+.
-- [ ] `.agents/skills/package-release/SKILL.md`: drop the references to the deleted changelog files and workflows (or reword them as "if the repo adds them"), and use `make test` / `make test-all` as the release check.
-- [ ] `.agents/skills/package-testing/SKILL.md`: add the `make` equivalents (`make test-unit ARGS="--filter ..."`, `make test`, `make test-all`) next to the composer commands.
-- [ ] `README.md` and `AGENTS.md` Quick Commands: mention `ARGS` for `make test-unit` / `make test-<db>` if Step 10 added it.
+- [x] `.github/CONTRIBUTING.md`: Setup/Lint/Tests use `make build`, `make install`, `make lint`, `make test`, and `make test-all` (with the minimum-version commands) for database-related changes. Mention that the `composer` scripts work too for contributors with local PHP 8.3+.
+- [x] `.agents/skills/package-release/SKILL.md`: drop the references to the deleted changelog files and workflows (or reword them as "if the repo adds them"), and use `make test` / `make test-all` as the release check.
+- [x] `.agents/skills/package-testing/SKILL.md`: add the `make` equivalents (`make test-unit ARGS="--filter ..."`, `make test`, `make test-all`) next to the composer commands.
+- [x] `README.md` and `AGENTS.md` Quick Commands: mention `ARGS` for `make test-unit` / `make test-<db>` if Step 10 added it.
 
 **Validate:** `make test` (docs-only change, CI will be skipped by `paths-ignore`). Proof-read every command against `Makefile`.
 
