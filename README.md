@@ -106,7 +106,7 @@ Thank you for considering contributing to RouteConnex! Please review our [contri
 
 ## Credits
 
-- [Leo Oberle](https://github.com/route-connex)
+- [Leo Oberle](https://github.com/leocello)
 - [All Contributors](../../contributors)
 
 ## License
