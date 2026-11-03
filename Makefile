@@ -3,8 +3,8 @@ export UID := $(shell id -u)
 export GID := $(shell id -g)
 
 RUN := docker compose run --rm app
-# Pest against one database: $(call pest_on,mysql)
-pest_on = docker compose run --rm -e DB_CONNECTION=$(1) app vendor/bin/pest
+# Pest against one database, extra arguments via ARGS: $(call pest_on,mysql)
+pest_on = docker compose run --rm -e DB_CONNECTION=$(1) app vendor/bin/pest $(ARGS)
 DB_SERVICES := mysql pgsql mongodb
 
 .PHONY: help build install update composer test test-unit lint analyse serve testbench shell \
@@ -26,10 +26,10 @@ composer: ## Run any composer command: make composer ARGS="require foo/bar"
 	$(RUN) composer $(ARGS)
 
 test: ## Full suite (PHPStan, Pint, type coverage, Pest) on SQLite
-	$(RUN) composer test
+	docker compose run --rm -e DB_CONNECTION=sqlite app composer test
 
-test-unit: ## Pest only, on SQLite
-	$(RUN) composer test:unit
+test-unit: ## Pest only, on SQLite: make test-unit ARGS="--filter=Foo"
+	docker compose run --rm -e DB_CONNECTION=sqlite app composer test:unit -- $(ARGS)
 
 lint: ## Fix code style with Pint
 	$(RUN) composer lint
@@ -52,18 +52,18 @@ db-up: ## Start MySQL, PostgreSQL and MongoDB
 db-down: ## Stop and remove the database containers (and their anonymous volumes)
 	docker compose --profile databases rm --force --stop --volumes $(DB_SERVICES)
 
-test-sqlite: ## Pest against SQLite
+test-sqlite: ## Pest against SQLite (accepts ARGS)
 	$(call pest_on,sqlite)
 
-test-mysql: ## Pest against MySQL
+test-mysql: ## Pest against MySQL (accepts ARGS)
 	docker compose --profile databases up -d --wait mysql
 	$(call pest_on,mysql)
 
-test-pgsql: ## Pest against PostgreSQL
+test-pgsql: ## Pest against PostgreSQL (accepts ARGS)
 	docker compose --profile databases up -d --wait pgsql
 	$(call pest_on,pgsql)
 
-test-mongodb: ## Pest against MongoDB
+test-mongodb: ## Pest against MongoDB (accepts ARGS)
 	docker compose --profile databases up -d --wait mongodb
 	$(call pest_on,mongodb)
 

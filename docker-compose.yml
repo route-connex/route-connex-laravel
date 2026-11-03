@@ -15,8 +15,6 @@ services:
       - composer-cache:/home/app/.composer
     ports:
       - "8000:8000"
-    environment:
-      DB_CONNECTION: ${DB_CONNECTION:-sqlite}
 
   mysql:
     image: mysql:${MYSQL_VERSION:-8.4}

@@ -41,11 +41,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume 53980e7a-cfec-47b1-9f4e-38bc6de59b88` (xps-omarchy)
   - **Why:** Typical Pest/Testbench test work against the existing service provider. Independent of Step 8.
   - **Prompt:** Implement Step 9 of PLAN.md: Test the facade and the publish tags. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only tests change; `src/RouteConnexServiceProvider.php` stays as it is. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change (in particular, ask before changing package code if a test exposes a bug). Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 10.
-- [ ] **10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`**
+- [x] **10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`**
   - **Model:** `sonnet`
   - **Effort:** `low`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Small Makefile/Compose change, but it touches how every test target picks its database, so it needs a careful check of each target. Independent of Step 9's test work.
   - **Prompt:** Implement Step 10 of PLAN.md: Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `Makefile` and `docker-compose.yml` change (README/AGENTS docs follow in Step 11). Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 11.
 - [ ] **11. Align CONTRIBUTING, README and the agent skills with the Docker workflow**
@@ -299,15 +299,15 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Test the facade and the package publish tags`
 
 #### 10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS` (from Phase 3 review)
-**Status:** todo
+**Status:** done
 
 **Why:**
 - `docker-compose.yml` passes the host's `DB_CONNECTION` into the `app` container (`DB_CONNECTION: ${DB_CONNECTION:-sqlite}`). Checked: `DB_CONNECTION=mysql docker compose run --rm app printenv DB_CONNECTION` prints `mysql`. A Laravel developer with `DB_CONNECTION` exported in their shell (direnv, another project) gets `make test` running Pest `--parallel` against MySQL, which isn't started and would be shared by the parallel workers. Review finding R3.
 - `make test-unit` and `make test-<db>` take no arguments, so the `package-testing` skill's `composer test:unit -- --filter ...` advice has no `make` equivalent. Review finding R4.
 
-- [ ] `docker-compose.yml`: drop the `DB_CONNECTION` passthrough from the `app` service (TestCase already defaults to `sqlite`), or pin it to `sqlite`.
-- [ ] `Makefile`: `test`, `test-unit` and `test-sqlite` always run on SQLite, whatever the host shell has exported; `test-mysql`/`test-pgsql`/`test-mongodb` keep setting it explicitly with `-e`.
-- [ ] `Makefile`: `test-unit` and the `pest_on` targets pass `$(ARGS)` through, e.g. `make test-unit ARGS="--filter=DatabaseTest"`, `make test-mysql ARGS="--filter=DatabaseTest"`. Update the `help` texts.
+- [x] `docker-compose.yml`: dropped the `DB_CONNECTION` passthrough from the `app` service (TestCase already defaults to `sqlite`), or pin it to `sqlite`.
+- [x] `Makefile`: `test`, `test-unit` and `test-sqlite` always run on SQLite, whatever the host shell has exported; `test-mysql`/`test-pgsql`/`test-mongodb` keep setting it explicitly with `-e`.
+- [x] `Makefile`: `test-unit` and the `pest_on` targets pass `$(ARGS)` through, e.g. `make test-unit ARGS="--filter=DatabaseTest"`, `make test-mysql ARGS="--filter=DatabaseTest"`. Update the `help` texts.
 
 **Validate:**
 - `DB_CONNECTION=mysql make test` passes on SQLite with the database containers stopped (`make db-down` first).
@@ -315,6 +315,8 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 - `make test-all` and `MYSQL_VERSION=8.0 make test-mysql ARGS="--filter=DatabaseTest"` pass.
 
 **Commit:** `Pin make test targets to SQLite and pass ARGS through to Pest`
+
+> Note: the passthrough was dropped (TestCase defaults to `sqlite`); `make test` and `make test-unit` also pass `-e DB_CONNECTION=sqlite` explicitly, so they ignore the host variable.
 
 #### 11. Align CONTRIBUTING, README and the agent skills with the Docker workflow (from Phase 3 review)
 **Status:** todo
