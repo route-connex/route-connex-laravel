@@ -14,4 +14,7 @@
 /.agents            export-ignore
 /CLAUDE.md          export-ignore
 /AGENTS.md          export-ignore
-/AGENTS_PACKAGE.md  export-ignore
+/docker             export-ignore
+/docker-compose.yml export-ignore
+/Makefile           export-ignore
+/PLAN.md            export-ignore

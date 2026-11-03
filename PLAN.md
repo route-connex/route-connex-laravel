@@ -27,11 +27,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume ea9d766f-1d8f-4e27-8421-5af3ecd48611` (xps-omarchy)
   - **Why:** A full review across Docker, the skeleton, the multi-database tests and CI needs broad judgement. Reviews are always a fresh session that didn't build Task 1.
   - **Prompt:** Do the Phase 3 review of Task 1 in PLAN.md. Follow AGENTS.md (Task Plan Workflow → Phase 3). Before starting, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Check every step against the actual code, not the ticked boxes. Look for gaps and errors in the Docker setup, Makefile, composer.json, the service provider and skeleton wiring, tests/TestCase.php and the database tests, the CI workflow, and whether the docs match the code. Run `make test` and `make test-all`, plus the minimum database versions (`MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`). Write the findings in a **Review** section of PLAN.md, propose fixes as new steps (each with an Implementation entry) without implementing them, set this entry's Done to [x], then stop and give a suggested commit message.
-- [ ] **8. Keep dev tooling out of the Composer dist archive**
+- [x] **8. Keep dev tooling out of the Composer dist archive**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 6bbbdbf3-e722-4e67-a582-411d745aa949` (xps-omarchy)
   - **Why:** A few lines in `.gitattributes`, checked with one `git archive` command. The review session is long and about the whole task.
   - **Prompt:** Implement Step 8 of PLAN.md: Keep dev tooling out of the Composer dist archive. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `.gitattributes` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 9.
 - [ ] **9. Test the facade and the publish tags**
@@ -267,12 +267,14 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 **Commit:** `Skip CI for documentation-only changes`
 
 #### 8. Keep dev tooling out of the Composer dist archive (from Phase 3 review)
-**Status:** todo
+**Status:** done
 
 **Why:** Composer installs tagged releases from GitHub's zip archive, which honours `export-ignore` in `.gitattributes`. `git archive HEAD` currently includes `Makefile`, `PLAN.md`, `docker-compose.yml` and `docker/php/Dockerfile`, so every app that installs the package would get them in `vendor/route-connex/route-connex-laravel/`. Review finding R1.
 
-- [ ] `.gitattributes`: add `export-ignore` lines for `/docker`, `/docker-compose.yml`, `/Makefile` and `/PLAN.md`, aligned with the existing entries.
-- [ ] `.gitattributes`: remove the stale `/AGENTS_PACKAGE.md` entry (no such file; it's a skeleton leftover).
+- [x] `.gitattributes`: add `export-ignore` lines for `/docker`, `/docker-compose.yml`, `/Makefile` and `/PLAN.md`, aligned with the existing entries.
+- [x] `.gitattributes`: remove the stale `/AGENTS_PACKAGE.md` entry (no such file; it's a skeleton leftover).
+
+Note: `/docker-compose.yml` is 19 characters, so its line has one space before `export-ignore` instead of the two the other entries use. The column is off by one for that line only.
 
 **Validate:**
 - `git archive --worktree-attributes HEAD | tar -t | grep -v '/$'` lists only `LICENSE`, `README.md`, `composer.json`, `config/`, `database/`, `lang/`, `public/`, `resources/`, `routes/` and `src/` files.
