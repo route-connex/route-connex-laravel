@@ -1,5 +1,6 @@
 <div align="center">
     <h1>RouteConnex</h1>
+    <h2>This plugin is under development - DO NOT try to use it yet!</h2>
 </div>
 
 <p align="center">
