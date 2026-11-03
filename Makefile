@@ -49,8 +49,8 @@ shell: ## Shell inside the PHP container
 db-up: ## Start MySQL, PostgreSQL and MongoDB
 	docker compose --profile databases up -d --wait $(DB_SERVICES)
 
-db-down: ## Stop the database containers
-	docker compose --profile databases down
+db-down: ## Stop and remove the database containers (and their anonymous volumes)
+	docker compose --profile databases rm --force --stop --volumes $(DB_SERVICES)
 
 test-sqlite: ## Pest against SQLite
 	$(call pest_on,sqlite)

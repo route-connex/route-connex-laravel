@@ -71,57 +71,73 @@ jobs:
         run: vendor/bin/pest
 
   databases:
-    runs-on: ubuntu-latest
+    # MongoDB 8.x refuses to start on Linux kernels 6.19 to 7.0.13, which ubuntu-latest
+    # (Ubuntu 26.04) currently ships: https://jira.mongodb.org/browse/SERVER-121912
+    # Move back to ubuntu-latest once its kernel is >= 7.0.14.
+    runs-on: ubuntu-24.04
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         laravel: [12.*, 13.*]
-        db: [mysql, pgsql, mongodb]
+        # Minimum supported versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0) plus newer targets.
+        db:
+          - connection: mysql
+            image: mysql:8.0
+            port: 3306
+            health: "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          - connection: mysql
+            image: mysql:8.4
+            port: 3306
+            health: "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          - connection: pgsql
+            image: postgres:14
+            port: 5432
+            health: "pg_isready -U testing -d testing"
+          - connection: pgsql
+            image: postgres:17
+            port: 5432
+            health: "pg_isready -U testing -d testing"
+          - connection: pgsql
+            image: postgres:18
+            port: 5432
+            health: "pg_isready -U testing -d testing"
+          - connection: mongodb
+            image: mongo:7.0
+            port: 27017
+            health: "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          - connection: mongodb
+            image: mongo:8
+            port: 27017
+            health: "mongosh --quiet --eval 'db.runCommand({ping:1})'"
         include:
           - laravel: 12.*
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
-          - db: mysql
-            port: 3306
-          - db: pgsql
-            port: 5432
-          - db: mongodb
-            port: 27017
 
-    name: DB ${{ matrix.db }} - L${{ matrix.laravel }}
+    name: DB ${{ matrix.db.image }} - L${{ matrix.laravel }}
 
     services:
-      mysql:
-        image: mysql:8.4
+      # One service per job: the database under test, configured from the matrix.
+      db:
+        image: ${{ matrix.db.image }}
         env:
           MYSQL_DATABASE: testing
           MYSQL_USER: testing
           MYSQL_PASSWORD: testing
           MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot" --health-interval=5s --health-timeout=5s --health-retries=20
-      pgsql:
-        image: postgres:17
-        env:
           POSTGRES_DB: testing
           POSTGRES_USER: testing
           POSTGRES_PASSWORD: testing
         ports:
-          - 5432:5432
-        options: --health-cmd="pg_isready -U testing -d testing" --health-interval=5s --health-timeout=5s --health-retries=20
-      mongodb:
-        image: mongo:8
-        ports:
-          - 27017:27017
-        options: --health-cmd="mongosh --quiet --eval 'db.runCommand({ping:1})'" --health-interval=5s --health-timeout=5s --health-retries=20
+          - ${{ matrix.db.port }}:${{ matrix.db.port }}
+        options: --health-cmd="${{ matrix.db.health }}" --health-interval=5s --health-timeout=5s --health-retries=20
 
     env:
-      DB_CONNECTION: ${{ matrix.db }}
+      DB_CONNECTION: ${{ matrix.db.connection }}
       DB_HOST: 127.0.0.1
-      DB_PORT: ${{ matrix.port }}
+      DB_PORT: ${{ matrix.db.port }}
 
     steps:
       - name: Checkout code

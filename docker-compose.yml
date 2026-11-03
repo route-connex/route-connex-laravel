@@ -1,3 +1,6 @@
+# Database versions default to the latest supported; override to test others, e.g.
+# MYSQL_VERSION=8.0 make test-mysql, POSTGRES_VERSION=14 make test-pgsql, MONGO_VERSION=7.0 make test-mongodb
+# Minimum supported: MySQL 8.0, PostgreSQL 14, MongoDB 7.0.
 services:
   app:
     build:
@@ -16,7 +19,7 @@ services:
       DB_CONNECTION: ${DB_CONNECTION:-sqlite}
 
   mysql:
-    image: mysql:8.4
+    image: mysql:${MYSQL_VERSION:-8.4}
     profiles: [databases]
     environment:
       MYSQL_DATABASE: testing
@@ -32,14 +35,18 @@ services:
       retries: 30
 
   pgsql:
-    image: postgres:17
+    image: postgres:${POSTGRES_VERSION:-18}
     profiles: [databases]
     environment:
       POSTGRES_DB: testing
       POSTGRES_USER: testing
       POSTGRES_PASSWORD: testing
+      # Keep data inside the tmpfs for every version: 14-17 declare a volume at
+      # /var/lib/postgresql/data (which would outlive version switches), and 18
+      # refuses to start with a mount there.
+      PGDATA: /var/lib/postgresql/pgdata
     tmpfs:
-      - /var/lib/postgresql/data
+      - /var/lib/postgresql
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "testing", "-d", "testing"]
       interval: 2s
@@ -47,7 +54,7 @@ services:
       retries: 30
 
   mongodb:
-    image: mongo:8
+    image: mongo:${MONGO_VERSION:-8}
     profiles: [databases]
     tmpfs:
       - /data/db

@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in progress (step 6 added from review; waiting for the user to approve and commit the plan)
+**Status:** in progress (step 6 implemented; waiting for the user to commit and push, then CI)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 
 > **Progress notes**
@@ -127,7 +127,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - [ ] Review the whole diff. Don't commit until you've looked at it.
 
 #### 6. Minimum database versions and CI database fix (from review)
-**Status:** todo
+**Status:** done (waiting for the user to commit)
 
 **Why:**
 - The first CI run failed in the `databases` job: `mongo:8` refuses to start on `ubuntu-latest` (Ubuntu 26.04), whose kernel is in the range MongoDB 8.x can't run on (6.19 up to 7.0.13; see [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
@@ -141,23 +141,29 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - Test the minimum and the latest version of each. PostgreSQL also tests 17, so it covers 14, 17 and 18.
 - Local default stays on the latest versions.
 
-- [ ] `docker-compose.yml`: make the database image tags configurable, with the latest versions as defaults:
+- [x] `docker-compose.yml`: make the database image tags configurable, with the latest versions as defaults:
   - `mysql:${MYSQL_VERSION:-8.4}`
   - `postgres:${POSTGRES_VERSION:-18}`, with the pgsql tmpfs mount moved from `/var/lib/postgresql/data` to `/var/lib/postgresql`
   - `mongo:${MONGO_VERSION:-8}`
 
   This allows e.g. `MONGO_VERSION=7.0 make test-mongodb`. Changing a version recreates the container (tmpfs data, so nothing is lost).
-- [ ] `.github/workflows/tests.yml`, `databases` job:
+- [x] `.github/workflows/tests.yml`, `databases` job:
   - one generic `db` service, with its image, port and health check taken from the matrix, so each job starts only the database it tests
   - matrix: Laravel 12/13 × {mysql 8.0, mysql 8.4, pgsql 14, pgsql 17, pgsql 18, mongodb 7.0, mongodb 8}, 14 jobs
   - `runs-on: ubuntu-24.04` (kernel older than 6.19), with a comment linking SERVER-121912; switch back to `ubuntu-latest` once its kernel is ≥ 7.0.14
   - `fail-fast: false`, so one database failing doesn't cancel the others
-- [ ] `README.md`: add a "Requirements" section:
+- [x] `README.md`: add a "Requirements" section:
   - PHP ^8.3
   - Laravel 12 or 13
   - MySQL ≥ 8.0, PostgreSQL ≥ 14, MongoDB ≥ 7.0 (needs `mongodb/laravel-mongodb` ^5.12 and `ext-mongodb`), SQLite
   - mention `MYSQL_VERSION` / `POSTGRES_VERSION` / `MONGO_VERSION` in the Development section
-- [ ] `AGENTS.md`: note the supported database versions, so that new code isn't checked only against the latest ones.
+- [x] `AGENTS.md`: note the supported database versions, so that new code isn't checked only against the latest ones.
+
+**Notes from development:**
+- PostgreSQL 14–17 images declare a volume at `/var/lib/postgresql/data`. With the tmpfs at `/var/lib/postgresql`, that anonymous volume outlived version switches, so 17 failed on data left behind by 14. Fixed by setting `PGDATA=/var/lib/postgresql/pgdata` (inside the tmpfs) for every version. Switching 14 → 17 → 18 → 14 now works, as do MySQL 8.4 ↔ 8.0 and MongoDB 8 ↔ 7.0.
+- `make db-down` now runs `docker compose rm --force --stop --volumes` on the database services. That removes their anonymous volumes too, without touching the `composer-cache` volume (which `down -v` would delete).
+- `actionlint` (run via Docker) passes on `.github/workflows/tests.yml`.
+- Local results: `make test` passes. All 14 tests pass on mysql 8.0 and 8.4, pgsql 14, 17 and 18, and mongodb 7.0 and 8. The CI run is still pending.
 
 **Validate:**
 - `make test-all` (latest versions)

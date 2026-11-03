@@ -12,6 +12,16 @@
 
 Laravel plugin for route-connex
 
+## Requirements
+
+- PHP 8.3+
+- Laravel 12 or 13
+- One of these databases:
+  - MySQL 8.0+
+  - PostgreSQL 14+
+  - MongoDB 7.0+ (requires [`mongodb/laravel-mongodb`](https://github.com/mongodb/laravel-mongodb) ^5.12 and the `mongodb` PHP extension)
+  - SQLite
+
 ## Installation
 
 You can install the package via Composer:
@@ -77,7 +87,17 @@ make testbench ARGS="route:list"   # artisan for the package
 make shell      # shell inside the container
 ```
 
-MySQL 8.4, PostgreSQL 17 and MongoDB 8 run as Compose services (the `databases` profile). `make test-mysql`, `make test-pgsql` and `make test-mongodb` start them as needed, and `make db-down` stops them.
+MySQL, PostgreSQL and MongoDB run as Compose services (the `databases` profile). `make test-mysql`, `make test-pgsql` and `make test-mongodb` start them as needed, and `make db-down` stops and removes them.
+
+By default they run the latest tested versions (MySQL 8.4, PostgreSQL 18, MongoDB 8). Set `MYSQL_VERSION`, `POSTGRES_VERSION` or `MONGO_VERSION` to test another version, e.g. the minimum supported ones:
+
+```bash
+MYSQL_VERSION=8.0 make test-mysql
+POSTGRES_VERSION=14 make test-pgsql
+MONGO_VERSION=7.0 make test-mongodb
+```
+
+CI tests MySQL 8.0 and 8.4, PostgreSQL 14, 17 and 18, and MongoDB 7.0 and 8, each on Laravel 12 and 13.
 
 ## Contributing
 
