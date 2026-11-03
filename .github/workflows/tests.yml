@@ -90,6 +90,7 @@ jobs:
       fail-fast: false
       matrix:
         laravel: [12.*, 13.*]
+        stability: [prefer-lowest, prefer-stable]
         # Minimum supported versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0) plus newer targets.
         db:
           - connection: mysql
@@ -130,7 +131,7 @@ jobs:
           - laravel: 13.*
             testbench: 11.*
 
-    name: DB ${{ matrix.db.image }} - L${{ matrix.laravel }}
+    name: DB ${{ matrix.db.image }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
 
     services:
       # One service per job: the database under test, configured from the matrix.
@@ -169,7 +170,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --prefer-stable --prefer-dist --no-interaction --no-progress --no-scripts
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress --no-scripts
           composer run prepare
 
       - name: Test Suite
