@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use RouteConnex\Laravel\Facades\RouteConnex as RouteConnexFacade;
 use RouteConnex\Laravel\RouteConnex;
 use RouteConnex\Laravel\RouteConnexServiceProvider;
@@ -48,16 +49,23 @@ it('includes every resource in the group tag', function (string $tag, string $so
 })->with('publish tags');
 
 it('publishes the config with vendor:publish', function () {
-    $target = config_path('route-connex-laravel.php');
+    // Publish into a folder of this test's own: Testbench's config folder is
+    // shared by the parallel workers, which load every file they find there.
+    $configPath = sys_get_temp_dir().'/route-connex-laravel-'.Str::random(16);
+    $target = "{$configPath}/route-connex-laravel.php";
 
-    File::delete($target);
+    File::ensureDirectoryExists($configPath);
 
     try {
+        $this->app->useConfigPath($configPath);
+        $this->app->register(RouteConnexServiceProvider::class, force: true);
+
         $this->artisan('vendor:publish', ['--tag' => 'route-connex-laravel-config'])->assertSuccessful();
 
         expect(File::exists($target))->toBeTrue()
-            ->and(File::get($target))->toBe(File::get(dirname(__DIR__, 2).'/config/route-connex-laravel.php'));
+            ->and(File::get($target))->toBe(File::get(dirname(__DIR__, 2).'/config/route-connex-laravel.php'))
+            ->and(File::exists(base_path('config/route-connex-laravel.php')))->toBeFalse();
     } finally {
-        File::delete($target);
+        File::deleteDirectory($configPath);
     }
 });

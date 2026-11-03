@@ -90,6 +90,13 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume e0e9f832-3525-44a9-b36f-b51b427fc324` (xps-omarchy)
   - **Why:** Docs and workflow rules only, but the Task 1 entry must summarise what was actually built across Steps 0–15 and the rule must fit the existing Phase 4 and release skill wording. A fresh session reads the whole plan and git log without unrelated context.
   - **Prompt:** Implement Step 16 of PLAN.md: Add CHANGELOG.md and make it part of the workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 13–15 must be committed first, since the changelog lists them; read `git log` and the whole plan to write the Task 1 entry. Only `CHANGELOG.md` (new), `AGENTS.md` and `.agents/skills/package-release/SKILL.md` change. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
+- [x] **17. Stop the `vendor:publish` test from racing parallel workers**
+  - **Model:** `opus`
+  - **Effort:** `high`
+  - **Session:** `same`
+  - **Resume:** `claude --ide --resume ef8feec1-ef12-4681-9daa-9bf7ba68a439` (xps-omarchy)
+  - **Why:** Found while checking CI run `41579484391` in this session; the diagnosis (a race between Pest's parallel workers) is the context the fix needs.
+  - **Prompt:** Implement Step 17 of PLAN.md: Stop the `vendor:publish` test from racing parallel workers. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only `tests/Feature/ServiceProviderTest.php` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
 
 > **Progress notes**
 > - The host's Docker networking was fixed outside the repo: NetworkManager no longer manages `docker0`/`br-*`/`veth*` (`/etc/NetworkManager/conf.d/99-docker-unmanaged.conf`). No compose overrides are needed.
@@ -438,6 +445,19 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Validate:** the file follows the format above; every listed item matches the code and `git log`; `.gitattributes` has no `export-ignore` for `CHANGELOG.md`. `make test` isn't needed (docs only).
 
 **Commit:** `Add a hand-written CHANGELOG and fill it at each task's close`
+
+#### 17. Stop the `vendor:publish` test from racing parallel workers (from CI run `41579484391`)
+**Status:** done
+
+**Why:** CI run `41579484391` (`f29cebe`) failed on `P8.3 - L13.* - prefer-lowest - ubuntu-latest`: `ArchTest` crashed while booting with `Failed opening required '.../vendor/orchestra/testbench-core/laravel/config/route-connex-laravel.php'`. Step 9's `publishes the config with vendor:publish` test writes that file into Testbench's shared `laravel/config` folder and deletes it again. `composer test:unit` runs Pest `--parallel`, so another worker booting in that window lists the file and then can't load it. Fail-fast then cancelled 20 `tests` jobs. All 28 `databases` jobs passed.
+
+- [x] `tests/Feature/ServiceProviderTest.php` → `publishes the config with vendor:publish`: point the app's config path at a temporary folder of its own (`useConfigPath()`), register `RouteConnexServiceProvider` again with `force: true` so its `boot()` maps the config to that folder through `config_path()`, run `vendor:publish --tag=route-connex-laravel-config`, compare the file with the package config, and delete the folder afterwards. Nothing is written to `vendor/orchestra/testbench-core/laravel` any more.
+
+> Note: the test also asserts that `base_path('config/route-connex-laravel.php')` (Testbench's shared config folder) stays absent, so a regression fails the test itself. Reproduced locally by running `vendor/bin/pest --parallel` 20 times in one container: the old test failed 3 of 20 runs with the CI error, the new one 0 of 20. `make test` (26 passed, type coverage 100 %) and `make test-all` (26 passed on each database) are green.
+
+**Validate:** `make test` and `make test-all`; `vendor/orchestra/testbench-core/laravel/config/route-connex-laravel.php` doesn't exist during or after the run. After the user pushes, CI is green; record the run ID here.
+
+**Commit:** `Publish the config into a temp folder in the vendor:publish test`
 
 ### Expected key files afterwards
 - `composer.json` (name `route-connex/route-connex-laravel`, PSR-4 `RouteConnex\Laravel\` → `src/`, provider `RouteConnex\Laravel\RouteConnexServiceProvider`, alias `RouteConnex`)
