@@ -455,7 +455,7 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 
 > Note: the test also asserts that `base_path('config/route-connex-laravel.php')` (Testbench's shared config folder) stays absent, so a regression fails the test itself. Reproduced locally by running `vendor/bin/pest --parallel` 20 times in one container: the old test failed 3 of 20 runs with the CI error, the new one 0 of 20. `make test` (26 passed, type coverage 100 %) and `make test-all` (26 passed on each database) are green.
 
-**Validate:** `make test` and `make test-all`; `vendor/orchestra/testbench-core/laravel/config/route-connex-laravel.php` doesn't exist during or after the run. After the user pushes, CI is green; record the run ID here.
+**Validate:** `make test` and `make test-all`; `vendor/orchestra/testbench-core/laravel/config/route-connex-laravel.php` doesn't exist during or after the run. After the user pushes, CI is green; record the run ID here. ✅ Run `41580353076` (`60141e8`): all 52 jobs passed (24 `tests`, 28 `databases`).
 
 **Commit:** `Publish the config into a temp folder in the vendor:publish test`
 
