@@ -1,6 +1,6 @@
 # Branching model, branch-aware CHANGELOG and `version`
 
-**Status:** in progress
+**Status:** in review
 **Branch:** `docs/init` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -118,11 +118,33 @@ This task:
 **Commit:** `Run CI on release branches and check the version file on tag pushes`
 
 ## Acceptance Criteria
-- [ ] AGENTS.md documents the release branches, `main` = latest stable tag, the `feature/` `hotfix/` `docs/` names (with the optional origin major), tags `vX.Y.Z`, and no `develop` branch.
-- [ ] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and folds them into `# Unreleased` at close. CONTRIBUTING and the `package-release` skill agree with it.
-- [ ] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags, release branches and work branches.
-- [ ] A Pest test fails for a malformed `version`.
-- [ ] CI runs on pushes to `main` and `release/*.x`. A tag push fails when `version` or the CHANGELOG heading doesn't match the tag.
-- [ ] `make test` and `make test-all` pass.
+- [x] AGENTS.md documents the release branches, `main` = latest stable tag, the `feature/` `hotfix/` `docs/` names (with the optional origin major), tags `vX.Y.Z`, and no `develop` branch.
+- [x] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and folds them into `# Unreleased` at close. CONTRIBUTING and the `package-release` skill agree with it.
+- [x] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags, release branches and work branches.
+- [x] A Pest test fails for a malformed `version`.
+- [x] CI runs on pushes to `main` and `release/*.x`. A tag push fails when `version` or the CHANGELOG heading doesn't match the tag.
+- [x] `make test` and `make test-all` pass.
 
 ## Review
+
+Reviewed on `gandalf` against commits `317f000`, `7a77b28` and `eb7b91b`, checking the code rather than the ticked boxes.
+
+**Result:** every step and acceptance criterion is met. AGENTS.md, CONTRIBUTING, the `package-release` skill and PLAN.md → Decisions describe the same rules. `CHANGELOG.md` has one item per step under `# docs/init`, and `version` holds `docs/init`.
+
+**Validation:**
+- `make test`: PHPStan, Pint and 100 % type coverage pass, and Pest runs 58 tests, all passing.
+- `make test-all`: 58 tests pass on SQLite, MySQL, PostgreSQL and MongoDB.
+- Not re-run: actionlint (the tool was denied during the review; Step 3 records a clean run) and the tag check's shell script (Step 3 records a manual run). The `version.yml` script was read: `"# $GITHUB_REF_NAME ("*` is matched literally, so the dots in the tag can't act as wildcards.
+
+**Findings:**
+
+1. **A branch closed after a release silently loses its `version` and CHANGELOG changes (gap, medium).** A work branch forks from `release/0.x` while `version` is `release/0.x`. Then `v0.1.0` is released (`version` becomes `v0.1.0`, `# Unreleased` becomes `# v0.1.0 (…)`), and only after that does the branch close and merge. Its close commit sets `version` back to `release/0.x`, so the branch's side shows no change and git keeps `v0.1.0` on an untagged commit. The Pest test still passes, because `v0.1.0` is a valid value. The branch's items are appended under its old `# Unreleased` lines, far from the renamed heading, so they merge without a conflict into the **released** `# v0.1.0` section. Fix: Phase 4 (and CONTRIBUTING) should first bring the target branch into the work branch (merge or rebase) before folding the CHANGELOG items and setting `version`, so the close works against the target's current sections.
+2. **External pull requests have no close step (gap, low).** CONTRIBUTING tells contributors to set `version` to their branch name and says the maintainer folds the CHANGELOG items. It doesn't say who sets `version` back to the release branch. Merging the PR as it is leaves `version = feature/x` on `release/<N>.x`, and the Pest test accepts it. Fix: say that the maintainer does the Phase 4 close (fold the items, reset `version`) on the PR branch, or in a follow-up commit, before or right after merging.
+3. **The `main` fast-forward targets the branch, not the tag (inconsistency, low).** AGENTS.md says `main` is fast-forwarded to the tag, but `package-release` step 7 drafts `git merge --ff-only release/<N>.x`. They are the same commit only while nothing has landed on the release branch since the tag. `git merge --ff-only vX.Y.Z` always matches the rule "`main` = latest stable tag".
+4. **`package-release` step 3 is out of date (docs, low).** It still says "many Laravel packages rely on Git tags rather than a hardcoded package version", but step 5 now requires the `version` file to equal the tag. Reword step 3 to point to step 5, e.g. "Composer versions come from the Git tag; the `version` file must match it (step 5)."
+5. **The tag check tolerates extra blank lines in `version` (nit).** `$(cat version)` strips every trailing newline, so `v0.1.0` followed by blank lines passes `version.yml`. The Pest test rejects that, and it runs on the release commit's push to `release/*.x`, so it's caught before tagging. No change needed unless the workflow should be strict without relying on the Pest test.
+
+**Observations, no action:**
+- `v*.*.*` also matches pre-release tags like `v1.0.0-beta`. Their `version` value would fail the Pest regex, which is consistent with the decision to use plain `vX.Y.Z` tags only.
+- Pushes to work branches don't run CI; only pull requests do. That was already the case and it's unchanged.
+- The README's Tests badge (`branch=main`) now shows the status of the latest release, not the latest work, because `main` only moves on releases.
