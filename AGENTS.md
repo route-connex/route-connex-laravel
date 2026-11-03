@@ -39,12 +39,12 @@ The message must describe what was actually changed, not only what the plan pred
    - Each step leaves the package working, with tests passing.
    - Each step is small enough to review in one commit.
    - Each step lists the commands that validate it.
-5. At the top of the plan, before the Implementation table, record where the plan was created, so the user can return to the planning session:
+5. At the top of the plan, before the Implementation list, record where the plan was created, so the user can return to the planning session:
    - **Computer:** the output of `hostname`.
    - **Planning session:** the command to resume it, `claude --ide --resume <session-id>`, run from the repo root on that computer. The session ID is shown by `/status`. It is also the name of the newest `*.jsonl` file in `~/.claude/projects/<project-folder>/`, where the folder is the repo path with `/` replaced by `-`. If unsure, ask the user.
-6. Fill the **Implementation** table: one row per step, with the model, effort level and prompt for the agent that will implement it.
-   - **Done:** first column, starts as `[ ]`. The implementing agent changes it to `[x]` when it finishes the step (see Phase 2).
-   - **Resume:** starts empty (`–`). The implementing agent fills it with `claude --ide --resume <session-id>` (_hostname_) for its own session **as soon as it starts the step**: the command, followed by the name of the computer the session runs on (from `hostname`), e.g. `claude --ide --resume 1e90e112-…` (xps-omarchy). Sessions only exist on the computer that started them, which is why the name is needed., before changing any code (find the ID as for the planning session). That way an unfinished step can be picked up again in the same session.
+6. Fill the **Implementation** list: one entry per step, with the model, effort level and prompt for the agent that will implement it.
+   - **Done:** the checkbox in front of the step's title, starts as `[ ]`. The implementing agent changes it to `[x]` when it finishes the step (see Phase 2).
+   - **Resume:** starts as `–`. The implementing agent fills it with `claude --ide --resume <session-id>` (_hostname_) for its own session **as soon as it starts the step**: the command, followed by the name of the computer the session runs on (from `hostname`), e.g. `claude --ide --resume 1e90e112-…` (xps-omarchy). Sessions only exist on the computer that started them, which is why the name is needed., before changing any code (find the ID as for the planning session). That way an unfinished step can be picked up again in the same session.
    - **Model:** use a Claude Code model alias, e.g. `haiku`, `sonnet` or `opus`. Pick the cheapest model that will do the step reliably:
      - `haiku` for mechanical edits (renames, config values, docs)
      - `sonnet` for typical feature work with tests
@@ -58,24 +58,24 @@ The message must describe what was actually changed, not only what the plan pred
      - name the step (`Implement Step N of PLAN.md: <title>`)
      - point to `AGENTS.md` and the step's section in `PLAN.md` instead of repeating them
      - mention any context the step depends on (e.g. code added by an earlier step)
-     - restate the rules: tick boxes as you go, keep the plan aligned with what was implemented, ask before unplanned changes, fill the step's **Resume** command in the Implementation table before starting, run the step's validation, tick the step's **Done** box, stop and suggest a commit message, don't start the next step
+     - restate the rules: tick boxes as you go, keep the plan aligned with what was implemented, ask before unplanned changes, fill the step's **Resume** command in the Implementation list before starting, run the step's validation, tick the step's **Done** box, stop and suggest a commit message, don't start the next step
 7. Stop. The user reviews the plan, asks for changes if needed, and commits it. Don't start development until the plan is committed. Check with `git log -- PLAN.md` and `git status`.
 
 ### Phase 2: Development (after the plan is committed)
 
 1. Work through the steps in order, **one step at a time**.
-2. When starting a step, before changing any code, fill its **Resume** column in the Implementation table with `claude --ide --resume <session-id>` (_hostname_) for the current session.
-   - If the session is `same` as the previous step, that's the same ID as the previous row.
+2. When starting a step, before changing any code, fill its **Resume** item in the Implementation list with `claude --ide --resume <session-id>` (_hostname_) for the current session.
+   - If the session is `same` as the previous step, that's the same ID as the previous entry.
    - If an unfinished step is continued in a different session later, add the new command next to the old one instead of replacing it.
 3. While working on a step, tick its checkboxes (`- [x]`) in `PLAN.md` as each item is done. Add short notes under the step for anything the reviewer should know, such as deviations or surprises.
 4. When a step is finished:
    - run its validation commands and report the results honestly
-   - set the step to done in `PLAN.md`, and tick its **Done** box (`[x]`) in the Implementation table. This happens before the user validates the step; it's fine, because nothing is committed until the user has validated it.
+   - set the step to done in `PLAN.md`, and tick its **Done** box (`[x]`) in the Implementation list. This happens before the user validates the step; it's fine, because nothing is committed until the user has validated it.
    - stop, give the suggested commit message (start from the step's **Commit** line and adjust it to what was actually done), and wait for the user to commit
    - don't start the next step until the previous one is committed
 5. Keep the plan aligned with the implementation:
    - **The work differs from what the plan says** (a different file, approach, command or detail, within the step's scope): update the step in `PLAN.md` so it describes what was actually implemented, and add a short note under the step saying what changed and why. The plan must never describe something the code doesn't do.
-   - **A change isn't covered by the plan at all** (extra behavior, files, dependencies, refactors, or anything outside the step's scope): stop and ask the user before making it. If the user agrees, add it to the plan (to the current step, or as a new step with an Implementation row), then implement it.
+   - **A change isn't covered by the plan at all** (extra behavior, files, dependencies, refactors, or anything outside the step's scope): stop and ask the user before making it. If the user agrees, add it to the plan (to the current step, or as a new step with an Implementation entry), then implement it.
    - **The plan turns out to be wrong or incomplete in a way that affects other steps:** stop and ask the user before continuing.
 
 ### Phase 3: Review (after all steps are committed)
@@ -86,7 +86,7 @@ An agent, preferably one that didn't do the development, validates the whole tas
 - Do a full review looking for gaps and errors: missing behavior, edge cases, untested paths, broken publish tags or config, documentation that doesn't match the code, and compatibility with Laravel 12/13 and every supported database.
 - Run the full validation: `make test` and `make test-all`.
 - Write the findings in the plan's **Review** section. Fixes for any findings get added as new steps, with the user's agreement, and then go through Phase 2.
-  - New steps also get a row in the **Implementation** table.
+  - New steps also get an entry in the **Implementation** list.
 - Stop, give the suggested commit message for the review, and wait for the user to validate.
 
 ### Phase 4: Close
@@ -109,10 +109,20 @@ claude --ide --resume <session-id>
 
 ## Implementation
 
-| Done | Step | Model | Effort | Session | Resume | Why | Prompt |
-|------|------|-------|--------|---------|--------|-----|--------|
-| [ ] | 1. <title> | `sonnet` | `medium` | `same` | – | <short reason> | Implement Step 1 of PLAN.md: <title>. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. <any context it depends on>. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this row's Resume column with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this row's Done to [x], then stop and give a suggested commit message. Don't start Step 2. |
-| [ ] | 2. ... | | | | – | | |
+- [ ] **1. <title>**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** <short reason>
+  - **Prompt:** Implement Step 1 of PLAN.md: <title>. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. <any context it depends on>. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
+- [ ] **2. ...**
+  - **Model:** …
+  - **Effort:** …
+  - **Session:** …
+  - **Resume:** –
+  - **Why:** …
+  - **Prompt:** …
 
 ## Context
 Why this task exists, what problem it solves, and the intended outcome.
