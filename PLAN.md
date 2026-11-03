@@ -83,11 +83,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume 7377b426-5393-408f-acd7-79a99f92ce89` (xps-omarchy)
   - **Why:** A one-line docs edit; it fits at the end of Step 14's short session.
   - **Prompt:** Implement Step 15 of PLAN.md: Link the README credits to the author's GitHub profile. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `README.md` changes. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 16.
-- [ ] **16. Add CHANGELOG.md and make it part of the workflow**
+- [x] **16. Add CHANGELOG.md and make it part of the workflow**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume e0e9f832-3525-44a9-b36f-b51b427fc324` (xps-omarchy)
   - **Why:** Docs and workflow rules only, but the Task 1 entry must summarise what was actually built across Steps 0–15 and the rule must fit the existing Phase 4 and release skill wording. A fresh session reads the whole plan and git log without unrelated context.
   - **Prompt:** Implement Step 16 of PLAN.md: Add CHANGELOG.md and make it part of the workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 13–15 must be committed first, since the changelog lists them; read `git log` and the whole plan to write the Task 1 entry. Only `CHANGELOG.md` (new), `AGENTS.md` and `.agents/skills/package-release/SKILL.md` change. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
 
@@ -418,7 +418,7 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Link the README credits to the author's GitHub profile`
 
 #### 16. Add CHANGELOG.md and make it part of the workflow (from Phase 3 review observations)
-**Status:** todo
+**Status:** done
 
 **Why:** Step 3 deleted the skeleton's `CHANGELOG.md` and its automation. Decision: keep a hand-written changelog instead, filled at each task's close and turned into a release entry when a version is tagged.
 
@@ -428,10 +428,12 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 - Each task adds its items under `# Unreleased` in its Phase 4 close commit. At release time, `# Unreleased` is renamed to the version and date, and the tag matches it (`vX.Y.Z`).
 - `CHANGELOG.md` ships in the Composer dist archive (no `export-ignore`). CI's `paths-ignore` (`**.md`) already covers it.
 
-- [ ] `CHANGELOG.md` (new): `# Unreleased` with Task 1's items, written for package users and maintainers, one line each: Docker toolchain and `make` targets, package skeleton (config, routes, views, translations, command, migrations, facade, assets, Boost skill), Laravel 12 and 13 support, test setup on SQLite, MySQL 8.0+, PostgreSQL 14+ and MongoDB 7.0+, CI matrix (including Steps 7 and 14), dist archive cleanup, facade and publish tag tests, contributor docs. Check each item against `git log` and the code.
-- [ ] `AGENTS.md` → Phase 4: before blanking `PLAN.md`, add the task's items under `# Unreleased` in `CHANGELOG.md` (create that section at the top, followed by `---` when older releases exist), in the same close commit. Describe the format in one short paragraph.
-- [ ] `.agents/skills/package-release/SKILL.md`: the release renames `# Unreleased` to `# vX.Y.Z (YYYY-MM-DD)`, the tag is `vX.Y.Z`, and the next task starts a new `# Unreleased` above a `---`. Replace the "if the repo has a changelog" wording with `CHANGELOG.md`, and list it under References.
-- [ ] Task 1's own close doesn't add another entry: this step already writes it.
+- [x] `CHANGELOG.md` (new): `# Unreleased` with Task 1's items, written for package users and maintainers, one line each: Docker toolchain and `make` targets, package skeleton (config, routes, views, translations, command, migrations, facade, assets, Boost skill), Laravel 12 and 13 support, test setup on SQLite, MySQL 8.0+, PostgreSQL 14+ and MongoDB 7.0+, CI matrix (including Steps 7 and 14), dist archive cleanup, facade and publish tag tests, contributor docs. Check each item against `git log` and the code.
+- [x] `AGENTS.md` → Phase 4: before blanking `PLAN.md`, add the task's items under `# Unreleased` in `CHANGELOG.md` (create that section at the top, followed by `---` when older releases exist), in the same close commit. Describe the format in one short paragraph.
+- [x] `.agents/skills/package-release/SKILL.md`: the release renames `# Unreleased` to `# vX.Y.Z (YYYY-MM-DD)`, the tag is `vX.Y.Z`, and the next task starts a new `# Unreleased` above a `---`. Replace the "if the repo has a changelog" wording with `CHANGELOG.md`, and list it under References.
+- [x] Task 1's own close doesn't add another entry: this step already writes it.
+
+> Note: `CHANGELOG.md` has 8 items, one per theme of Steps 0–15 (checked against `git log`, the Makefile, `tests/` and `.gitattributes`). The `package-release` skill also got a numbered step 4 for the changelog update (the later steps shifted by one) and a changelog example.
 
 **Validate:** the file follows the format above; every listed item matches the code and `git log`; `.gitattributes` has no `export-ignore` for `CHANGELOG.md`. `make test` isn't needed (docs only).
 

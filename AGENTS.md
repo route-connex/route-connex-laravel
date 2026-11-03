@@ -92,7 +92,9 @@ An agent, preferably one that didn't do the development, validates the whole tas
 
 ### Phase 4: Close
 
-Once the user has validated the task, blank `PLAN.md` again (back to the single line above) as the last commit on the task branch, and give the suggested commit message (e.g. `Close task: <task title>`). The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
+Once the user has validated the task, add its items to `CHANGELOG.md`, then blank `PLAN.md` again (back to the single line above), in the same last commit on the task branch, and give the suggested commit message (e.g. `Close task: <task title>`). The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
+
+`CHANGELOG.md` is hand-written, newest release first, with no title above the first H1. Each release is one H1, `# vX.Y.Z (YYYY-MM-DD)`, followed by one line per item, and releases are separated by a line `---`. Work that isn't released yet goes under `# Unreleased` at the top: the close commit adds the task's items there, one line each, written for package users and maintainers (create the section above a `---` when older releases exist). The release renames `# Unreleased` to the version and date (see the `package-release` skill).
 
 ### `PLAN.md` format
 
