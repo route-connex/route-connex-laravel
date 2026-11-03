@@ -1,3 +1,7 @@
+# docs/project
+
+---
+
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4 with Composer, driven by `make` targets (`make help` lists them): tests, lint, static analysis, the workbench server, Testbench and per-database test runs. No local PHP is needed.
