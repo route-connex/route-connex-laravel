@@ -10,6 +10,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
 - Supported versions: PHP 8.3+, Laravel 12 and 13, MySQL 8.0+, PostgreSQL 14+, MongoDB 7.0+ and SQLite. Database code (especially migrations) must work on every supported database, not only the latest versions. Check the minimum versions with `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb`. Keep the CI `databases` matrix, `docker-compose.yml` defaults and the README Requirements section in sync when these change.
+- CI skips docs-only changes (`paths-ignore` in `.github/workflows/tests.yml`: `**.md`, `LICENSE`, `CLAUDE.md`, `.agents/**`, `.claude`). Never add an ignore entry that covers a file the tests or build depend on.
 
 ## Task Plan Workflow
 

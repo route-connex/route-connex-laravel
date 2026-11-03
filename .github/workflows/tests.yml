@@ -5,7 +5,20 @@ on:
     branches:
       - main
       - '*.x'
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'CLAUDE.md'
+      - '.agents/**'
+      - '.claude'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'CLAUDE.md'
+      - '.agents/**'
+      - '.claude'
+  workflow_dispatch:
 
 permissions:
   contents: read
