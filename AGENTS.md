@@ -22,11 +22,12 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
   - `<quick-description>` is lowercase kebab-case
   - examples, with `release/2.x` the latest: `feature/add-route-cache` (from `release/2.x`), `hotfix/1/fix-cache-key` (from `release/1.x`), `docs/init` (from `release/2.x`)
 - There is no `develop` branch: unreleased work lives on the release branch.
-- **Tags**: every release is tagged `v<major>.<minor>.<patch>` (SemVer) on its release branch, matching the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`. CI runs on pushes to `main` and `release/*.x`, and `.github/workflows/version.yml` fails a tag push unless `version` equals the tag and the first line of `CHANGELOG.md` starts with `# <tag> (`.
+- **Tags**: every release is tagged `v<major>.<minor>.<patch>` (SemVer) on its release branch, matching the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`. Only plain `vX.Y.Z` tags are allowed: release candidates (`vX.Y.Z-rc`) are never tagged. CI runs on pushes to `main` and `release/*.x`, and `.github/workflows/version.yml` fails a tag push unless `version` equals the tag and the first line of `CHANGELOG.md` starts with `# <tag> (`.
+- **Release candidate**: work merged into a release branch but not yet released is collected under `# vX.Y.Z-rc` in `CHANGELOG.md`, where `vX.Y.Z` is the version it will be released as. The `-rc` suffix has no number (`v0.1.0-rc`, never `v0.1.0-rc.1`), there is no date, and one rc collects every branch merged until the release. There is no `# Unreleased` section.
 - **`version`** (a file at the repo root, one line) names where the code is:
   - on a tagged commit: the tag name, e.g. `v0.1.0`
   - on a work branch: the branch name, e.g. `docs/init`. The plan commit (Phase 1) sets it.
-  - on an untagged release branch commit (after a task closes, before the next release): the release branch name, e.g. `release/0.x`. The close commit (Phase 4) sets it.
+  - on an untagged release branch commit (after a task closes, before the next release): the release candidate, e.g. `v0.1.0-rc`, the same string as the top `CHANGELOG.md` heading. The close commit (Phase 4) sets it.
   - The release commit sets it to the tag (see the `package-release` skill). It stays in the Composer dist archive, which is built from a tag.
 
 ## Task Plan Workflow
@@ -111,14 +112,27 @@ An agent, preferably one that didn't do the development, validates the whole tas
 
 ### Phase 4: Close
 
-Once the user has validated the task, fold its `CHANGELOG.md` items into the target branch's `# Unreleased` section (create it above a `---` if it's missing) and delete the `# <task branch>` heading and its `---`. Set `version` to the target branch name (e.g. `release/0.x`), then blank `PLAN.md` again (back to the single line above). All of this goes in the same last commit on the task branch. Give the suggested commit message (e.g. `Close task: <task title>`). The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
+Once the user has validated the task, close it in one last commit on the task branch:
+
+1. Check that the target branch is already in the task branch: `git merge-base --is-ancestor <target> HEAD` must succeed. If it fails, stop and ask the user to merge or rebase the target into the task branch (agents never merge). Then the close works against the target's current `CHANGELOG.md` and `version`, not against the state the task branch forked from.
+2. Fold the `# <task branch>` items into the release candidate:
+   - If the first section below `# <task branch>` and its `---` is a `# vX.Y.Z-rc`, add the items to it. No new rc is created.
+   - Otherwise (the first section is a released `# vX.Y.Z (YYYY-MM-DD)`, or there is none), ask the user which version to target, suggesting one from the task's changes: the next patch for fixes and docs, the next minor for new behavior, the next major for breaking changes. Then create `# vX.Y.Z-rc` with the items above a `---`.
+3. Delete the `# <task branch>` heading and its `---`.
+4. Set `version` to that `vX.Y.Z-rc`.
+5. Blank `PLAN.md` again (back to the single line above).
+
+Give the suggested commit message (e.g. `Close task: <task title>`). The user then merges the branch into its target branch. The target branch's `PLAN.md` therefore stays blank, and the plan remains in git history.
+
+For a contributor's pull request, the maintainer does this close on the PR branch before merging it.
 
 `CHANGELOG.md` is hand-written, newest release first, with no title above the first H1. Each release is one H1, `# vX.Y.Z (YYYY-MM-DD)`, followed by one line per item, and sections are separated by a line `---`. The top section depends on the branch:
 
-- On `main` and `release/<N>.x`, work that isn't released yet goes under `# Unreleased`.
-- On a work branch, the top H1 is the branch name instead (e.g. `# docs/init`) and lists only what was done in that branch. Below it come a `---` and the sections the branch started from (`# Unreleased` and older releases). Each step's commit adds its items there, creating the section with the first one. The close commit folds them into `# Unreleased`, so a merged branch never leaves its name behind.
+- On `main`, the top section is always a released `# vX.Y.Z (YYYY-MM-DD)`, because `main` only holds tagged commits.
+- On `release/<N>.x`, work that isn't released yet goes under `# vX.Y.Z-rc` (no date), above the released sections. There is no `# Unreleased`.
+- On a work branch, the top H1 is the branch name instead (e.g. `# docs/init`) and lists only what was done in that branch. Below it come a `---` and the sections the branch started from (the target's `# vX.Y.Z-rc`, if it has one, and older releases). Each step's commit adds its items there, creating the section with the first one. The close commit folds them into the rc, so a merged branch never leaves its name behind.
 
-Items are one line each, written for package users and maintainers. The release renames `# Unreleased` to the version and date (see the `package-release` skill).
+Items are one line each, written for package users and maintainers. The release renames `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)` (see the `package-release` skill).
 
 ```markdown
 # docs/init
@@ -127,7 +141,7 @@ Items are one line each, written for package users and maintainers. The release 
 
 ---
 
-# Unreleased
+# v0.2.0-rc
 
 - Docker toolchain for PHP 8.4.
 

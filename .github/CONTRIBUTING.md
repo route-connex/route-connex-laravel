@@ -23,7 +23,7 @@ Name your branch `<type>/<origin_major>/<quick-description>`:
 
 For example, `feature/add-route-cache` for the latest major, or `hotfix/1/fix-cache-key` for a fix to `release/1.x`.
 
-In `CHANGELOG.md`, add your items (one line each) under a `# <your-branch-name>` heading at the top, above the existing sections. The maintainer folds them into `# Unreleased` when the branch is merged. Set the `version` file at the repo root to your branch name.
+In `CHANGELOG.md`, add your items (one line each) under a `# <your-branch-name>` heading at the top, above the existing sections. Set the `version` file at the repo root to your branch name. Before merging your pull request, the maintainer closes it: they fold your items into the release branch's `# vX.Y.Z-rc` section (the release candidate that collects unreleased work), remove your branch heading and set `version` to that `vX.Y.Z-rc`. You don't need to do this yourself.
 
 ## Guidelines
 

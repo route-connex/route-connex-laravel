@@ -32,11 +32,11 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
   - **Resume:** `claude --ide --resume aafaac91-2d16-4d42-bfcd-901475cfed55` (gandalf)
   - **Why:** Small GitHub Actions change. The Step 2 session already knows the `version` rules and the test that enforces its format.
   - **Prompt:** Implement Step 3 of PLAN.md: Run CI on release branches and check `version` on tag pushes. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 documented the branching model and `version`, and Step 2 added `tests/Unit/VersionFileTest.php` for its format; use the `package-release` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
-- [ ] **4. Release candidate versions in the docs, and the close against the target's current state**
+- [x] **4. Release candidate versions in the docs, and the close against the target's current state**
   - **Model:** `sonnet`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 71acc65f-b7b0-4ace-a18f-e8798bca5fe8` (gandalf)
   - **Why:** Docs only, but it rewrites the close procedure (with a branch on whether an `-rc` exists) in AGENTS.md, CONTRIBUTING and the release skill, which have to stay consistent. The review session that planned it has every decision loaded.
   - **Prompt:** Implement Step 4 of PLAN.md: Release candidate versions in the docs, and the close against the target's current state. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the rules to write down are in PLAN.md → Decisions (the entries marked "changed after review") and the review findings 1–4 it fixes. Steps 1–3 wrote the current branching docs, the `version` test and the tag workflow; this step changes only docs and `CHANGELOG.md`. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 5.
 - [ ] **5. Accept `-rc` versions in the test and reject `-rc` tags in CI**
@@ -141,18 +141,24 @@ After the review, the user replaced `# Unreleased` and the release branch name w
 **Commit:** `Run CI on release branches and check the version file on tag pushes`
 
 ### Step 4: Release candidate versions in the docs, and the close against the target's current state
-**Status:** todo
-- [ ] `AGENTS.md` → Branching and Versioning: `version` on an untagged release branch commit is `vX.Y.Z-rc` (the same string as the top CHANGELOG heading), set by the close commit. Tags are plain `vX.Y.Z` only, and `-rc` versions are never tagged.
-- [ ] `AGENTS.md` → Phase 4: rewrite the close as in PLAN.md → Decisions → Close commit: check that the target is merged into the work branch (otherwise stop and ask the user to merge or rebase it), add the items to an existing `# vX.Y.Z-rc` or ask the user for the version (with a patch/minor/major suggestion) and create one, set `version` to the rc, remove `# <branch>` and its `---`, blank `PLAN.md`.
-- [ ] `AGENTS.md` → the `CHANGELOG.md` paragraph and its example: `# vX.Y.Z-rc` (no date) replaces `# Unreleased` on release branches. The example shows `# docs/init`, `---`, `# v0.2.0-rc`, `---`, `# v0.1.0 (2026-01-01)`. The release renames the rc heading.
-- [ ] `.github/CONTRIBUTING.md` → Branching: contributors keep their items under `# <branch>`. The maintainer does the close on the PR branch before merging (folds the items into the rc, sets `version`). Review finding 2.
-- [ ] `.agents/skills/package-release/SKILL.md`:
+**Status:** done
+- [x] `AGENTS.md` → Branching and Versioning: `version` on an untagged release branch commit is `vX.Y.Z-rc` (the same string as the top CHANGELOG heading), set by the close commit. Tags are plain `vX.Y.Z` only, and `-rc` versions are never tagged.
+- [x] `AGENTS.md` → Phase 4: rewrite the close as in PLAN.md → Decisions → Close commit: check that the target is merged into the work branch (otherwise stop and ask the user to merge or rebase it), add the items to an existing `# vX.Y.Z-rc` or ask the user for the version (with a patch/minor/major suggestion) and create one, set `version` to the rc, remove `# <branch>` and its `---`, blank `PLAN.md`.
+- [x] `AGENTS.md` → the `CHANGELOG.md` paragraph and its example: `# vX.Y.Z-rc` (no date) replaces `# Unreleased` on release branches. The example shows `# docs/init`, `---`, `# v0.2.0-rc`, `---`, `# v0.1.0 (2026-01-01)`. The release renames the rc heading.
+- [x] `.github/CONTRIBUTING.md` → Branching: contributors keep their items under `# <branch>`. The maintainer does the close on the PR branch before merging (folds the items into the rc, sets `version`). Review finding 2.
+- [x] `.agents/skills/package-release/SKILL.md`:
   - step 3: say that Composer versions come from the Git tag and the `version` file must match it (step 5). Review finding 4.
   - step 4: rename `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)`. The release version is the rc's `vX.Y.Z`.
   - step 7: fast-forward `main` with `git merge --ff-only vX.Y.Z`. After the release, the next close asks for the next version. Review finding 3.
   - the example (`v0.1.0` from `release/0.x`, starting from `# v0.1.0-rc`) and an anti-pattern for tagging an `-rc` version.
-- [ ] `CHANGELOG.md`: rename `# Unreleased` to `# v0.1.0-rc`, and add this step's item under `# docs/init`.
-- [ ] No `# Unreleased` or release-branch `version` value is left in the docs: `git grep -n -E "Unreleased|version.*release/<N>\.x|release branch name" -- ':!PLAN.md'` finds nothing that describes the old rules.
+- [x] `CHANGELOG.md`: rename `# Unreleased` to `# v0.1.0-rc`, and add this step's item under `# docs/init`.
+- [x] No `# Unreleased` or release-branch `version` value is left in the docs: `git grep -n -E "Unreleased|version.*release/<N>\.x|release branch name" -- ':!PLAN.md'` finds nothing that describes the old rules.
+
+**Notes:**
+- `AGENTS.md` also gained a **Release candidate** bullet in Branching and Versioning (the `vX.Y.Z-rc` format: no number, no date, one rc until the release), and the Phase 4 close is now a numbered list. Phase 2 and Phase 3 needed no change.
+- The remaining `Unreleased` hits in `git grep` are the statements that it is no longer used (AGENTS.md lines 26 and 132) and the `CHANGELOG.md` items that say what changed.
+- `CHANGELOG.md`: the Step 2 item still says the test accepts a `release/<N>.x` branch, which is true until Step 5 changes the test. Step 5 should update that line when it does.
+- Validation: `make test` passes (PHPStan, Pint, 100 % type coverage, 58 tests). The docs-only change doesn't touch the database tests, so `make test-all` wasn't run.
 
 **Validate:** `make test`. Check by hand that AGENTS.md, CONTRIBUTING and the skill describe the same rules as PLAN.md → Decisions, and run the `git grep` above.
 **Commit:** `Use release candidate versions on release branches and close against the target's current state`
