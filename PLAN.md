@@ -55,11 +55,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** –
   - **Why:** Docs-only edits. It documents the `ARGS` support from Step 10, so it follows it in the same session.
   - **Prompt:** Implement Step 11 of PLAN.md: Align CONTRIBUTING, README and the agent skills with the Docker workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 10 added `ARGS` to `make test-unit` and the `make test-<db>` targets; describe what the Makefile actually does. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 12.
-- [ ] **12. Bring Task 1's steps in line with what was built**
+- [x] **12. Bring Task 1's steps in line with what was built**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Text edits inside PLAN.md only, each one listed in the step.
   - **Prompt:** Implement Step 12 of PLAN.md: Bring Task 1's steps in line with what was built. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `PLAN.md` changes. Check each listed item against the code before editing it. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
 
@@ -158,25 +158,25 @@ docker compose run --rm app php configure.php --no-interaction \
 #### 4b. Multi-database test infrastructure (SQLite, MySQL, PostgreSQL, MongoDB)
 The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This step adds the infrastructure for all four databases. How the migrations themselves handle MongoDB is a design question for later.
 
-- [x] **Image**: add `pdo_mysql`, `pdo_pgsql` (plus the `libpq-dev` build dependency) and `pecl install mongodb`.
+- [x] **Image**: install `pdo_mysql`, `pdo_pgsql` and `mongodb` with `mlocati/php-extension-installer`. `pdo_sqlite` comes with the base image; there's no `pecl install` or `libpq-dev`.
 - [x] **docker-compose services**, each with a healthcheck and a tmpfs data dir so test runs stay fast and disposable:
   - `mysql:8.4`
   - `postgres:17`
   - `mongo:8`
-  - `app` gets `depends_on` for them with `condition: service_healthy`, under a compose profile so `make test` on SQLite doesn't start them.
+  - The database services sit under a compose profile (`databases`), so `make test` on SQLite doesn't start them. `app` has no `depends_on`: the Makefile starts each database with `docker compose --profile databases up -d --wait <service>` before its tests run.
 - [x] **Composer**:
   - add `mongodb/laravel-mongodb` as `require-dev` and as a `suggest` entry, not a hard `require`, so SQL-only users don't need ext-mongodb
   - confirm which version supports both Laravel 12 and 13 when installing
 - [x] **Tests**:
   - `tests/TestCase.php` → `defineEnvironment()` reads `DB_CONNECTION` (default `sqlite`) and configures a connection for it: `sqlite` in-memory, `mysql`, `pgsql`, or `mongodb`, using the compose service hostnames.
   - Register `MongoDB\Laravel\MongoDBServiceProvider` only when the connection is `mongodb`.
-  - Load package migrations with `defineDatabaseMigrations()` / `RefreshDatabase`.
+  - Load package migrations with `$this->loadMigrationsFrom()` in `tests/Feature/DatabaseTest.php`'s `beforeEach` (Testbench rolls them back after each test).
   - Add one smoke test that runs the placeholder migration and does a simple insert/select, so each driver is checked end to end.
 - [x] **Makefile**:
   - `make test` runs on SQLite
   - `make test-mysql`, `make test-pgsql` and `make test-mongodb` run with `DB_CONNECTION=...`
   - `make test-all` runs all four
-- [x] **CI**: add a `db` matrix axis (`sqlite`, `mysql`, `pgsql`, `mongodb`) with GitHub Actions service containers. Crossed with the Laravel 12/13 axis.
+- [x] **CI**: the existing matrix stays on SQLite, with `mongodb` added to its extensions. A separate `databases` job runs Laravel 12/13 × mysql/pgsql/mongodb on PHP 8.4 with GitHub Actions service containers (see Step 6).
 - [ ] **Deferred to the feature work**:
   - how package migrations target MongoDB. The laravel-mongodb `Blueprint` supports collections and indexes only, so migrations will probably need a `if ($connection->getDriverName() === 'mongodb')` branch or separate migration files.
   - which connection the package uses: probably a `connection` key in the package config.
@@ -184,7 +184,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 #### 5. Housekeeping
 - [x] `.gitignore`: the skeleton ignores `vendor/`, `composer.lock`, `.phpunit.cache`, and `workbench` build artifacts; check those and add any missing entries.
 - [x] Add a short "Development with Docker" section to `README.md` listing the `make` targets.
-- [ ] Review the whole diff. Don't commit until you've looked at it.
+- ~~[ ] Review the whole diff. Don't commit until you've looked at it.~~ Obsolete: the setup was committed in `732637b`.
 
 #### 6. Minimum database versions and CI database fix (from review)
 **Status:** done
@@ -336,16 +336,16 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Document the Docker make workflow in CONTRIBUTING and agent skills`
 
 #### 12. Bring Task 1's steps in line with what was built (from Phase 3 review)
-**Status:** todo
+**Status:** done
 
 **Why:** Several Task 1 steps describe something the code doesn't do, without a note. AGENTS.md: "The plan must never describe something the code doesn't do." Review finding R6.
 
-- [ ] Step 1 / 4b, image: the Dockerfile installs extensions with `mlocati/php-extension-installer` (`intl zip pcntl bcmath pdo_mysql pdo_pgsql mongodb`); `pdo_sqlite` comes with the base image. There's no `pecl install` or `libpq-dev`.
-- [ ] Step 4b, compose: `app` has no `depends_on`; the Makefile starts each database with `docker compose --profile databases up -d --wait <service>` instead.
-- [ ] Step 4b, tests: migrations are loaded with `$this->loadMigrationsFrom()` in `tests/Feature/DatabaseTest.php`'s `beforeEach` (Testbench rolls them back after each test), not `defineDatabaseMigrations()` / `RefreshDatabase`.
-- [ ] Step 4b, CI: replace the "`db` matrix axis crossed with Laravel 12/13" text with the separate `databases` job (see the progress notes and Step 6).
-- [ ] Step 5: the "Review the whole diff" box is obsolete (the setup was committed in `732637b`); strike it through with a short note.
-- [ ] "Expected key files": drop `.dockerignore` (Step 1 decided it isn't needed).
+- [x] Step 1 / 4b, image: the Dockerfile installs extensions with `mlocati/php-extension-installer` (`intl zip pcntl bcmath pdo_mysql pdo_pgsql mongodb`); `pdo_sqlite` comes with the base image. There's no `pecl install` or `libpq-dev`.
+- [x] Step 4b, compose: `app` has no `depends_on`; the Makefile starts each database with `docker compose --profile databases up -d --wait <service>` instead.
+- [x] Step 4b, tests: migrations are loaded with `$this->loadMigrationsFrom()` in `tests/Feature/DatabaseTest.php`'s `beforeEach` (Testbench rolls them back after each test), not `defineDatabaseMigrations()` / `RefreshDatabase`.
+- [x] Step 4b, CI: replace the "`db` matrix axis crossed with Laravel 12/13" text with the separate `databases` job (see the progress notes and Step 6).
+- [x] Step 5: the "Review the whole diff" box is obsolete (the setup was committed in `732637b`); strike it through with a short note.
+- [x] "Expected key files": drop `.dockerignore` (Step 1 decided it isn't needed).
 
 **Validate:** each edited sentence matches the code it describes. `make test` isn't needed (PLAN.md only).
 
@@ -356,7 +356,7 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 - `src/RouteConnexServiceProvider.php`, `src/RouteConnex.php`, `src/Facades/RouteConnex.php`, `src/Console/Commands/RouteConnexCommand.php`
 - `config/route-connex-laravel.php` (or whatever slug the configurator picks), `routes/`, `resources/views`, `lang/en`, `database/migrations`, `public/`
 - `tests/` (Pest + Testbench), `workbench/`, `testbench.yaml`, `phpunit.xml.dist`, `phpstan.neon.dist`, `pint.json`
-- `docker/php/Dockerfile`, `docker-compose.yml`, `Makefile`, `.dockerignore`
+- `docker/php/Dockerfile`, `docker-compose.yml`, `Makefile`
 - `PLAN.md` (shared task plan, referenced from `AGENTS.md`)
 
 ### Verification
