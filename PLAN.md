@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in progress (Phase 3 review done; its follow-up steps 8–12 are done and committed; steps 13–16, from the review observations, are planned and wait for the plan commit)
+**Status:** in progress (Phase 3 review done; its follow-up steps 8–16 are done and committed; Step 17 fixes a flaky test found in CI run `41579484391`)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 **Planned on:** `xps-omarchy`
 **Planning session:**
@@ -402,23 +402,23 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Build test database connections on Laravel's default config`
 
 #### 14. Check the Laravel 12 floor on every database in CI (from Phase 3 review observations)
-**Status:** todo
+**Status:** done
 
 **Why:** The `databases` job only runs `--prefer-stable`, so the lowest dependency versions are checked against MySQL, PostgreSQL and MongoDB only locally. Decision: run the full matrix, so the job doubles from 14 to 28 jobs.
 
-- [ ] `.github/workflows/tests.yml`, `databases` job: add `stability: [prefer-lowest, prefer-stable]` to the matrix, use `--${{ matrix.stability }}` in `composer update` (as the `tests` job does), and add the stability to the job name (`DB <image> - L<laravel> - <stability>`).
-- [ ] The `tests` job, triggers and `paths-ignore` stay as they are.
+- [x] `.github/workflows/tests.yml`, `databases` job: add `stability: [prefer-lowest, prefer-stable]` to the matrix, use `--${{ matrix.stability }}` in `composer update` (as the `tests` job does), and add the stability to the job name (`DB <image> - L<laravel> - <stability>`).
+- [x] The `tests` job, triggers and `paths-ignore` stay as they are.
 
-**Validate:** `actionlint` through Docker (see the Implementation prompt). After the user pushes, the CI run shows 28 green `databases` jobs; record the run ID here.
+**Validate:** `actionlint` through Docker (see the Implementation prompt). After the user pushes, the CI run shows 28 green `databases` jobs; record the run ID here. ✅ Run `41579484391` (`f29cebe`): all 28 `databases` jobs passed (the run itself failed on the flaky `tests` job fixed in Step 17).
 
-**Commit:** `Run the database CI jobs with prefer-lowest and prefer-stable`
+**Commit:** `Run the databases CI job on prefer-lowest and prefer-stable`
 
 #### 15. Link the README credits to the author's GitHub profile (from Phase 3 review observations)
-**Status:** todo
+**Status:** done
 
 **Why:** The skeleton linked "Leo Oberle" to the `route-connex` organisation. Decision: link the personal profile instead.
 
-- [ ] `README.md` Credits: `[Leo Oberle](https://github.com/leocello)`.
+- [x] `README.md` Credits: `[Leo Oberle](https://github.com/leocello)`.
 
 **Validate:** the link points to `https://github.com/leocello`; no other file links the author to the organisation (`grep -rn 'github.com/route-connex)' --exclude-dir=vendor .`). `make test` isn't needed (docs only).
 
