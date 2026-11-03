@@ -1,6 +1,6 @@
 # Branching model, branch-aware CHANGELOG and `version`
 
-**Status:** in progress
+**Status:** in review
 **Branch:** `docs/init` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -181,12 +181,12 @@ After the review, the user replaced `# Unreleased` and the release branch name w
 
 ## Acceptance Criteria
 - [x] AGENTS.md documents the release branches, `main` = latest stable tag, the `feature/` `hotfix/` `docs/` names (with the optional origin major), tags `vX.Y.Z`, and no `develop` branch.
-- [ ] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and, at close, folds them into the target's `# vX.Y.Z-rc` (creating it with a user-chosen version when there is none). CONTRIBUTING and the `package-release` skill agree with it, and `# Unreleased` is no longer used.
-- [ ] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags (`vX.Y.Z`), untagged release branch commits (`vX.Y.Z-rc`) and work branches.
-- [ ] The close checks that the target is merged into the work branch before it runs (review finding 1).
-- [ ] A Pest test fails for a malformed `version`, including `release/<N>.x` and numbered or uppercase `-rc` values.
-- [ ] CI runs on pushes to `main` and `release/*.x`. A tag push fails when the tag isn't a plain `vX.Y.Z`, or when `version` or the CHANGELOG heading doesn't match the tag.
-- [ ] `make test` and `make test-all` pass.
+- [x] The Task Plan Workflow writes CHANGELOG items per step under `# <branch>` and, at close, folds them into the target's `# vX.Y.Z-rc` (creating it with a user-chosen version when there is none). CONTRIBUTING and the `package-release` skill agree with it, and `# Unreleased` is no longer used.
+- [x] `version` exists, holds `docs/init` on this branch, and the docs define its value for tags (`vX.Y.Z`), untagged release branch commits (`vX.Y.Z-rc`) and work branches.
+- [x] The close checks that the target is merged into the work branch before it runs (review finding 1).
+- [x] A Pest test fails for a malformed `version`, including `release/<N>.x` and numbered or uppercase `-rc` values.
+- [x] CI runs on pushes to `main` and `release/*.x`. A tag push fails when the tag isn't a plain `vX.Y.Z`, or when `version` or the CHANGELOG heading doesn't match the tag.
+- [x] `make test` and `make test-all` pass.
 
 ## Review
 
@@ -213,3 +213,27 @@ Reviewed on `gandalf` against commits `317f000`, `7a77b28` and `eb7b91b`, checki
 - The README's Tests badge (`branch=main`) now shows the status of the latest release, not the latest work, because `main` only moves on releases.
 
 **Follow-up:** after the review, the user replaced `# Unreleased` and the release branch `version` value with a `vX.Y.Z-rc` release candidate (see Decisions, "changed after review"). Steps 4 and 5 implement that and fix findings 1–4. Finding 5 needs no change: Step 5's tag format check doesn't change it, and the Pest test still catches extra blank lines. After Step 5, the task goes through a new Phase 3 review in a fresh session.
+
+### Second review (after Steps 4 and 5)
+
+Reviewed on `gandalf` against commits `34db36b` and `4fdcd75`, checking the code rather than the ticked boxes.
+
+**Result:** Steps 4 and 5 are implemented as planned, and review findings 1–4 are fixed. Every acceptance criterion is met. `CHANGELOG.md` has an item for each step under `# docs/init` above `# v0.1.0-rc`, `version` holds `docs/init`, and `git merge-base --is-ancestor release/0.x HEAD` succeeds, so the close can run on this branch as it stands.
+
+**Validation:**
+- `make test`: PHPStan, Pint and 100 % type coverage pass, and Pest runs 65 tests, all passing.
+- `make test-all`: 65 tests pass on SQLite, MySQL, PostgreSQL and MongoDB.
+- actionlint: clean.
+- The `version.yml` script, run by hand: it fails for tag `v0.1.0-rc` (with matching `version` and heading), passes for `v0.1.0` with `version` = `v0.1.0` and `# v0.1.0 (2026-11-04)`, and fails when `version` is `v0.1.0-rc`, when the heading is `# v0.1.0-rc`, or when `version` is `docs/init`.
+
+**Findings:**
+
+6. **`package-release` step 8 still fast-forwards `main` to the branch (inconsistency, low).** It says that once `v<N+1>.0.0` is tagged, `main` "is fast-forwarded to `release/<N+1>.x`". Finding 3 fixed step 7, but this line was missed. It should say `git merge --ff-only v<N+1>.0.0`, to match AGENTS.md ("fast-forwards `main` to it", meaning the tag) and step 7.
+7. **The close can suggest a version the release branch can't release (gap, low).** Phase 4 step 2 suggests "the next major for breaking changes". But a close on `release/<N>.x` can only feed a `v<N>.*` rc: a new major needs a new `release/<N+1>.x`, which the user creates. So on `release/0.x` a breaking change would get a `v1.0.0-rc`. Fix: the rc on `release/<N>.x` is always `v<N>.Y.Z-rc`. Before 1.0 (SemVer 0.x), breaking changes suggest the next minor. From 1.0, the agent stops and asks the user whether to start `release/<N+1>.x`, rather than suggesting `v<N+1>.0.0-rc` on `release/<N>.x`.
+8. **Some CHANGELOG items describe this branch's intermediate states (nit).** At the close, these items become `v0.1.0-rc` lines for package users. But "`version` holds the same `vX.Y.Z-rc` instead of the release branch name" and "`main` is fast-forwarded to the tag, not to the release branch" compare against rules that only existed inside `docs/init` and were never released. The Step 1 item also still says `version` names "the tag or branch". Fix: reword the items to describe the end result only. "Replacing `# Unreleased`" can stay, because `# Unreleased` existed before this branch.
+
+**Observations, no action:**
+- `release/0.x` exists locally (at `16c8a5b`, the same commit as `main`) but not on `origin`, which only has `main` and `docs/init`. Push it before opening or merging the PR into it. The repo's default branch is still `main`, so pull requests open against `main` unless contributors pick the release branch.
+- Phase 4 step 1 checks against the local `<target>`. If merges into the target happen on GitHub, run `git fetch` first and check `origin/<target>`, or the check can pass on a stale local branch.
+- `main` currently holds `# Unreleased` and no `version`, because nothing is tagged yet. This is expected until `v0.1.0` is released and `main` is fast-forwarded to it.
+- Once `release/<N+1>.x` exists, `v<N>` hotfix tags don't move `main` (`N` is no longer the latest major), so `main` lags the newest stable tag until `v<N+1>.0.0`. This is what keeps the later fast-forward possible, so it's consistent, but "always the latest stable release" doesn't hold strictly in that window.
