@@ -37,40 +37,41 @@ abstract class TestCase extends Orchestra
 
         $app['config']->set('database.default', $connection);
         $app['config']->set("database.connections.{$connection}", match ($connection) {
-            'sqlite' => [
-                'driver' => 'sqlite',
+            'sqlite' => array_merge($this->laravelConnection($app, $connection), [
                 'database' => ':memory:',
-                'prefix' => '',
                 'foreign_key_constraints' => true,
-            ],
-            'mysql' => [
-                'driver' => 'mysql',
+            ]),
+            'mysql' => array_merge($this->laravelConnection($app, $connection), [
                 'host' => $host,
                 'port' => getenv('DB_PORT') ?: 3306,
                 'database' => $database,
                 'username' => $username,
                 'password' => $password,
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-            ],
-            'pgsql' => [
-                'driver' => 'pgsql',
+            ]),
+            'pgsql' => array_merge($this->laravelConnection($app, $connection), [
                 'host' => $host,
                 'port' => getenv('DB_PORT') ?: 5432,
                 'database' => $database,
                 'username' => $username,
                 'password' => $password,
-                'charset' => 'utf8',
-                'prefix' => '',
-                'search_path' => 'public',
-            ],
+            ]),
             'mongodb' => [
                 'driver' => 'mongodb',
                 'dsn' => sprintf('mongodb://%s:%s', $host, getenv('DB_PORT') ?: 27017),
                 'database' => $database,
             ],
         });
+    }
+
+    /**
+     * Laravel's own config for a connection, so the tests run on the same
+     * settings (strict, prefix_indexes, sslmode, ...) as a Laravel app.
+     *
+     * @return array<string, mixed>
+     */
+    protected function laravelConnection($app, string $connection): array
+    {
+        return $app['config']->get("database.connections.{$connection}");
     }
 
     protected static function databaseConnection(): string

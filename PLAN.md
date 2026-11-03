@@ -62,11 +62,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Text edits inside PLAN.md only, each one listed in the step.
   - **Prompt:** Implement Step 12 of PLAN.md: Bring Task 1's steps in line with what was built. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `PLAN.md` changes. Check each listed item against the code before editing it. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
-- [ ] **13. Build the test database connections on Laravel's defaults**
+- [x] **13. Build the test database connections on Laravel's defaults**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume f46eb0db-f1c1-40e7-af76-a63df28b7edb` (xps-omarchy)
   - **Why:** A small change to `tests/TestCase.php`, but it affects every database run, so all four drivers and the minimum versions must be rechecked. The planning session is long and about the review.
   - **Prompt:** Implement Step 13 of PLAN.md: Build the test database connections on Laravel's defaults. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only `tests/TestCase.php` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 14.
 - [ ] **14. Check the Laravel 12 floor on every database in CI**
@@ -380,13 +380,15 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Align Task 1 plan steps with the implemented setup`
 
 #### 13. Build the test database connections on Laravel's defaults (from Phase 3 review observations)
-**Status:** todo
+**Status:** done
 
 **Why:** `tests/TestCase.php` writes the MySQL and PostgreSQL connection arrays by hand, so Laravel's defaults such as `strict`, `engine`, `prefix_indexes` and `sslmode` are missing. It makes no difference today, but it will once real migrations and queries exist, and the tests should run on the same settings a Laravel app uses.
 
-- [ ] `tests/TestCase.php` → `defineEnvironment()`: for `sqlite`, `mysql` and `pgsql`, start from Laravel's own connection config (`$app['config']->get("database.connections.{$connection}")`) and override only what the test setup decides: host, port, database, username and password (and `database => ':memory:'` plus `foreign_key_constraints => true` for SQLite). Keep the `DB_*` environment variables and their defaults as they are.
-- [ ] `mongodb` keeps its hand-written array, since Laravel has no default MongoDB connection.
-- [ ] No new tests: the existing suite on all four databases is the check.
+- [x] `tests/TestCase.php` → `defineEnvironment()`: for `sqlite`, `mysql` and `pgsql`, start from Laravel's own connection config (`$app['config']->get("database.connections.{$connection}")`) and override only what the test setup decides: host, port, database, username and password (and `database => ':memory:'` plus `foreign_key_constraints => true` for SQLite). Keep the `DB_*` environment variables and their defaults as they are.
+- [x] `mongodb` keeps its hand-written array, since Laravel has no default MongoDB connection.
+- [x] No new tests: the existing suite on all four databases is the check.
+
+> Note: the shared lookup is a small `laravelConnection()` helper in `TestCase`; the MySQL/PostgreSQL arrays now override only host, port, database, username and password.
 
 **Validate:** `make test`, `make test-all`, `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`.
 
