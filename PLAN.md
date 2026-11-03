@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in progress (step 7 added from review; waiting for the user to approve and commit the plan)
+**Status:** in review (Phase 3 review done; steps 8–12 proposed from its findings, waiting for the user to approve them)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 **Planned on:** `xps-omarchy`
 **Planning session:**
@@ -20,13 +20,48 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume 9a8d2e18-651d-49ba-9bd8-59def7984e6b` (xps-omarchy)
   - **Why:** Small, contained YAML change. It only needs care so that the ignore list never covers files CI depends on. The planning session is very long and about Task 1 setup, and the prompt plus the step section are self-contained.
   - **Prompt:** Implement Step 7 of PLAN.md: Skip CI for documentation-only changes. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Only `.github/workflows/tests.yml` and `AGENTS.md` change: keep the existing `push`/`pull_request` triggers and jobs as they are, and run `actionlint` through Docker (`docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:1.7.7 .github/workflows/tests.yml`). Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. When it's validated, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
-- [ ] **Review (Phase 3)**
+- [x] **Review (Phase 3)**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume ea9d766f-1d8f-4e27-8421-5af3ecd48611` (xps-omarchy)
   - **Why:** A full review across Docker, the skeleton, the multi-database tests and CI needs broad judgement. Reviews are always a fresh session that didn't build Task 1.
   - **Prompt:** Do the Phase 3 review of Task 1 in PLAN.md. Follow AGENTS.md (Task Plan Workflow → Phase 3). Before starting, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Check every step against the actual code, not the ticked boxes. Look for gaps and errors in the Docker setup, Makefile, composer.json, the service provider and skeleton wiring, tests/TestCase.php and the database tests, the CI workflow, and whether the docs match the code. Run `make test` and `make test-all`, plus the minimum database versions (`MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`). Write the findings in a **Review** section of PLAN.md, propose fixes as new steps (each with an Implementation entry) without implementing them, set this entry's Done to [x], then stop and give a suggested commit message.
+- [ ] **8. Keep dev tooling out of the Composer dist archive**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** A few lines in `.gitattributes`, checked with one `git archive` command. The review session is long and about the whole task.
+  - **Prompt:** Implement Step 8 of PLAN.md: Keep dev tooling out of the Composer dist archive. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `.gitattributes` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 9.
+- [ ] **9. Test the facade and the publish tags**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** Typical Pest/Testbench test work against the existing service provider. Independent of Step 8.
+  - **Prompt:** Implement Step 9 of PLAN.md: Test the facade and the publish tags. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only tests change; `src/RouteConnexServiceProvider.php` stays as it is. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change (in particular, ask before changing package code if a test exposes a bug). Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 10.
+- [ ] **10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`**
+  - **Model:** `sonnet`
+  - **Effort:** `low`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** Small Makefile/Compose change, but it touches how every test target picks its database, so it needs a careful check of each target. Independent of Step 9's test work.
+  - **Prompt:** Implement Step 10 of PLAN.md: Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `Makefile` and `docker-compose.yml` change (README/AGENTS docs follow in Step 11). Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 11.
+- [ ] **11. Align CONTRIBUTING, README and the agent skills with the Docker workflow**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** Docs-only edits. It documents the `ARGS` support from Step 10, so it follows it in the same session.
+  - **Prompt:** Implement Step 11 of PLAN.md: Align CONTRIBUTING, README and the agent skills with the Docker workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 10 added `ARGS` to `make test-unit` and the `make test-<db>` targets; describe what the Makefile actually does. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 12.
+- [ ] **12. Bring Task 1's steps in line with what was built**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** Text edits inside PLAN.md only, each one listed in the step.
+  - **Prompt:** Implement Step 12 of PLAN.md: Bring Task 1's steps in line with what was built. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `PLAN.md` changes. Check each listed item against the code before editing it. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
 
 > **Progress notes**
 > - The host's Docker networking was fixed outside the repo: NetworkManager no longer manages `docker0`/`br-*`/`veth*` (`/etc/NetworkManager/conf.d/99-docker-unmanaged.conf`). No compose overrides are needed.
@@ -231,6 +266,84 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 
 **Commit:** `Skip CI for documentation-only changes`
 
+#### 8. Keep dev tooling out of the Composer dist archive (from Phase 3 review)
+**Status:** todo
+
+**Why:** Composer installs tagged releases from GitHub's zip archive, which honours `export-ignore` in `.gitattributes`. `git archive HEAD` currently includes `Makefile`, `PLAN.md`, `docker-compose.yml` and `docker/php/Dockerfile`, so every app that installs the package would get them in `vendor/route-connex/route-connex-laravel/`. Review finding R1.
+
+- [ ] `.gitattributes`: add `export-ignore` lines for `/docker`, `/docker-compose.yml`, `/Makefile` and `/PLAN.md`, aligned with the existing entries.
+- [ ] `.gitattributes`: remove the stale `/AGENTS_PACKAGE.md` entry (no such file; it's a skeleton leftover).
+
+**Validate:**
+- `git archive --worktree-attributes HEAD | tar -t | grep -v '/$'` lists only `LICENSE`, `README.md`, `composer.json`, `config/`, `database/`, `lang/`, `public/`, `resources/`, `routes/` and `src/` files.
+- `make test` still passes.
+
+**Commit:** `Keep Docker, Makefile and PLAN.md out of the dist archive`
+
+#### 9. Test the facade and the publish tags (from Phase 3 review)
+**Status:** todo
+
+**Why:** AGENTS.md asks for tests of service provider wiring and published resources. The suite covers the config merge, views, translations, the command and the singleton, but nothing checks the `RouteConnex` facade or any of the six publish tags the README documents. A renamed path or tag would go unnoticed. Review finding R2.
+
+- [ ] `tests/Feature/ExampleTest.php` (or a new `tests/Feature/ServiceProviderTest.php`): the `RouteConnex\Laravel\Facades\RouteConnex` facade resolves to the same `RouteConnex\Laravel\RouteConnex` singleton as the container.
+- [ ] Publish tags: for each of `route-connex-laravel-config`, `-views`, `-lang`, `-assets` and `-migrations`, assert the source → target mapping (e.g. via `ServiceProvider::pathsToPublish(RouteConnexServiceProvider::class, $tag)`), and that the `route-connex-laravel` tag contains all of them. Use a Pest dataset rather than five copies of the same test.
+- [ ] One end-to-end check that `vendor:publish --tag=route-connex-laravel-config` writes `config/route-connex-laravel.php` into the Testbench app (clean up the published file afterwards, so tests don't leak files into `vendor/orchestra/testbench-core/laravel`).
+
+**Validate:** `make test` (type coverage stays at 100 %) and `make test-all`.
+
+**Commit:** `Test the facade and the package publish tags`
+
+#### 10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS` (from Phase 3 review)
+**Status:** todo
+
+**Why:**
+- `docker-compose.yml` passes the host's `DB_CONNECTION` into the `app` container (`DB_CONNECTION: ${DB_CONNECTION:-sqlite}`). Checked: `DB_CONNECTION=mysql docker compose run --rm app printenv DB_CONNECTION` prints `mysql`. A Laravel developer with `DB_CONNECTION` exported in their shell (direnv, another project) gets `make test` running Pest `--parallel` against MySQL, which isn't started and would be shared by the parallel workers. Review finding R3.
+- `make test-unit` and `make test-<db>` take no arguments, so the `package-testing` skill's `composer test:unit -- --filter ...` advice has no `make` equivalent. Review finding R4.
+
+- [ ] `docker-compose.yml`: drop the `DB_CONNECTION` passthrough from the `app` service (TestCase already defaults to `sqlite`), or pin it to `sqlite`.
+- [ ] `Makefile`: `test`, `test-unit` and `test-sqlite` always run on SQLite, whatever the host shell has exported; `test-mysql`/`test-pgsql`/`test-mongodb` keep setting it explicitly with `-e`.
+- [ ] `Makefile`: `test-unit` and the `pest_on` targets pass `$(ARGS)` through, e.g. `make test-unit ARGS="--filter=DatabaseTest"`, `make test-mysql ARGS="--filter=DatabaseTest"`. Update the `help` texts.
+
+**Validate:**
+- `DB_CONNECTION=mysql make test` passes on SQLite with the database containers stopped (`make db-down` first).
+- `make test-unit ARGS="--filter=DatabaseTest"` runs only the 3 database tests.
+- `make test-all` and `MYSQL_VERSION=8.0 make test-mysql ARGS="--filter=DatabaseTest"` pass.
+
+**Commit:** `Pin make test targets to SQLite and pass ARGS through to Pest`
+
+#### 11. Align CONTRIBUTING, README and the agent skills with the Docker workflow (from Phase 3 review)
+**Status:** todo
+
+**Why:** Review finding R5.
+- `.github/CONTRIBUTING.md` tells contributors to run `composer install`, `composer lint` and `composer test`, but the documented setup has no local PHP, and it never mentions the database targets.
+- `.agents/skills/package-release/SKILL.md` points to `CHANGELOG.md`, `.github/release.yml` and `.github/workflows/update-changelog.yml`, which Step 3 deleted on purpose.
+- `.agents/skills/package-testing/SKILL.md` only mentions `composer` commands.
+
+- [ ] `.github/CONTRIBUTING.md`: Setup/Lint/Tests use `make build`, `make install`, `make lint`, `make test`, and `make test-all` (with the minimum-version commands) for database-related changes. Mention that the `composer` scripts work too for contributors with local PHP 8.3+.
+- [ ] `.agents/skills/package-release/SKILL.md`: drop the references to the deleted changelog files and workflows (or reword them as "if the repo adds them"), and use `make test` / `make test-all` as the release check.
+- [ ] `.agents/skills/package-testing/SKILL.md`: add the `make` equivalents (`make test-unit ARGS="--filter ..."`, `make test`, `make test-all`) next to the composer commands.
+- [ ] `README.md` and `AGENTS.md` Quick Commands: mention `ARGS` for `make test-unit` / `make test-<db>` if Step 10 added it.
+
+**Validate:** `make test` (docs-only change, CI will be skipped by `paths-ignore`). Proof-read every command against `Makefile`.
+
+**Commit:** `Document the Docker make workflow in CONTRIBUTING and agent skills`
+
+#### 12. Bring Task 1's steps in line with what was built (from Phase 3 review)
+**Status:** todo
+
+**Why:** Several Task 1 steps describe something the code doesn't do, without a note. AGENTS.md: "The plan must never describe something the code doesn't do." Review finding R6.
+
+- [ ] Step 1 / 4b, image: the Dockerfile installs extensions with `mlocati/php-extension-installer` (`intl zip pcntl bcmath pdo_mysql pdo_pgsql mongodb`); `pdo_sqlite` comes with the base image. There's no `pecl install` or `libpq-dev`.
+- [ ] Step 4b, compose: `app` has no `depends_on`; the Makefile starts each database with `docker compose --profile databases up -d --wait <service>` instead.
+- [ ] Step 4b, tests: migrations are loaded with `$this->loadMigrationsFrom()` in `tests/Feature/DatabaseTest.php`'s `beforeEach` (Testbench rolls them back after each test), not `defineDatabaseMigrations()` / `RefreshDatabase`.
+- [ ] Step 4b, CI: replace the "`db` matrix axis crossed with Laravel 12/13" text with the separate `databases` job (see the progress notes and Step 6).
+- [ ] Step 5: the "Review the whole diff" box is obsolete (the setup was committed in `732637b`); strike it through with a short note.
+- [ ] "Expected key files": drop `.dockerignore` (Step 1 decided it isn't needed).
+
+**Validate:** each edited sentence matches the code it describes. `make test` isn't needed (PLAN.md only).
+
+**Commit:** `Align Task 1 plan steps with the implemented setup`
+
 ### Expected key files afterwards
 - `composer.json` (name `route-connex/route-connex-laravel`, PSR-4 `RouteConnex\Laravel\` → `src/`, provider `RouteConnex\Laravel\RouteConnexServiceProvider`, alias `RouteConnex`)
 - `src/RouteConnexServiceProvider.php`, `src/RouteConnex.php`, `src/Facades/RouteConnex.php`, `src/Console/Commands/RouteConnexCommand.php`
@@ -252,3 +365,36 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
    - The same check also runs in CI through the matrix.
 - [x] 7. `make test-all` passes the migration smoke test on sqlite, mysql, pgsql and mongodb.
 - [x] 8. `git status` shows file ownership as the host user (no root-owned files).
+
+### Review
+Phase 3 review, 2026-11-03, in a session that didn't build Task 1 (`claude --ide --resume ea9d766f-1d8f-4e27-8421-5af3ecd48611`, xps-omarchy). Every step was checked against the files, not the ticked boxes.
+
+**Validation runs (all green):**
+- `make test`: PHPStan level 7 no errors, Pint pass (21 files), type coverage 100 %, Pest 14 passed (18 assertions).
+- `make test-all`: 14 passed on each of sqlite, mysql 8.4, pgsql 18 and mongodb 8 (`mongo:8`).
+- Minimum versions: `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb`: 14 passed each.
+- CI: last full run `41567523964` (`270bbc7`) had all 38 jobs green; Step 7 only changed triggers.
+
+**What checks out:**
+- Composer: name, PSR-4 `RouteConnex\Laravel\`, provider and alias auto-discovery, `illuminate/support ^12.0||^13.0`, Testbench `^10||^11`, Larastan/Pest ranges that resolve on both Laravel versions (Pest 5 needs PHP 8.4, so PHP 8.3 CI jobs get Pest 4), `mongodb/laravel-mongodb ^5.12` in `require-dev` + `suggest` (5.12 requires `illuminate/support ^12|^13`). `serve` binds `0.0.0.0:8000` behind `@build`.
+- Service provider: config merge, routes, views, translations, publish tags (`route-connex-laravel` plus `-config`, `-views`, `-lang`, `-assets`, `-migrations`) and the command all match the README. Migrations are publish-only (`publishesMigrations`), which matches the README's "publish, then migrate".
+- Docker: non-root user from `UID`/`GID`, Composer cache volume, database services with tmpfs + healthchecks under the `databases` profile, version overrides, `PGDATA` fix for 14–18. `make db-down` keeps the Composer cache.
+- `tests/TestCase.php`: the connection comes from `DB_CONNECTION` with defaults matching both Compose and CI; the MongoDB provider is only registered for `mongodb`. The database tests run without `--parallel`, as intended.
+- CI: L12/L13 × prefer-lowest/stable × PHP 8.3–8.5 × Linux/Windows on SQLite, plus a 14-job `databases` matrix covering the minimum and latest versions. Actions are pinned by SHA, `fail-fast: false` for databases, `paths-ignore` matches AGENTS.md and covers nothing CI depends on.
+- README Requirements, the Development section, AGENTS.md supported versions and the CI matrix agree (MongoDB 8.2 vs `mongo:8` locally is documented).
+
+**Findings (each has a proposed step):**
+- **R1 — dev tooling ships to users (medium).** `git archive HEAD` includes `Makefile`, `PLAN.md`, `docker-compose.yml` and `docker/php/Dockerfile`; `.gitattributes` has no `export-ignore` for them, and still lists a non-existent `/AGENTS_PACKAGE.md`. → Step 8.
+- **R2 — facade and publish tags are untested (medium).** No test resolves the facade or checks any publish tag, though both are documented and AGENTS.md asks for tests of provider wiring and published resources. → Step 9.
+- **R3 — `make test` follows the host's `DB_CONNECTION` (low).** Compose passes it through (verified with `printenv`), so an exported `DB_CONNECTION=mysql` makes `make test` run parallel Pest against MySQL. → Step 10.
+- **R4 — no way to filter tests through `make` (low).** `make test-unit` / `make test-<db>` take no `ARGS`. → Step 10.
+- **R5 — contributor and agent docs describe a different setup (low).** `.github/CONTRIBUTING.md` uses bare `composer` commands; the `package-release` skill references the deleted `CHANGELOG.md`, `.github/release.yml` and `update-changelog.yml`; the `package-testing` skill has no `make` commands. → Step 11.
+- **R6 — Task 1's steps don't all match the code (low).** Step 1/4b image details, `depends_on`, the migration-loading approach, the CI `db` axis wording, Step 5's open "review the diff" box and `.dockerignore` in Expected key files. → Step 12.
+
+**Observations, no step proposed (decide whether any should become one):**
+- The `databases` CI job only runs `--prefer-stable`, so the Laravel 12 floor is checked against MySQL/PostgreSQL/MongoDB only locally (progress notes), not in CI. Adding `prefer-lowest` would double it to 28 jobs.
+- `TestCase` builds the MySQL/PostgreSQL connection arrays by hand instead of starting from Laravel's defaults, so options such as `strict` and `prefix_indexes` are missing. Today this makes no difference (MySQL 8's default `sql_mode` equals Laravel's strict mode, and there is no prefix), but it may matter once real migrations and queries exist.
+- Nothing enforces the documented `mongodb/laravel-mongodb` ^5.12 minimum for users (it's only a `suggest`). A `conflict` with `<5.12` fits better once the package has MongoDB code (already deferred in Step 4b).
+- README Credits links "Leo Oberle" to `https://github.com/route-connex` (the organisation), as generated by the skeleton. Check whether it should be a personal profile.
+- `resources/boost/skills/route-connex-laravel-development/SKILL.md`, the placeholder route, config key, view, translation, command and migration are skeleton placeholders by design; they get replaced by the feature work.
+- This plan predates the current `PLAN.md` format (no Decisions/Acceptance Criteria sections, no Implementation entries for Steps 0–6). Not worth reformatting, since Phase 4 blanks it.
