@@ -19,6 +19,10 @@ jobs:
       - name: Check the version file and CHANGELOG heading match the tag
         run: |
           set -eu
+          if ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::tag '$GITHUB_REF_NAME' is not allowed, only plain vX.Y.Z tags are (release candidates are never tagged)"
+            exit 1
+          fi
           if [ "$(cat version)" != "$GITHUB_REF_NAME" ]; then
             echo "::error file=version::version holds '$(cat version)', expected '$GITHUB_REF_NAME'"
             exit 1

@@ -39,11 +39,11 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
   - **Resume:** `claude --ide --resume 71acc65f-b7b0-4ace-a18f-e8798bca5fe8` (gandalf)
   - **Why:** Docs only, but it rewrites the close procedure (with a branch on whether an `-rc` exists) in AGENTS.md, CONTRIBUTING and the release skill, which have to stay consistent. The review session that planned it has every decision loaded.
   - **Prompt:** Implement Step 4 of PLAN.md: Release candidate versions in the docs, and the close against the target's current state. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the rules to write down are in PLAN.md → Decisions (the entries marked "changed after review") and the review findings 1–4 it fixes. Steps 1–3 wrote the current branching docs, the `version` test and the tag workflow; this step changes only docs and `CHANGELOG.md`. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 5.
-- [ ] **5. Accept `-rc` versions in the test and reject `-rc` tags in CI**
+- [x] **5. Accept `-rc` versions in the test and reject `-rc` tags in CI**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume cc1eea64-144c-4714-9fa9-1444c578dcbc` (gandalf)
   - **Why:** A small regex and dataset change plus a few lines of shell in the workflow. The rules are fully written in PLAN.md → Decisions, so a fresh session doesn't need the planning context.
   - **Prompt:** Implement Step 5 of PLAN.md: Accept `-rc` versions in the test and reject `-rc` tags in CI. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 added `tests/Unit/VersionFileTest.php` and Step 3 added `.github/workflows/version.yml`; Step 4 documented the `vX.Y.Z-rc` value and the plain-tag rule in AGENTS.md (see PLAN.md → Decisions). Use the `package-testing` and `package-release` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -164,13 +164,17 @@ After the review, the user replaced `# Unreleased` and the release branch name w
 **Commit:** `Use release candidate versions on release branches and close against the target's current state`
 
 ### Step 5: Accept `-rc` versions in the test and reject `-rc` tags in CI
-**Status:** todo
-- [ ] `tests/Unit/VersionFileTest.php`: `VERSION_PATTERN` accepts `vX.Y.Z`, `vX.Y.Z-rc` and work branch names, and no longer accepts `release/<N>.x`.
+**Status:** done
+- [x] `tests/Unit/VersionFileTest.php`: `VERSION_PATTERN` accepts `vX.Y.Z`, `vX.Y.Z-rc` and work branch names, and no longer accepts `release/<N>.x`.
   - valid dataset: add `v0.1.0-rc` and `v12.34.56-rc`, and remove the two release branch values
   - invalid dataset: add `release/0.x`, `v0.1.0-rc.1`, `v0.1.0-rc1`, `v0.1.0-RC`, `0.1.0-rc`, `v0.1-rc` and `v0.1.0-rc-1`
-- [ ] `.github/workflows/version.yml`: before the existing checks, fail unless `$GITHUB_REF_NAME` matches `^v[0-9]+\.[0-9]+\.[0-9]+$`, with an `::error::` that says only plain `vX.Y.Z` tags are allowed.
-- [ ] `AGENTS.md` → Branching and Versioning → Tags and the `package-release` skill (step 5): mention that the workflow rejects other tags.
-- [ ] `CHANGELOG.md`: add this step's item under `# docs/init`.
+- [x] `.github/workflows/version.yml`: before the existing checks, fail unless `$GITHUB_REF_NAME` matches `^v[0-9]+\.[0-9]+\.[0-9]+$`, with an `::error::` that says only plain `vX.Y.Z` tags are allowed.
+- [x] `AGENTS.md` → Branching and Versioning → Tags and the `package-release` skill (step 5): mention that the workflow rejects other tags.
+- [x] `CHANGELOG.md`: add this step's item under `# docs/init`.
+
+**Notes:**
+- The CHANGELOG's Step 2 item now says the test accepts a `vX.Y.Z-rc` release candidate instead of a `release/<N>.x` branch, and a new item records the tag workflow check. The `package-release` skill (step 5) also mentions the tag rejection.
+- Validation: `make test` passes (65 tests), actionlint is clean, and the workflow's shell script fails for `v0.1.0-rc` and passes for `v0.1.0`. `make test-all` wasn't run (no database code changed).
 
 **Validate:** `make test`, `make test-unit ARGS="--filter=VersionFile"`. Lint the workflows with `docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest`. Run the check's shell script by hand against a temp copy: `GITHUB_REF_NAME=v0.1.0-rc` with `version` = `v0.1.0-rc` and a `# v0.1.0-rc` heading (expect a failure on the tag format), and `GITHUB_REF_NAME=v0.1.0` with `version` = `v0.1.0` and a `# v0.1.0 (…)` heading (expect a pass).
 **Commit:** `Accept release candidate versions in the version test and reject rc tags in CI`

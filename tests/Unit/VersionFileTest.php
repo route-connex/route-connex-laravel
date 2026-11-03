@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const VERSION_PATTERN = '/\A(?:v\d+\.\d+\.\d+|release\/\d+\.x|(?:feature|hotfix|docs)(?:\/\d+)?\/[a-z0-9]+(?:-[a-z0-9]+)*)\z/';
+const VERSION_PATTERN = '/\A(?:v\d+\.\d+\.\d+(?:-rc)?|(?:feature|hotfix|docs)(?:\/\d+)?\/[a-z0-9]+(?:-[a-z0-9]+)*)\z/';
 
 it('has a version file with exactly one valid line', function () {
     $path = dirname(__DIR__, 2).'/version';
@@ -21,8 +21,8 @@ it('accepts valid version values', function (string $value) {
 })->with([
     'tag' => 'v0.1.0',
     'tag with several digits' => 'v12.34.56',
-    'release branch' => 'release/0.x',
-    'latest major release branch' => 'release/12.x',
+    'release candidate' => 'v0.1.0-rc',
+    'release candidate with several digits' => 'v12.34.56-rc',
     'feature branch' => 'feature/add-route-cache',
     'feature branch from an older major' => 'feature/1/add-route-cache',
     'hotfix branch' => 'hotfix/fix-cache-key',
@@ -40,6 +40,13 @@ it('rejects invalid version values', function (string $value) {
     'tag without v' => '1.2.3',
     'tag with suffix' => 'v1.2.3-beta',
     'tag with four parts' => 'v1.2.3.4',
+    'release branch' => 'release/0.x',
+    'numbered release candidate' => 'v0.1.0-rc.1',
+    'release candidate with a number' => 'v0.1.0-rc1',
+    'uppercase release candidate' => 'v0.1.0-RC',
+    'release candidate without v' => '0.1.0-rc',
+    'release candidate without patch' => 'v0.1-rc',
+    'hyphen-numbered release candidate' => 'v0.1.0-rc-1',
     'release without x' => 'release/1',
     'release with minor' => 'release/1.2',
     'release with uppercase x' => 'release/1.X',
