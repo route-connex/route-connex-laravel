@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in progress (step 6 implemented; waiting for the user to commit and push, then CI)
+**Status:** in review (all steps done and CI is green; next is the Phase 3 full review, then close)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 
 > **Progress notes**
@@ -127,7 +127,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - [ ] Review the whole diff. Don't commit until you've looked at it.
 
 #### 6. Minimum database versions and CI database fix (from review)
-**Status:** done locally (waiting for the user to commit and push the `mongo:8.2` fix, then a green CI run)
+**Status:** done
 
 **Why:**
 - The first CI run failed in the `databases` job: `mongo:8` refuses to start on `ubuntu-latest` (Ubuntu 26.04), whose kernel is in the range MongoDB 8.x can't run on (6.19 up to 7.0.13; see [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
@@ -174,7 +174,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 **Validate:**
 - `make test-all` (latest versions)
 - `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `POSTGRES_VERSION=17 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb` (minimum versions)
-- after the user pushes, the `databases` CI job is green for all 14 combinations (re-run after the `mongo:8.2` fix)
+- after the user pushes, the `databases` CI job is green for all 14 combinations (re-run after the `mongo:8.2` fix). ✅ Run `41567523964` (`270bbc7`): all 38 jobs passed
 
 **Commit:** `Set minimum database versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0), test PostgreSQL 18, and fix CI database jobs`
 
