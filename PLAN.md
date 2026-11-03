@@ -34,11 +34,11 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume 6bbbdbf3-e722-4e67-a582-411d745aa949` (xps-omarchy)
   - **Why:** A few lines in `.gitattributes`, checked with one `git archive` command. The review session is long and about the whole task.
   - **Prompt:** Implement Step 8 of PLAN.md: Keep dev tooling out of the Composer dist archive. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `.gitattributes` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 9.
-- [ ] **9. Test the facade and the publish tags**
+- [x] **9. Test the facade and the publish tags**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 53980e7a-cfec-47b1-9f4e-38bc6de59b88` (xps-omarchy)
   - **Why:** Typical Pest/Testbench test work against the existing service provider. Independent of Step 8.
   - **Prompt:** Implement Step 9 of PLAN.md: Test the facade and the publish tags. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only tests change; `src/RouteConnexServiceProvider.php` stays as it is. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change (in particular, ask before changing package code if a test exposes a bug). Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 10.
 - [ ] **10. Make the `make` test targets ignore the host's `DB_CONNECTION` and accept `ARGS`**
@@ -283,13 +283,16 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 **Commit:** `Keep Docker, Makefile and PLAN.md out of the dist archive`
 
 #### 9. Test the facade and the publish tags (from Phase 3 review)
-**Status:** todo
+**Status:** done
 
 **Why:** AGENTS.md asks for tests of service provider wiring and published resources. The suite covers the config merge, views, translations, the command and the singleton, but nothing checks the `RouteConnex` facade or any of the six publish tags the README documents. A renamed path or tag would go unnoticed. Review finding R2.
 
-- [ ] `tests/Feature/ExampleTest.php` (or a new `tests/Feature/ServiceProviderTest.php`): the `RouteConnex\Laravel\Facades\RouteConnex` facade resolves to the same `RouteConnex\Laravel\RouteConnex` singleton as the container.
-- [ ] Publish tags: for each of `route-connex-laravel-config`, `-views`, `-lang`, `-assets` and `-migrations`, assert the source → target mapping (e.g. via `ServiceProvider::pathsToPublish(RouteConnexServiceProvider::class, $tag)`), and that the `route-connex-laravel` tag contains all of them. Use a Pest dataset rather than five copies of the same test.
-- [ ] One end-to-end check that `vendor:publish --tag=route-connex-laravel-config` writes `config/route-connex-laravel.php` into the Testbench app (clean up the published file afterwards, so tests don't leak files into `vendor/orchestra/testbench-core/laravel`).
+- [x] New `tests/Feature/ServiceProviderTest.php`: the `RouteConnex\Laravel\Facades\RouteConnex` facade resolves to the same `RouteConnex\Laravel\RouteConnex` singleton as the container.
+- [x] Publish tags: for each of `route-connex-laravel-config`, `-views`, `-lang`, `-assets` and `-migrations`, assert the source → target mapping (e.g. via `ServiceProvider::pathsToPublish(RouteConnexServiceProvider::class, $tag)`), and that the `route-connex-laravel` tag contains all of them. Use a Pest dataset rather than five copies of the same test.
+- [x] One end-to-end check that `vendor:publish --tag=route-connex-laravel-config` writes `config/route-connex-laravel.php` into the Testbench app (clean up the published file afterwards, so tests don't leak files into `vendor/orchestra/testbench-core/laravel`).
+- [x] `AGENTS.md` (Task Plan Workflow): suggested commit messages are not hard-wrapped; a line break only where a new line starts. Added at the user's request during this step (outside the original scope).
+
+> Note: the dataset holds closures for the target paths (`config_path()` etc.), because datasets are built before the app boots. The step's tests all passed on the first real run of `make test` (26 tests) and `make test-all`; no package code changed.
 
 **Validate:** `make test` (type coverage stays at 100 %) and `make test-all`.
 

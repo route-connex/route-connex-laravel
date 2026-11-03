@@ -27,6 +27,7 @@ Agents never commit, push or merge. The user does all of that. Each phase ends b
 Whenever an agent stops for the user to commit (a plan, a step, a review, or the close), it ends its message with a **suggested commit message** in a code block:
 - a subject line in the imperative mood, at most ~72 characters
 - a short body listing what changed and why
+- no hard wrapping: put a line break only where a new line starts (subject, blank line, each list item), never in the middle of a sentence
 
 The message must describe what was actually changed, not only what the plan predicted.
 
