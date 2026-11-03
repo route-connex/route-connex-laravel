@@ -22,7 +22,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
   - `<quick-description>` is lowercase kebab-case
   - examples, with `release/2.x` the latest: `feature/add-route-cache` (from `release/2.x`), `hotfix/1/fix-cache-key` (from `release/1.x`), `docs/init` (from `release/2.x`)
 - There is no `develop` branch: unreleased work lives on the release branch.
-- **Tags**: every release is tagged `v<major>.<minor>.<patch>` (SemVer) on its release branch, matching the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`.
+- **Tags**: every release is tagged `v<major>.<minor>.<patch>` (SemVer) on its release branch, matching the CHANGELOG heading `# vX.Y.Z (YYYY-MM-DD)`. CI runs on pushes to `main` and `release/*.x`, and `.github/workflows/version.yml` fails a tag push unless `version` equals the tag and the first line of `CHANGELOG.md` starts with `# <tag> (`.
 - **`version`** (a file at the repo root, one line) names where the code is:
   - on a tagged commit: the tag name, e.g. `v0.1.0`
   - on a work branch: the branch name, e.g. `docs/init`. The plan commit (Phase 1) sets it.

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - '*.x'
+      - 'release/*.x'
     paths-ignore:
       - '**.md'
       - 'LICENSE'

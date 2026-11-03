@@ -25,11 +25,11 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
   - **Resume:** `claude --ide --resume aafaac91-2d16-4d42-bfcd-901475cfed55` (gandalf)
   - **Why:** A small, self-contained Pest test. A fresh session avoids carrying over the long planning context.
   - **Prompt:** Implement Step 2 of PLAN.md: Test the `version` format. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 added the `version` file at the repo root and documented its allowed values in AGENTS.md (see PLAN.md → Decisions); use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
-- [ ] **3. Run CI on release branches and check `version` on tag pushes**
+- [x] **3. Run CI on release branches and check `version` on tag pushes**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume aafaac91-2d16-4d42-bfcd-901475cfed55` (gandalf)
   - **Why:** Small GitHub Actions change. The Step 2 session already knows the `version` rules and the test that enforces its format.
   - **Prompt:** Implement Step 3 of PLAN.md: Run CI on release branches and check `version` on tag pushes. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 documented the branching model and `version`, and Step 2 added `tests/Unit/VersionFileTest.php` for its format; use the `package-release` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -105,11 +105,15 @@ This task:
 **Commit:** `Test the version file format`
 
 ### Step 3: Run CI on release branches and check `version` on tag pushes
-**Status:** todo
-- [ ] `.github/workflows/tests.yml`: change the push `branches` to `main` and `release/*.x` (GitHub's `*` doesn't match `/`, so the current `'*.x'` misses `release/1.x`).
-- [ ] New `.github/workflows/version.yml`: on `push` of tags `v*.*.*`, fail unless `version` equals `$GITHUB_REF_NAME` and the first line of `CHANGELOG.md` starts with `# $GITHUB_REF_NAME (`.
-- [ ] Mention the tag check in the `package-release` skill and in AGENTS.md → Branching and Versioning.
-- [ ] `CHANGELOG.md`: add this step's item under `# docs/init`.
+**Status:** done
+- [x] `.github/workflows/tests.yml`: change the push `branches` to `main` and `release/*.x` (GitHub's `*` doesn't match `/`, so the current `'*.x'` misses `release/1.x`).
+- [x] New `.github/workflows/version.yml`: on `push` of tags `v*.*.*`, fail unless `version` equals `$GITHUB_REF_NAME` and the first line of `CHANGELOG.md` starts with `# $GITHUB_REF_NAME (`.
+- [x] Mention the tag check in the `package-release` skill and in AGENTS.md → Branching and Versioning.
+- [x] `CHANGELOG.md`: add this step's item under `# docs/init`.
+**Notes:**
+- The workflow checks out with the same pinned `actions/checkout` SHA as `tests.yml`. The tag check was run by hand: it fails on this branch (`version` is `docs/init`), passes against a temp copy with `v0.1.0` and a `# v0.1.0 (…)` heading, and fails when the heading is `# Unreleased`.
+- The `package-release` skill (`.agents/skills`, also reachable as `.claude/skills`) now names the workflow in step 5 and References; AGENTS.md → Branching and Versioning → Tags mentions the CI trigger and the tag check.
+
 **Validate:** `make test`. Lint both workflows with `docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest`. Run the check's shell script by hand with `GITHUB_REF_NAME=v0.1.0` (expect a failure on this branch) and against a temp copy with matching files (expect a pass).
 **Commit:** `Run CI on release branches and check the version file on tag pushes`
 

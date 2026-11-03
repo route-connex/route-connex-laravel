@@ -1,0 +1,32 @@
+name: version
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the version file and CHANGELOG heading match the tag
+        run: |
+          set -eu
+          if [ "$(cat version)" != "$GITHUB_REF_NAME" ]; then
+            echo "::error file=version::version holds '$(cat version)', expected '$GITHUB_REF_NAME'"
+            exit 1
+          fi
+          case "$(head -n 1 CHANGELOG.md)" in
+            "# $GITHUB_REF_NAME ("*) ;;
+            *)
+              echo "::error file=CHANGELOG.md::the first heading is '$(head -n 1 CHANGELOG.md)', expected '# $GITHUB_REF_NAME (YYYY-MM-DD)'"
+              exit 1
+              ;;
+          esac
