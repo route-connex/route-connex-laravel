@@ -1,6 +1,6 @@
 # Task 1: Basic package setup (Docker + skeleton + multi-DB tests)
 
-**Status:** in review (Phase 3 review done; steps 8–12 proposed from its findings, waiting for the user to approve them)
+**Status:** in progress (Phase 3 review done; its follow-up steps 8–12 are done and committed; steps 13–16, from the review observations, are planned and wait for the plan commit)
 **Branch:** main → **Target:** main (initial setup, made before the task plan workflow existed)
 **Planned on:** `xps-omarchy`
 **Planning session:**
@@ -62,12 +62,40 @@ Steps 0–6 were done before this list was part of the workflow, so they have no
   - **Resume:** `claude --ide --resume ddf73b5f-a0fe-4082-8fa5-b11caa09f5a1` (xps-omarchy)
   - **Why:** Text edits inside PLAN.md only, each one listed in the step.
   - **Prompt:** Implement Step 12 of PLAN.md: Bring Task 1's steps in line with what was built. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `PLAN.md` changes. Check each listed item against the code before editing it. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
+- [ ] **13. Build the test database connections on Laravel's defaults**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** A small change to `tests/TestCase.php`, but it affects every database run, so all four drivers and the minimum versions must be rechecked. The planning session is long and about the review.
+  - **Prompt:** Implement Step 13 of PLAN.md: Build the test database connections on Laravel's defaults. Follow AGENTS.md (Task Plan Workflow), the `package-testing` skill and the step's section in PLAN.md. Only `tests/TestCase.php` changes. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 14.
+- [ ] **14. Check the Laravel 12 floor on every database in CI**
+  - **Model:** `sonnet`
+  - **Effort:** `low`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** A contained YAML change to the `databases` job, checked with `actionlint`; independent of Step 13's code.
+  - **Prompt:** Implement Step 14 of PLAN.md: Check the Laravel 12 floor on every database in CI. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `.github/workflows/tests.yml` changes: add a `stability` axis to the `databases` job only, keep the `tests` job as it is. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run `actionlint` through Docker (`docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:1.7.7 .github/workflows/tests.yml`). Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 15.
+- [ ] **15. Link the README credits to the author's GitHub profile**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** A one-line docs edit; it fits at the end of Step 14's short session.
+  - **Prompt:** Implement Step 15 of PLAN.md: Link the README credits to the author's GitHub profile. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Only `README.md` changes. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 16.
+- [ ] **16. Add CHANGELOG.md and make it part of the workflow**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** Docs and workflow rules only, but the Task 1 entry must summarise what was actually built across Steps 0–15 and the rule must fit the existing Phase 4 and release skill wording. A fresh session reads the whole plan and git log without unrelated context.
+  - **Prompt:** Implement Step 16 of PLAN.md: Add CHANGELOG.md and make it part of the workflow. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 13–15 must be committed first, since the changelog lists them; read `git log` and the whole plan to write the Task 1 entry. Only `CHANGELOG.md` (new), `AGENTS.md` and `.agents/skills/package-release/SKILL.md` change. Before changing anything, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
 
 > **Progress notes**
 > - The host's Docker networking was fixed outside the repo: NetworkManager no longer manages `docker0`/`br-*`/`veth*` (`/etc/NetworkManager/conf.d/99-docker-unmanaged.conf`). No compose overrides are needed.
 > - The skeleton was taken from commit `064b57f` with `git clone`; the GitHub tarball leaves out tests/, workbench/ and dotfiles (`export-ignore`). It already ships `^12.0||^13.0`, Testbench `^10||^11`, and a CI matrix for L12/L13 × prefer-lowest/stable.
 > - `configure.php` builds the namespace as `<vendor-namespace>\<class-name>`, and the vendor part can't contain `\`. It was run with `RouteConnex`/`RouteConnex`, and the namespace was then renamed to `RouteConnex\Laravel` by hand.
-> - CI: the existing matrix (OS × PHP × L12/13 × lowest/stable) stays on SQLite, with `mongodb` added to its extensions. A separate `databases` job runs L12/L13 × mysql/pgsql/mongodb on PHP 8.4 with service containers. That's 6 extra jobs instead of multiplying the matrix by 4.
+> - CI: the existing matrix (OS × PHP × L12/13 × lowest/stable) stays on SQLite, with `mongodb` added to its extensions. A separate `databases` job runs L12/L13 × mysql/pgsql/mongodb on PHP 8.4 with service containers. That's 6 extra jobs instead of multiplying the matrix by 4 (14 after Step 6 added the minimum and newer database versions).
 > - Database runs use `vendor/bin/pest` without `--parallel`: parallel processes would share one MySQL/Postgres/Mongo database.
 > - The Laravel 12 floor passes on all four databases. `--prefer-lowest` resolves Laravel 12.69 because of the dev dependencies; the package itself still requires `^12.0`.
 > - The skeleton's placeholder package route (`routes/route-connex-laravel.php`) is commented out, so there's no package URL to curl yet. The workbench `/` returns 200.
@@ -178,7 +206,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
   - `make test-all` runs all four
 - [x] **CI**: the existing matrix stays on SQLite, with `mongodb` added to its extensions. A separate `databases` job runs Laravel 12/13 × mysql/pgsql/mongodb on PHP 8.4 with GitHub Actions service containers (see Step 6).
 - [ ] **Deferred to the feature work**:
-  - how package migrations target MongoDB. The laravel-mongodb `Blueprint` supports collections and indexes only, so migrations will probably need a `if ($connection->getDriverName() === 'mongodb')` branch or separate migration files.
+  - ~~how package migrations target MongoDB.~~ Decided after the review (2026-11-03): MongoDB stays supported, but the first stage has no MongoDB migrations. MongoDB doesn't need a schema (collections are created on first write), so the package works there without one. The feature work decides how the SQL migrations skip a `mongodb` connection.
   - which connection the package uses: probably a `connection` key in the package config.
 
 #### 5. Housekeeping
@@ -351,6 +379,62 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 
 **Commit:** `Align Task 1 plan steps with the implemented setup`
 
+#### 13. Build the test database connections on Laravel's defaults (from Phase 3 review observations)
+**Status:** todo
+
+**Why:** `tests/TestCase.php` writes the MySQL and PostgreSQL connection arrays by hand, so Laravel's defaults such as `strict`, `engine`, `prefix_indexes` and `sslmode` are missing. It makes no difference today, but it will once real migrations and queries exist, and the tests should run on the same settings a Laravel app uses.
+
+- [ ] `tests/TestCase.php` → `defineEnvironment()`: for `sqlite`, `mysql` and `pgsql`, start from Laravel's own connection config (`$app['config']->get("database.connections.{$connection}")`) and override only what the test setup decides: host, port, database, username and password (and `database => ':memory:'` plus `foreign_key_constraints => true` for SQLite). Keep the `DB_*` environment variables and their defaults as they are.
+- [ ] `mongodb` keeps its hand-written array, since Laravel has no default MongoDB connection.
+- [ ] No new tests: the existing suite on all four databases is the check.
+
+**Validate:** `make test`, `make test-all`, `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`.
+
+**Commit:** `Build test database connections on Laravel's default config`
+
+#### 14. Check the Laravel 12 floor on every database in CI (from Phase 3 review observations)
+**Status:** todo
+
+**Why:** The `databases` job only runs `--prefer-stable`, so the lowest dependency versions are checked against MySQL, PostgreSQL and MongoDB only locally. Decision: run the full matrix, so the job doubles from 14 to 28 jobs.
+
+- [ ] `.github/workflows/tests.yml`, `databases` job: add `stability: [prefer-lowest, prefer-stable]` to the matrix, use `--${{ matrix.stability }}` in `composer update` (as the `tests` job does), and add the stability to the job name (`DB <image> - L<laravel> - <stability>`).
+- [ ] The `tests` job, triggers and `paths-ignore` stay as they are.
+
+**Validate:** `actionlint` through Docker (see the Implementation prompt). After the user pushes, the CI run shows 28 green `databases` jobs; record the run ID here.
+
+**Commit:** `Run the database CI jobs with prefer-lowest and prefer-stable`
+
+#### 15. Link the README credits to the author's GitHub profile (from Phase 3 review observations)
+**Status:** todo
+
+**Why:** The skeleton linked "Leo Oberle" to the `route-connex` organisation. Decision: link the personal profile instead.
+
+- [ ] `README.md` Credits: `[Leo Oberle](https://github.com/leocello)`.
+
+**Validate:** the link points to `https://github.com/leocello`; no other file links the author to the organisation (`grep -rn 'github.com/route-connex)' --exclude-dir=vendor .`). `make test` isn't needed (docs only).
+
+**Commit:** `Link the README credits to the author's GitHub profile`
+
+#### 16. Add CHANGELOG.md and make it part of the workflow (from Phase 3 review observations)
+**Status:** todo
+
+**Why:** Step 3 deleted the skeleton's `CHANGELOG.md` and its automation. Decision: keep a hand-written changelog instead, filled at each task's close and turned into a release entry when a version is tagged.
+
+**Decisions:**
+- One H1 per release, `# vX.Y.Z (YYYY-MM-DD)`, followed by a list of the items done in that release. Releases are separated by a line `---`. Newest first. No file title or intro above the first H1.
+- Work that isn't released yet goes under `# Unreleased` at the top. There are no tags yet, so the file starts with `# Unreleased` listing Task 1.
+- Each task adds its items under `# Unreleased` in its Phase 4 close commit. At release time, `# Unreleased` is renamed to the version and date, and the tag matches it (`vX.Y.Z`).
+- `CHANGELOG.md` ships in the Composer dist archive (no `export-ignore`). CI's `paths-ignore` (`**.md`) already covers it.
+
+- [ ] `CHANGELOG.md` (new): `# Unreleased` with Task 1's items, written for package users and maintainers, one line each: Docker toolchain and `make` targets, package skeleton (config, routes, views, translations, command, migrations, facade, assets, Boost skill), Laravel 12 and 13 support, test setup on SQLite, MySQL 8.0+, PostgreSQL 14+ and MongoDB 7.0+, CI matrix (including Steps 7 and 14), dist archive cleanup, facade and publish tag tests, contributor docs. Check each item against `git log` and the code.
+- [ ] `AGENTS.md` → Phase 4: before blanking `PLAN.md`, add the task's items under `# Unreleased` in `CHANGELOG.md` (create that section at the top, followed by `---` when older releases exist), in the same close commit. Describe the format in one short paragraph.
+- [ ] `.agents/skills/package-release/SKILL.md`: the release renames `# Unreleased` to `# vX.Y.Z (YYYY-MM-DD)`, the tag is `vX.Y.Z`, and the next task starts a new `# Unreleased` above a `---`. Replace the "if the repo has a changelog" wording with `CHANGELOG.md`, and list it under References.
+- [ ] Task 1's own close doesn't add another entry: this step already writes it.
+
+**Validate:** the file follows the format above; every listed item matches the code and `git log`; `.gitattributes` has no `export-ignore` for `CHANGELOG.md`. `make test` isn't needed (docs only).
+
+**Commit:** `Add a hand-written CHANGELOG and fill it at each task's close`
+
 ### Expected key files afterwards
 - `composer.json` (name `route-connex/route-connex-laravel`, PSR-4 `RouteConnex\Laravel\` → `src/`, provider `RouteConnex\Laravel\RouteConnexServiceProvider`, alias `RouteConnex`)
 - `src/RouteConnexServiceProvider.php`, `src/RouteConnex.php`, `src/Facades/RouteConnex.php`, `src/Console/Commands/RouteConnexCommand.php`
@@ -358,6 +442,7 @@ Note: `/docker-compose.yml` is 19 characters, so its line has one space before `
 - `tests/` (Pest + Testbench), `workbench/`, `testbench.yaml`, `phpunit.xml.dist`, `phpstan.neon.dist`, `pint.json`
 - `docker/php/Dockerfile`, `docker-compose.yml`, `Makefile`
 - `PLAN.md` (shared task plan, referenced from `AGENTS.md`)
+- `CHANGELOG.md` (hand-written, one H1 per release; added in Step 16)
 
 ### Verification
 - [x] 1. `make build` builds the image, and `docker compose run --rm app php -v` shows PHP 8.4.
@@ -398,10 +483,11 @@ Phase 3 review, 2026-11-03, in a session that didn't build Task 1 (`claude --ide
 - **R5 — contributor and agent docs describe a different setup (low).** `.github/CONTRIBUTING.md` uses bare `composer` commands; the `package-release` skill references the deleted `CHANGELOG.md`, `.github/release.yml` and `update-changelog.yml`; the `package-testing` skill has no `make` commands. → Step 11.
 - **R6 — Task 1's steps don't all match the code (low).** Step 1/4b image details, `depends_on`, the migration-loading approach, the CI `db` axis wording, Step 5's open "review the diff" box and `.dockerignore` in Expected key files. → Step 12.
 
-**Observations, no step proposed (decide whether any should become one):**
-- The `databases` CI job only runs `--prefer-stable`, so the Laravel 12 floor is checked against MySQL/PostgreSQL/MongoDB only locally (progress notes), not in CI. Adding `prefer-lowest` would double it to 28 jobs.
-- `TestCase` builds the MySQL/PostgreSQL connection arrays by hand instead of starting from Laravel's defaults, so options such as `strict` and `prefix_indexes` are missing. Today this makes no difference (MySQL 8's default `sql_mode` equals Laravel's strict mode, and there is no prefix), but it may matter once real migrations and queries exist.
-- Nothing enforces the documented `mongodb/laravel-mongodb` ^5.12 minimum for users (it's only a `suggest`). A `conflict` with `<5.12` fits better once the package has MongoDB code (already deferred in Step 4b).
-- README Credits links "Leo Oberle" to `https://github.com/route-connex` (the organisation), as generated by the skeleton. Check whether it should be a personal profile.
-- `resources/boost/skills/route-connex-laravel-development/SKILL.md`, the placeholder route, config key, view, translation, command and migration are skeleton placeholders by design; they get replaced by the feature work.
-- This plan predates the current `PLAN.md` format (no Decisions/Acceptance Criteria sections, no Implementation entries for Steps 0–6). Not worth reformatting, since Phase 4 blanks it.
+**Observations, no step proposed at review time.** The user's decisions, 2026-11-03, are noted after each one:
+- The `databases` CI job only runs `--prefer-stable`, so the Laravel 12 floor is checked against MySQL/PostgreSQL/MongoDB only locally (progress notes), not in CI. Adding `prefer-lowest` would double it to 28 jobs. → Full matrix: Step 14.
+- `TestCase` builds the MySQL/PostgreSQL connection arrays by hand instead of starting from Laravel's defaults, so options such as `strict` and `prefix_indexes` are missing. Today this makes no difference (MySQL 8's default `sql_mode` equals Laravel's strict mode, and there is no prefix), but it may matter once real migrations and queries exist. → Step 13.
+- Nothing enforces the documented `mongodb/laravel-mongodb` ^5.12 minimum for users (it's only a `suggest`). A `conflict` with `<5.12` fits better once the package has MongoDB code (already deferred in Step 4b). → Stays deferred: MongoDB is supported, but the first stage has no MongoDB migrations (see Step 4b), so there's no MongoDB code yet.
+- README Credits links "Leo Oberle" to `https://github.com/route-connex` (the organisation), as generated by the skeleton. Check whether it should be a personal profile. → `https://github.com/leocello`: Step 15.
+- `resources/boost/skills/route-connex-laravel-development/SKILL.md`, the placeholder route, config key, view, translation, command and migration are skeleton placeholders by design; they get replaced by the feature work. → No step.
+- This plan predates the current `PLAN.md` format (no Decisions/Acceptance Criteria sections, no Implementation entries for Steps 0–6). Not worth reformatting, since Phase 4 blanks it. → No step.
+- Added by the user after the review: keep a hand-written `CHANGELOG.md` (the skeleton's was deleted in Step 3). → Step 16.
