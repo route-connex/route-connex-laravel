@@ -71,10 +71,7 @@ jobs:
         run: vendor/bin/pest
 
   databases:
-    # MongoDB 8.x refuses to start on Linux kernels 6.19 to 7.0.13, which ubuntu-latest
-    # (Ubuntu 26.04) currently ships: https://jira.mongodb.org/browse/SERVER-121912
-    # Move back to ubuntu-latest once its kernel is >= 7.0.14.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
@@ -106,8 +103,12 @@ jobs:
             image: mongo:7.0
             port: 27017
             health: "mongosh --quiet --eval 'db.runCommand({ping:1})'"
+          # Not mongo:8 (= 8.3): MongoDB 8.0/8.3 builds refuse to start on Linux kernels
+          # 6.19 to 7.0.13, which GitHub's runners currently use. 8.2 is reported to start:
+          # https://jira.mongodb.org/browse/SERVER-121912, https://jira.mongodb.org/browse/SERVER-136272
+          # Switch back to mongo:8 once the runner kernel is >= 7.0.14.
           - connection: mongodb
-            image: mongo:8
+            image: mongo:8.2
             port: 27017
             health: "mongosh --quiet --eval 'db.runCommand({ping:1})'"
         include:

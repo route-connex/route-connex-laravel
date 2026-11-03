@@ -97,7 +97,7 @@ POSTGRES_VERSION=14 make test-pgsql
 MONGO_VERSION=7.0 make test-mongodb
 ```
 
-CI tests MySQL 8.0 and 8.4, PostgreSQL 14, 17 and 18, and MongoDB 7.0 and 8, each on Laravel 12 and 13.
+CI tests MySQL 8.0 and 8.4, PostgreSQL 14, 17 and 18, and MongoDB 7.0 and 8.2, each on Laravel 12 and 13. (CI uses 8.2 instead of the latest 8.x because current MongoDB 8 builds refuse to start on the GitHub runners' kernel; see the comment in `.github/workflows/tests.yml`.)
 
 ## Contributing
 

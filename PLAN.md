@@ -127,7 +127,7 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - [ ] Review the whole diff. Don't commit until you've looked at it.
 
 #### 6. Minimum database versions and CI database fix (from review)
-**Status:** done (waiting for the user to commit)
+**Status:** done locally (waiting for the user to commit and push the `mongo:8.2` fix, then a green CI run)
 
 **Why:**
 - The first CI run failed in the `databases` job: `mongo:8` refuses to start on `ubuntu-latest` (Ubuntu 26.04), whose kernel is in the range MongoDB 8.x can't run on (6.19 up to 7.0.13; see [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)).
@@ -149,8 +149,8 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
   This allows e.g. `MONGO_VERSION=7.0 make test-mongodb`. Changing a version recreates the container (tmpfs data, so nothing is lost).
 - [x] `.github/workflows/tests.yml`, `databases` job:
   - one generic `db` service, with its image, port and health check taken from the matrix, so each job starts only the database it tests
-  - matrix: Laravel 12/13 × {mysql 8.0, mysql 8.4, pgsql 14, pgsql 17, pgsql 18, mongodb 7.0, mongodb 8}, 14 jobs
-  - `runs-on: ubuntu-24.04` (kernel older than 6.19), with a comment linking SERVER-121912; switch back to `ubuntu-latest` once its kernel is ≥ 7.0.14
+  - matrix: Laravel 12/13 × {mysql 8.0, mysql 8.4, pgsql 14, pgsql 17, pgsql 18, mongodb 7.0, mongodb 8.2}, 14 jobs
+  - ~~`runs-on: ubuntu-24.04`~~: didn't help, because the 24.04 runners also have an affected kernel. The job stays on `ubuntu-latest`, and CI tests `mongo:8.2` instead of `mongo:8` (see the notes below)
   - `fail-fast: false`, so one database failing doesn't cancel the others
 - [x] `README.md`: add a "Requirements" section:
   - PHP ^8.3
@@ -163,12 +163,18 @@ The skeleton only covers SQLite: Testbench defaults to in-memory SQLite. This st
 - PostgreSQL 14–17 images declare a volume at `/var/lib/postgresql/data`. With the tmpfs at `/var/lib/postgresql`, that anonymous volume outlived version switches, so 17 failed on data left behind by 14. Fixed by setting `PGDATA=/var/lib/postgresql/pgdata` (inside the tmpfs) for every version. Switching 14 → 17 → 18 → 14 now works, as do MySQL 8.4 ↔ 8.0 and MongoDB 8 ↔ 7.0.
 - `make db-down` now runs `docker compose rm --force --stop --volumes` on the database services. That removes their anonymous volumes too, without touching the `composer-cache` volume (which `down -v` would delete).
 - `actionlint` (run via Docker) passes on `.github/workflows/tests.yml`.
-- Local results: `make test` passes. All 14 tests pass on mysql 8.0 and 8.4, pgsql 14, 17 and 18, and mongodb 7.0 and 8. The CI run is still pending.
+- Local results: `make test` passes. All 14 tests pass on mysql 8.0 and 8.4, pgsql 14, 17 and 18, and mongodb 7.0, 8.2 and 8.
+- CI run `41566555139`: 36 of 38 jobs passed. Only `mongo:8` failed, with the same kernel guard as before, even on `ubuntu-24.04`.
+  - MongoDB 8.0.x and 8.3.x (`mongo:8` = 8.3) refuse to start on kernels 6.19–7.0.13 (SERVER-125742).
+  - `mongo:8.2` is reported to start on Ubuntu 26.04 / kernel 7.0 (SERVER-136272).
+  - Fix: CI uses `mongo:8.2` on `ubuntu-latest`, with a comment saying to switch back to `mongo:8` once the runner kernel is ≥ 7.0.14.
+  - Local defaults stay on `mongo:8`, since the dev machine's kernel (7.2) isn't affected.
+  - There is no MongoDB 8.4. The 8.x tags are 8.0, 8.2 and 8.3; 9.0 exists but hasn't been checked with laravel-mongodb 5.12.
 
 **Validate:**
 - `make test-all` (latest versions)
 - `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `POSTGRES_VERSION=17 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb` (minimum versions)
-- after the user pushes, the `databases` CI job is green for all 14 combinations
+- after the user pushes, the `databases` CI job is green for all 14 combinations (re-run after the `mongo:8.2` fix)
 
 **Commit:** `Set minimum database versions (MySQL 8.0, PostgreSQL 14, MongoDB 7.0), test PostgreSQL 18, and fix CI database jobs`
 
