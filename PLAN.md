@@ -18,11 +18,11 @@ claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33
   - **Resume:** `claude --ide --resume b796e158-cec8-4b7c-8633-a25c4fb63c33` (gandalf)
   - **Why:** Docs only, but it rewrites parts of the Task Plan Workflow that have to stay consistent with each other. The planning session already has every decision loaded.
   - **Prompt:** Implement Step 1 of PLAN.md: Document the branching model, the branch-aware CHANGELOG and `version`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the rules to write down are in PLAN.md → Decisions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. Test the `version` format**
+- [x] **2. Test the `version` format**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume aafaac91-2d16-4d42-bfcd-901475cfed55` (gandalf)
   - **Why:** A small, self-contained Pest test. A fresh session avoids carrying over the long planning context.
   - **Prompt:** Implement Step 2 of PLAN.md: Test the `version` format. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 added the `version` file at the repo root and documented its allowed values in AGENTS.md (see PLAN.md → Decisions); use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [ ] **3. Run CI on release branches and check `version` on tag pushes**
@@ -91,13 +91,16 @@ This task:
 **Commit:** `Document the branching model, branch-aware CHANGELOG and version file`
 
 ### Step 2: Test the `version` format
-**Status:** todo
-- [ ] `tests/Unit/VersionFileTest.php`: `version` exists at the repo root and holds exactly one line (a trailing newline is allowed). That line is one of:
+**Status:** done
+- [x] `tests/Unit/VersionFileTest.php`: `version` exists at the repo root and holds exactly one line (a trailing newline is allowed). That line is one of:
   - a tag: `vX.Y.Z` (`^v\d+\.\d+\.\d+$`)
   - a release branch: `release/<N>.x`
   - a work branch: `feature|hotfix|docs` + optional `/<N>` + `/<kebab-case>`
-- [ ] Tests for the regex's edge cases, through a small dataset of valid and invalid values (e.g. `v1.2`, `release/1`, `feature/Foo`, `fix/x`), so the rule is pinned down beyond the file's current value.
-- [ ] `CHANGELOG.md`: add this step's item under `# docs/init`.
+- [x] Tests for the regex's edge cases, through a small dataset of valid and invalid values (e.g. `v1.2`, `release/1`, `feature/Foo`, `fix/x`), so the rule is pinned down beyond the file's current value.
+- [x] `CHANGELOG.md`: add this step's item under `# docs/init`.
+**Notes:**
+- The regex lives in `VERSION_PATTERN` (a constant in the test file); it uses `\A…\z` so a trailing newline in a value is rejected. The file test strips the single trailing newline itself and requires exactly one.
+
 **Validate:** `make test`, `make test-unit ARGS="--filter=VersionFile"`
 **Commit:** `Test the version file format`
 

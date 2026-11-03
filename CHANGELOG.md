@@ -1,6 +1,7 @@
 # docs/init
 
 - Branching model documented (`release/<major>.x` branches, `main` as the latest stable release, `feature/`, `hotfix/` and `docs/` work branches, `v<major>.<minor>.<patch>` tags), with branch-named CHANGELOG sections for work in progress and a `version` file at the repo root naming the tag or branch the code is on.
+- Pest test for the `version` file: it must hold one line that is a `vX.Y.Z` tag, a `release/<N>.x` branch or a `feature|hotfix|docs` work branch name.
 
 ---
 
