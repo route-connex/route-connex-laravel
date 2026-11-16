@@ -30,12 +30,14 @@ Developers of Laravel apps whose organisation is a RouteConnex customer. The pac
 - **Everything is overridable.** The models are set in config, so an app can extend them to add fields and change the table name or connection. Every other class the package uses can be replaced with the app's own subclass.
 - **Ready for `stancl/tenancy`.** A `tenancy` section in the config sets the package up for apps that use [`stancl/tenancy`](https://tenancyforlaravel.com) with little or no extra code. Version 3 with a database per tenant comes first. Apps with their own tenancy setup plug it in through the overridable classes instead.
 - **A building block, not a framework.** An app with its own integration structure can call the package from it without handing over the flow.
+- **Ready for AI agents.** The package ships a [Laravel Boost](https://github.com/laravel/boost) skill that teaches coding agents in consumer apps how to use it, and every feature keeps that skill up to date.
 
 ## Non-goals
 
 - **No admin UI.** The package ships no screens (Filament, Blade or Livewire) for managing credentials or browsing Runs. Apps build their own.
 - **No RouteConnex account management.** Customers, routes, connections and agents are set up in RouteConnex, not through this package.
 - **No direct API calls.** All API access goes through the SDK. If the API offers something the SDK doesn't yet, it's added to the SDK first.
+- **No queued Runs before 1.0.** RouteConnex already queues Runs on its side. An app that wants the call itself queued wraps it in its own job.
 - **No support outside the matrix.** Apps on PHP below 8.3 or Laravel below 12 aren't supported.
 
 ## Guiding principles
@@ -62,5 +64,4 @@ The SDK is still being developed alongside the API. When it changes, this packag
 
 ## Open questions
 
-- **Other goals for 1.0.** Not decided yet. Candidates raised so far: queued Runs, polling as a fallback when no callback arrives, and more Artisan commands.
 - **Other `stancl/tenancy` modes.** Whether single-database tenancy (scoping by `tenant_id`) and `stancl/tenancy` version 4 are supported, and when.

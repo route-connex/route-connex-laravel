@@ -24,12 +24,13 @@ Besides the callback configuration command (a 1.0 goal in [vision.md](vision.md)
 - `route-connex:callback-token {app}`: generates or rotates an App's Callback token.
 - `route-connex:runs`: lists recent `RouteConnexRun` records, filterable by App and status.
 - `route-connex:prune`: deletes old `RouteConnexRun` records.
+- `route-connex:purge`: clears the request and response of old successful Runs (see [`RouteConnexRun` tracking](features/run-tracking.md)).
 
 Every command must work with Tenants: App names can repeat across Tenants, so a command has to know which Tenant's App and `RouteConnexRun` records it acts on, and must not guess when the Tenancy preset is on.
 
 ## 2026-11-17: Polling as a fallback for missed Callbacks
 
-A Callback can get lost, for example when the consumer app is down, and the `RouteConnexRun` would then stay `running` forever. A fallback, such as a scheduled command, would re-check Runs that have been unfinished for too long. Depends on the SDK offering a way to get a Run. Low priority until a lost Callback becomes a real problem.
+A Callback can get lost, for example when the consumer app is down, and the `RouteConnexRun` would then stay `running` forever. A fallback, such as a scheduled command, would re-check Runs that have been unfinished for too long, using the SDK's call to get a Run. Low priority until a lost Callback becomes a real problem.
 
 ## 2026-11-17: Apps tied to a customer
 

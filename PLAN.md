@@ -39,11 +39,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Mostly collecting and ordering the user's ideas. The vision and concepts are on disk by now, and the earlier session will be long.
   - **Prompt:** Implement Step 4 of PLAN.md: Write `docs/ideas.md` and `docs/roadmap.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Read `docs/README.md`, `docs/vision.md` and `docs/concepts.md` first (Steps 1–3); use their terms and the status labels in `docs/README.md`. Collect the user's ideas into `docs/ideas.md`, then ask which ones become roadmap themes and in which version group (Now / Next / Later). Don't add ideas of your own unless the user asks for suggestions, and mark any you suggest as such until the user accepts them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 5.
-- [ ] **5. Write the first feature docs with the user**
+- [x] **5. Write the first feature docs with the user**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Turning roadmap themes into concrete developer-facing APIs needs design judgement, Laravel package idioms and multi-database awareness. Builds directly on the roadmap from Step 4.
   - **Prompt:** Implement Step 5 of PLAN.md: Write the first feature docs with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 4 wrote `docs/roadmap.md`; write one `docs/features/<name>.md` from `docs/features/_template.md` for each roadmap theme in the Now group (ask the user if Next themes should get one too). Interview the user per feature; you may propose the developer-experience examples (config, facade, Artisan) in Laravel-native style, marked as proposals until the user approves. Fill the database & compatibility notes against every supported database and Laravel 12/13 (use the `package-compatibility` skill). Link each feature from `docs/roadmap.md` and the idea it came from in `docs/ideas.md`. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 6.
 - [ ] **6. Record decisions and cross-link the docs**
@@ -163,14 +163,24 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - `docs/vision.md`: the callback configuration Artisan goal now says the command takes the Tenant when a Tenancy preset is on (requested by the user). Its Open questions still list queued Runs, polling and more Artisan commands as undecided; awaiting the user's answer on whether to update them.
 
 ### Step 5: Write the first feature docs with the user
-**Status:** todo
-- [ ] One `docs/features/<name>.md` per Now theme (and Next themes if the user asks), from the template
-- [ ] Database & compatibility notes cover MySQL, PostgreSQL, MongoDB, SQLite and Laravel 12/13
-- [ ] Links from `docs/roadmap.md` and `docs/ideas.md` to each feature
-- [ ] `CHANGELOG.md`: item under `# docs/project`
+**Status:** done
+- [x] One `docs/features/<name>.md` per Now theme (and Next themes if the user asks), from the template: `sdk-layer.md`, `apps.md`, `run-tracking.md`, `callbacks.md`, `overrides.md` (Now only, as the user chose)
+- [x] Database & compatibility notes cover MySQL, PostgreSQL, MongoDB, SQLite and Laravel 12/13
+- [x] Links from `docs/roadmap.md` and `docs/ideas.md` to each feature
+- [x] `CHANGELOG.md`: item under `# docs/project`
 
 **Validate:** the user approves each feature doc; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed
 **Commit:** `Write the first feature docs`
+
+**Notes:**
+- Same session as Step 4 (`38eff6af-…`).
+- No Now theme came from an `ideas.md` entry (they all come from the vision goals), so `ideas.md` links to a feature only where an idea refers to one (`route-connex:purge` → `run-tracking.md`). The features link back to related ideas under Related.
+- Read the public SDK (v1.1.0, read-only) for the developer-experience proposals; the user confirmed relying on it. It already has a get-Run call, so the "depends on the SDK" wording was removed from the polling entries.
+- Step 4 leftovers answered here: the Later roadmap themes are now `planned`; `docs/vision.md` lost its "Other goals for 1.0" open question and gained a "No queued Runs before 1.0" non-goal.
+- Added at the user's request: a "Ready for AI agents" goal in `docs/vision.md` (a bundled Laravel Boost skill that every feature keeps up to date), a line on it in `docs/roadmap.md`, and a Boost skill item in each feature's Scope.
+- Decisions for Step 6 (candidate ADRs): the facade mirrors the SDK with explicit mapping; one base `RouteConnexException`; Apps from config by name or as models implementing `RouteConnexAppContract` (no resolver), with a shipped `RouteConnexApp`; Runs store `app_name` or `app_id` (exclusive, no morph type), resolved through `models.app`; Run connection rule (own connection, else the App model's, else default); MongoDB through the consumer app's subclass with `DocumentModel`, laravel-mongodb staying a suggestion; payload purging of old successful Runs; Callback route `POST {prefix}/callbacks/{app}` with 404/403/404/200 responses; replaceable classes through container bindings, not config.
+- SDK change needed: accept an access token from outside so the package can cache it per App (listed in `sdk-layer.md`).
+- Consumer apps aren't named in the docs (see the Step 2 notes).
 
 ### Step 6: Record decisions and cross-link the docs
 **Status:** todo
