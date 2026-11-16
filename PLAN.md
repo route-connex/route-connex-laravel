@@ -32,11 +32,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** Defining the domain vocabulary needs judgement and builds directly on the vision just written in the same session.
   - **Prompt:** Implement Step 3 of PLAN.md: Write `docs/concepts.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 wrote `docs/vision.md`; reuse its terms. Interview the user for each term and how the terms relate, draft, and revise until they approve. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) to keep the terms consistent with them, but confirm with the user before using anything from them. Don't invent definitions: unclear terms go under Open questions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
-- [ ] **4. Write `docs/ideas.md` and `docs/roadmap.md` with the user**
+- [x] **4. Write `docs/ideas.md` and `docs/roadmap.md` with the user**
   - **Model:** `sonnet`
   - **Effort:** `high`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Mostly collecting and ordering the user's ideas. The vision and concepts are on disk by now, and the earlier session will be long.
   - **Prompt:** Implement Step 4 of PLAN.md: Write `docs/ideas.md` and `docs/roadmap.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Read `docs/README.md`, `docs/vision.md` and `docs/concepts.md` first (Steps 1–3); use their terms and the status labels in `docs/README.md`. Collect the user's ideas into `docs/ideas.md`, then ask which ones become roadmap themes and in which version group (Now / Next / Later). Don't add ideas of your own unless the user asks for suggestions, and mark any you suggest as such until the user accepts them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 5.
 - [ ] **5. Write the first feature docs with the user**
@@ -146,13 +146,21 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - For Step 4 (`ideas.md`): RouteConnex could tie an App to a customer instead of a single System (needs care: RouteConnex is in production); a way for API clients to request dry runs.
 
 ### Step 4: Write `docs/ideas.md` and `docs/roadmap.md` with the user
-**Status:** todo
-- [ ] `docs/ideas.md`: the user's ideas, one dated entry each
-- [ ] `docs/roadmap.md`: themes in Now / Next / Later with target version ranges and status labels
-- [ ] `CHANGELOG.md`: item under `# docs/project`
+**Status:** done
+- [x] `docs/ideas.md`: the user's ideas, one dated entry each
+- [x] `docs/roadmap.md`: themes in Now / Next / Later with target version ranges and status labels
+- [x] `CHANGELOG.md`: item under `# docs/project`
 
 **Validate:** the user approves both documents; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed
 **Commit:** `Write the ideas list and the roadmap`
+
+**Notes:**
+- Run in a new session (`38eff6af-…`), so the Resume command differs from Steps 2–3.
+- Ideas recorded (all dated 2026-11-17): dry-run mode, testing helpers, link Runs to models, more Artisan commands, polling fallback, Apps tied to a customer, other tenancy modes. Testing helpers, link Runs to models and the five Artisan commands were suggested by the agent from the docs and accepted by the user.
+- Dropped at the user's request: queued Runs (RouteConnex already queues Runs; an app can queue the call in its own job).
+- The roadmap holds the `vision.md` goals as themes as well as the ideas. Version ranges, as agreed: Now = `0.1`–`0.x`, Next = `0.x`–1.0, Later = not scheduled, up to 1.0 or after.
+- Statuses: Now and Next themes are `planned`; the Later themes are still only ideas, so they are `idea`. Change them to `planned` if the user wants them agreed.
+- `docs/vision.md`: the callback configuration Artisan goal now says the command takes the Tenant when a Tenancy preset is on (requested by the user). Its Open questions still list queued Runs, polling and more Artisan commands as undecided; awaiting the user's answer on whether to update them.
 
 ### Step 5: Write the first feature docs with the user
 **Status:** todo

@@ -4,6 +4,7 @@
 - Project vision in `docs/vision.md`: the problem, who the package is for, goals (a Laravel layer over the SDK, `RouteConnexRun` tracking, callbacks as events, sync calls, credential checks, overridable models and classes, `stancl/tenancy` support), non-goals, guiding principles and where it fits in RouteConnex.
 - Concepts and glossary in `docs/concepts.md`: App, Callback, Callback token, Consumer app, Credentials, Meta, RouteConnex API, RouteConnexRun, Run, Run status, Run type, Service, Sync call, System, Tenant and Tenancy preset, how they relate, and the `RouteConnex` naming prefix.
 - Vision goal for 1.0: an Artisan command that prints an App's callback configuration (URL, method, extra fields with the Callback token) as JSON for RouteConnex.
+- Ideas list in `docs/ideas.md` (dry-run mode, testing helpers, linking Runs to models, more Artisan commands that work with Tenants, a polling fallback, Apps tied to a customer, other tenancy modes) and roadmap in `docs/roadmap.md` with the vision goals and ideas grouped as Now / Next / Later.
 
 ---
 
