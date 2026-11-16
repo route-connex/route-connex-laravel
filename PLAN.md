@@ -25,11 +25,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** The vision comes from the user's head, not the code: it needs a careful interview and good judgement on goals and non-goals. Same session keeps the planning context about the ecosystem.
   - **Prompt:** Implement Step 2 of PLAN.md: Write `docs/vision.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 created `docs/vision.md` with its section headings. Interview the user section by section, draft each section from their answers, and revise until they approve it. Don't invent goals, features or facts: anything the user hasn't decided goes under Open questions. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) for context, but confirm with the user before writing anything taken from them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
-- [ ] **3. Write `docs/concepts.md` with the user**
+- [x] **3. Write `docs/concepts.md` with the user**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** Defining the domain vocabulary needs judgement and builds directly on the vision just written in the same session.
   - **Prompt:** Implement Step 3 of PLAN.md: Write `docs/concepts.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 wrote `docs/vision.md`; reuse its terms. Interview the user for each term and how the terms relate, draft, and revise until they approve. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) to keep the terms consistent with them, but confirm with the user before using anything from them. Don't invent definitions: unclear terms go under Open questions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
 - [ ] **4. Write `docs/ideas.md` and `docs/roadmap.md` with the user**
@@ -130,13 +130,20 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - Naming decided with the user: everything the package adds is prefixed `RouteConnex` (`route_connex_` for tables and keys); the Run model is `RouteConnexRun`. Step 3 should use these names.
 
 ### Step 3: Write `docs/concepts.md` with the user
-**Status:** todo
-- [ ] Glossary entries and how the terms relate, approved by the user
-- [ ] `docs/vision.md` updated if it uses a term differently (tell the user)
-- [ ] `CHANGELOG.md`: item under `# docs/project`
+**Status:** done
+- [x] Glossary entries and how the terms relate, approved by the user
+- [x] `docs/vision.md` updated if it uses a term differently (tell the user)
+- [x] `CHANGELOG.md`: item under `# docs/project`
 
 **Validate:** the user approves the document; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed
 **Commit:** `Write the RouteConnex concepts and glossary`
+
+**Notes:**
+- `docs/vision.md`: two lines changed to allow several credential pairs (Apps) per tenant or app, as decided here.
+- Terms checked against the private web repo and the WordPress plugin's callback handling (read-only), with each fact confirmed by the user before it was written.
+- Decided: "Service" for any API call, "Run type" for the kind of Run a System Service creates; each credential pair is an App, named in config like database connections; Callbacks are checked with a per-App Callback token (like the WordPress plugin's) plus a Run ID match, with a TODO for RouteConnex-side authentication.
+- Added at the user's request: a 1.0 goal in `docs/vision.md` for an Artisan command that takes an App and prints the JSON for its callback configuration in RouteConnex (URL, method, extra fields with the Callback token); the Callback token entry in `docs/concepts.md` mentions it.
+- For Step 4 (`ideas.md`): RouteConnex could tie an App to a customer instead of a single System (needs care: RouteConnex is in production); a way for API clients to request dry runs.
 
 ### Step 4: Write `docs/ideas.md` and `docs/roadmap.md` with the user
 **Status:** todo
