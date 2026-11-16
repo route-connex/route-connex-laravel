@@ -1,6 +1,6 @@
 # Project documentation: vision, concepts, roadmap, ideas and features
 
-**Status:** planning
+**Status:** in progress
 **Branch:** `docs/project` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -18,11 +18,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038` (gandalf)
   - **Why:** Creating files from a structure already agreed in the planning session, plus a one-line `.gitattributes` change. The planning session has the structure loaded.
   - **Prompt:** Implement Step 1 of PLAN.md: Scaffold `docs/`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The structure, file purposes, status labels and feature template fields are in PLAN.md → Decisions. Create headings and short placeholder comments only: no vision or feature content, which later steps write with the user. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. Write `docs/vision.md` with the user**
+- [x] **2. Write `docs/vision.md` with the user**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** The vision comes from the user's head, not the code: it needs a careful interview and good judgement on goals and non-goals. Same session keeps the planning context about the ecosystem.
   - **Prompt:** Implement Step 2 of PLAN.md: Write `docs/vision.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 created `docs/vision.md` with its section headings. Interview the user section by section, draft each section from their answers, and revise until they approve it. Don't invent goals, features or facts: anything the user hasn't decided goes under Open questions. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) for context, but confirm with the user before writing anything taken from them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [ ] **3. Write `docs/concepts.md` with the user**
@@ -116,13 +116,18 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 **Note:** the validate command checks `docs`, not `docs/README.md`: `git check-attr` doesn't apply a directory pattern like `/docs` to the files inside it, though `git archive` does exclude them.
 
 ### Step 2: Write `docs/vision.md` with the user
-**Status:** todo
-- [ ] Problem, Who it's for, Goals, Non-goals, Guiding principles, Where it fits, all approved by the user
-- [ ] Undecided points listed under Open questions
-- [ ] `CHANGELOG.md`: item under `# docs/project`
+**Status:** done
+- [x] Problem, Who it's for, Goals, Non-goals, Guiding principles, Where it fits, all approved by the user
+- [x] Undecided points listed under Open questions
+- [x] `CHANGELOG.md`: item under `# docs/project`
 
 **Validate:** the user approves the document; `git status` shows only `docs/vision.md`, `CHANGELOG.md` and `PLAN.md` changed
 **Commit:** `Write the project vision`
+
+**Notes:**
+- Run in a new session (`6ecefc09-…`), not the planning session, so the Resume command differs from Step 1's.
+- Besides the sibling repos, the user had me read two consumer apps (read-only) to shape the goals: a multi-tenant app with its own tenancy and ExternalIntegrations framework, and one on `stancl/tenancy` v3 with a database per tenant. At the user's request, the docs don't name them, nor RouteConnex's private repos (web, agent); they only mention the RouteConnex API and the public SDK.
+- Naming decided with the user: everything the package adds is prefixed `RouteConnex` (`route_connex_` for tables and keys); the Run model is `RouteConnexRun`. Step 3 should use these names.
 
 ### Step 3: Write `docs/concepts.md` with the user
 **Status:** todo

@@ -1,6 +1,7 @@
 # docs/project
 
 - Project documentation scaffold in `docs/` (vision, concepts, roadmap, ideas, feature and decision templates), kept out of the Composer dist archive and linked from the README and AGENTS.md.
+- Project vision in `docs/vision.md`: the problem, who the package is for, goals (a Laravel layer over the SDK, `RouteConnexRun` tracking, callbacks as events, sync calls, credential checks, overridable models and classes, `stancl/tenancy` support), non-goals, guiding principles and where it fits in RouteConnex.
 
 ---
 
