@@ -1,3 +1,9 @@
+# hotfix/cap-phpstan-type-coverage
+
+- PHPStan is capped below 2.3.6 in `require-dev`, because the type coverage plugin's 4.x line calls a method PHPStan 2.3.6 removed and CI failed on `composer test:types`. Apps that install the package aren't affected, and the cap goes once the plugin is fixed.
+
+---
+
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4 with Composer, driven by `make` targets (`make help` lists them): tests, lint, static analysis, the workbench server, Testbench and per-database test runs. No local PHP is needed.

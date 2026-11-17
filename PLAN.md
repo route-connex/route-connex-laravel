@@ -10,11 +10,11 @@ claude --ide --resume 301035d8-61c2-4388-b85e-f83b2e1c0f59
 
 ## Implementation
 
-- [ ] **1. Cap `phpstan/phpstan` in `require-dev`**
+- [x] **1. Cap `phpstan/phpstan` in `require-dev`**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 2e8b6fda-b5a8-4574-94b4-758f06c0ee75` (gandalf)
   - **Why:** A one-line constraint and a changelog item, but validating it means reproducing CI's dependency resolution in Docker for several lanes, which needs some care. The planning session is long and about another task, and Context below has the full diagnosis.
   - **Prompt:** Implement Step 1 of PLAN.md: Cap `phpstan/phpstan` in `require-dev`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Read PLAN.md → Context first: it explains why CI fails on `composer test:types` and why the cap is `^2.0 <2.3.6`. Only `composer.json` (`require-dev`), `CHANGELOG.md` and `PLAN.md` should change in git (`composer.lock` is gitignored). Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -46,12 +46,12 @@ The outcome: CI is green again on every lane, with no effect on apps that instal
 
 ### Step 1: Cap `phpstan/phpstan` in `require-dev`
 
-**Status:** todo
+**Status:** done
 
-- [ ] Reproduce the failure first: run the "CI lane" command below with `12.*` / `10.*` / `prefer-stable` and confirm it fails on `getCollectedData()`
-- [ ] `composer.json` → `require-dev`: add `"phpstan/phpstan": "^2.0 <2.3.6"` (sorted, after `phpstan/extension-installer`), with `make composer ARGS="require --dev 'phpstan/phpstan:^2.0 <2.3.6' --no-update"` or by hand
-- [ ] `make composer ARGS="update phpstan/phpstan"` so the local, gitignored `composer.lock` follows the constraint
-- [ ] `CHANGELOG.md`: add `# hotfix/cap-phpstan-type-coverage` above a `---` and `# v0.1.0-rc`, with one item: PHPStan is capped below 2.3.6 in `require-dev` because the type coverage plugin's 4.x line calls a method PHPStan 2.3.6 removed; apps that install the package aren't affected, and the cap goes once the plugin is fixed
+- [x] Reproduce the failure first: run the "CI lane" command below with `12.*` / `10.*` / `prefer-stable` and confirm it fails on `getCollectedData()`
+- [x] `composer.json` → `require-dev`: add `"phpstan/phpstan": "^2.0 <2.3.6"` (sorted, after `phpstan/extension-installer`), with `make composer ARGS="require --dev 'phpstan/phpstan:^2.0 <2.3.6' --no-update"` or by hand
+- [x] `make composer ARGS="update phpstan/phpstan"` so the local, gitignored `composer.lock` follows the constraint
+- [x] `CHANGELOG.md`: add `# hotfix/cap-phpstan-type-coverage` above a `---` and `# v0.1.0-rc`, with one item: PHPStan is capped below 2.3.6 in `require-dev` because the type coverage plugin's 4.x line calls a method PHPStan 2.3.6 removed; apps that install the package aren't affected, and the cap goes once the plugin is fixed
 
 **CI lane command** (runs in a throwaway copy inside the container, so the host's `vendor/` and `composer.lock` are untouched; set `L`, `TB` and `S` per lane):
 
@@ -61,7 +61,8 @@ docker compose run --rm -e L='12.*' -e TB='10.*' -e S=prefer-stable app sh -c '
   composer require "laravel/framework:$L" "orchestra/testbench:$TB" --no-interaction --no-update &&
   composer update --$S --prefer-dist --no-interaction --no-progress --no-scripts &&
   composer run prepare &&
-  composer show phpstan/phpstan pestphp/pest-plugin-type-coverage | grep -E "^(name|versions)" &&
+  composer show phpstan/phpstan | grep -E "^(name|versions)" &&
+  composer show pestphp/pest-plugin-type-coverage | grep -E "^(name|versions)" &&
   composer test:types && composer test:unit'
 ```
 
@@ -70,6 +71,12 @@ docker compose run --rm -e L='12.*' -e TB='10.*' -e S=prefer-stable app sh -c '
 - the CI lane command passes for `12.*`/`10.*` and `13.*`/`11.*`, each with `prefer-stable` and `prefer-lowest`, and shows PHPStan below 2.3.6 on the `prefer-stable` lanes
 - `make test`
 - `git status` shows only `composer.json`, `CHANGELOG.md` and `PLAN.md` changed (`version` is set by the plan commit)
+
+**Notes:**
+
+- The CI lane command in the plan called `composer show` with two packages, which it doesn't accept; it now uses two calls. Reproduced on `12.*`/`10.*` `prefer-stable` before the change (`getCollectedData()` error).
+- Results with the cap, all passing `composer test:types` and `composer test:unit` (65 tests, 100% type coverage): L12 stable → PHPStan 2.3.5 + plugin v4.0.4; L13 stable → PHPStan 2.3.5 + plugin v5.1.1; both `prefer-lowest` lanes → PHPStan 2.1.32 + plugin v4.0.0. The lowest lanes print a non-fatal `Class "FFI" not found` per file, with exit code 0.
+- `make test` passes locally; `composer.lock` is gitignored.
 
 **Commit:** `Cap PHPStan below 2.3.6 until the type coverage plugin supports it`
 
