@@ -1,6 +1,6 @@
 # Project documentation: vision, concepts, roadmap, ideas and features
 
-**Status:** in progress
+**Status:** in review
 **Branch:** `docs/project` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -53,6 +53,20 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Writing ADRs for decisions already taken in Steps 2–5 and checking links: the Step 5 session knows which decisions were made.
   - **Prompt:** Implement Step 6 of PLAN.md: Record decisions and cross-link the docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Write `docs/decisions/0001-project-documentation-structure.md` from `docs/decisions/_template.md` using PLAN.md → Decisions, then list the decisions taken while writing Steps 2–5 and ask the user which ones get an ADR. Check that every relative link in `docs/` and the README's docs link resolves, and that `docs/README.md` lists every file. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
+- [ ] **7. Callbacks and custom tenancy**
+  - **Model:** `opus`
+  - **Effort:** `high`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** It designs a new public extension point (`RouteConnexTenancy`) that affects several docs and ADRs, and it needs judgement about tenancy, queues and routing. The review session already has the findings and the user's answers.
+  - **Prompt:** Implement Step 7 of PLAN.md: Callbacks and custom tenancy. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The findings are R1–R5 and R9 in PLAN.md → Review, and the user's answers are in Decisions → "Review answers". Read `docs/features/callbacks.md`, `docs/features/overrides.md`, `docs/features/run-tracking.md`, `docs/vision.md`, `docs/concepts.md`, `docs/ideas.md`, `docs/roadmap.md` and ADRs 0005 and 0007 first. Propose the `RouteConnexTenancy` methods to the user, mark them as a proposal and get approval before writing them into the docs. Ask the user about the open point in R9 (a finished Run receiving a different finished status). Don't name consumer apps or private repos in the docs. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 8.
+- [ ] **8. Consistency fixes from the review**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** Small, already-decided wording fixes across the docs, AGENTS.md and PLAN.md. The Step 7 session knows what changed and can keep the CHANGELOG and the plan in line with it.
+  - **Prompt:** Implement Step 8 of PLAN.md: Consistency fixes from the review. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The findings are R6–R8 and R10–R13 in PLAN.md → Review, and the user's answers are in Decisions → "Review answers". Step 7 has added `RouteConnexTenancy` and changed the callback docs: keep the wording consistent with that. Don't name consumer apps or private repos anywhere. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start another review.
 
 ## Context
 
@@ -96,6 +110,11 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - **Writing the content:** Steps 2–5 are written with the user, interview-style. Agents don't invent vision, terms, ideas or features; anything undecided goes under Open questions.
 - **Steps:** Step 1 scaffolds every file, then one step per document (or pair of documents), then the ADRs and the link check.
 - **Branch:** `docs/project`, from and into `release/0.x`.
+- **Review answers** (Phase 3, findings in Review):
+  - R1: add a replaceable tenancy class now, `RouteConnexTenancy`, as the fifth public extension point, with its own ADR. The `stancl/tenancy` preset becomes one implementation of it, and an app with its own tenancy binds its own subclass.
+  - R8: `RouteConnexConfigurationException` also covers a Run with both `app_name` and `app_id`, or neither. Widen its definition; no new exception.
+  - R9: a `dry-run` Run fires `RouteConnexRunSucceeded`, as well as `RouteConnexRunFinished`.
+  - R13: reword this file so it no longer names RouteConnex's private repos or client plugin.
 
 ## Steps
 
@@ -201,14 +220,81 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - Each feature doc's Related section now links to its ADRs (not in the original plan, part of cross-linking).
 - `docs/README.md` lists the `decisions/` and `features/` folders, not each file in them, so it needed no change.
 
+### Step 7: Callbacks and custom tenancy
+
+**Status:** todo
+
+- [ ] R1: `RouteConnexTenancy`, a replaceable class bound in the container, documented in `docs/features/overrides.md` as the fifth extension point. A starting proposal, to confirm with the user: `enabled()` (`false` by default), `findTenant(string $id)` (the `--tenant` option of the Artisan commands), `run($tenant, Closure $callback)` (runs code in that Tenant's context), and `tenants()` (every Tenant, for example to purge once per Tenant). The default class does nothing, so single-tenant apps don't change. When `enabled()` is true, a command that needs a Tenant requires `--tenant` and doesn't guess.
+- [ ] R1: update every place that says "when a Tenancy preset is on" to say "when tenancy is enabled (a preset or the app's own `RouteConnexTenancy`)": `docs/vision.md` (callback setup goal, `stancl/tenancy` goal), `docs/concepts.md` (Tenancy preset, and a new glossary entry if the user agrees), `docs/ideas.md` (More Artisan commands, Other tenancy modes) and `docs/roadmap.md` (Artisan commands, the `stancl/tenancy` preset is an implementation of `RouteConnexTenancy`). In `docs/features/run-tracking.md`, purging once per Tenant can go through `tenants()` and `run()`.
+- [ ] R1: `docs/decisions/0010-replaceable-tenancy-class.md`, plus ADR 0005's list of extension points updated to five
+- [ ] R2: `docs/features/callbacks.md` names the handler's `protected` step methods and says that the Run lookup uses the same connection rule as storing a Run. The example shows a subclass that switches Tenants between finding the App and finding the Run.
+- [ ] R3: `docs/features/callbacks.md` → Tenancy: the queue worker must restore the same Tenant's context, not only a connection with the same name, before a queued listener uses `$event->run` or `$run->app`
+- [ ] R4: `docs/features/callbacks.md`: register the callback route once, and turn `register_routes` off when calling `callbackRoutes()`, because duplicate route names break `php artisan route:cache`. Or, if the user prefers, `callbackRoutes()` takes a route name.
+- [ ] R5 and R9: ADR 0007 and `docs/features/callbacks.md` record any tenancy setup, extra route parameters ignored, `RouteConnexCallbackUrlGenerator`, `dry-run` firing `RouteConnexRunSucceeded`, and the user's answer on a finished Run receiving a different finished status
+- [ ] `CHANGELOG.md`: items under `# docs/project`
+
+**Validate:** the user approves the changes; the link check from Step 6 lists only paths that exist; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed **Commit:** `Add a replaceable tenancy class and complete the callback docs for custom tenancy`
+
+### Step 8: Consistency fixes from the review
+
+**Status:** todo
+
+- [ ] R6: `CHANGELOG.md`: an item for the Step 6 callback changes (Callbacks work with any tenancy setup, `RouteConnexCallbackUrlGenerator` as an extension point, the vision's callback URL line). The Step 6 notes in this file record that these changes weren't planned.
+- [ ] R7: `docs/features/sdk-layer.md`: `$run->status` shows `RouteConnexRunStatus::Created`
+- [ ] R8: `docs/features/sdk-layer.md`: `RouteConnexConfigurationException` also covers a Run with both `app_name` and `app_id`, or neither
+- [ ] R10: `docs/features/apps.md` says how a config App gets its Callback token until `route-connex:callback-token` exists (a random value set in `ROUTE_CONNEX_CALLBACK_TOKEN`), and `docs/concepts.md` → Callback token says the package generates it for model Apps
+- [ ] R11: `docs/README.md` lifecycle: a theme can be `planned` before it has a feature doc, and the doc is written before the theme's `PLAN.md` task starts
+- [ ] R12: `AGENTS.md` → Phase 1 step 2 also lists `docs/roadmap.md` and the relevant `docs/decisions/*.md`
+- [ ] R13: this file: Context and the Step 2 and 3 prompts mention "RouteConnex's private repos" and the public SDK only; the Step 3 notes say "a RouteConnex client plugin" instead of naming it
+- [ ] `CHANGELOG.md`: items under `# docs/project`
+
+**Validate:** the link check from Step 6 lists only paths that exist; `grep -rniE 'route-connex-(we[b]|agen[t])|wordpres[s]' docs README.md CHANGELOG.md PLAN.md AGENTS.md` prints nothing (the brackets keep the pattern from matching this line); `make test`
+**Commit:** `Fix documentation inconsistencies found in the review`
+
 ## Acceptance Criteria
-- [ ] `docs/` holds every file listed in Decisions, and `docs/README.md` indexes them with the status labels and lifecycle
-- [ ] `vision.md`, `concepts.md`, `ideas.md`, `roadmap.md` and the feature docs hold content the user approved, with no invented content
-- [ ] Every feature doc follows the template, including the database & compatibility notes
-- [ ] `docs/` is export-ignored (`git archive HEAD | tar -t | grep '^docs/'` prints nothing)
-- [ ] AGENTS.md points planning agents to the project docs, and the README links to `docs/README.md`
-- [ ] All relative links in `docs/` resolve
+
+- [x] `docs/` holds every file listed in Decisions, and `docs/README.md` indexes them with the status labels and lifecycle
+- [x] `vision.md`, `concepts.md`, `ideas.md`, `roadmap.md` and the feature docs hold content the user approved, with no invented content
+- [x] Every feature doc follows the template, including the database & compatibility notes
+- [x] `docs/` is export-ignored (`git archive HEAD | tar -t | grep '^docs/'` prints nothing)
+- [x] AGENTS.md points planning agents to the project docs, and the README links to `docs/README.md`
+- [x] All relative links in `docs/` resolve
 - [ ] `CHANGELOG.md` lists each step's items under `# docs/project`, and `version` is `docs/project`
 
 ## Review
-Findings from Phase 3 (filled in by the reviewing agent).
+
+Reviewed in a new session against the files on `docs/project` at `9c7b23d`, not against the ticked boxes.
+
+**Validation:**
+
+- `make test`: passes (65 tests, lint, static analysis, type coverage).
+- `make test-all`: passes on SQLite, MySQL, PostgreSQL and MongoDB (65 tests each). The first run stopped at MySQL because a 13-day-old container pointed at a Docker network that no longer exists; `make db-down` fixed it. This was a problem with the local Docker setup, not with the package.
+- `git archive HEAD | tar -t | grep '^docs/'` prints nothing.
+- Every relative link and `#anchor` in `docs/` and the README's docs link resolves (checked with a script that also checks heading anchors). The only README link that doesn't resolve locally is `../../contributors`, which is an existing GitHub link.
+- The SDK names in the docs match `route-connex-sdk-php` v1.1.0 (`ErClient`, `routeConnex()`, `run()->_id_()`, `microsoftSharepoint()->files()`, `hpeContentManager()->records()`, PHP `^8.1`, Guzzle `^7.9`). The package names match the code: `config/route-connex-laravel.php`, the `route-connex-laravel-*` publish tags, `RouteConnex\Laravel\Facades\RouteConnex`, the Boost skill path, and `mongodb/laravel-mongodb` as both `suggest` and `require-dev`.
+- No consumer app or private repo is named in `docs/`, `README.md` or `CHANGELOG.md`.
+
+**Callbacks with custom tenancy** (the question raised at the end of Step 6):
+
+The HTTP side is covered. The route goes into the app's own group with `RouteConnex::callbackRoutes()`. The app's middleware finds the Tenant. The controller ignores extra route parameters. `RouteConnexCallbackHandler` and `RouteConnexCallbackUrlGenerator` can be replaced through the container. The gaps:
+
+- **R1. No custom-tenancy hook outside a request.** The callback configuration command takes a Tenant only "when a Tenancy preset is on" (vision, ideas). An app with its own tenancy has no documented way to say "run this for Tenant X". That affects the callback configuration command, which needs the Tenant's App, Callback token and URL, the other Artisan commands, and `purgePayloads()` run once per Tenant. The URL generator alone can't solve it, because it runs only after the Tenant's App has been loaded. Needs a decision: a replaceable tenancy class that the `stancl/tenancy` preset implements and a custom app binds (a fifth extension point), or an Open question for the Artisan commands theme.
+- **R2. The handler's steps aren't named.** `overrides.md` promises small `protected` methods per step, but `callbacks.md` doesn't name them. A custom app whose Apps live in a central database and whose Runs live in the Tenant's database must switch Tenants between "find the App" and "find the Run", so those step names are the extension contract. `callbacks.md` also doesn't say that the Run lookup follows the same connection rule as storing a Run (the Run model's own connection, else the App's, else the default). It only says the Run is "updated on its own connection".
+- **R3. Queue workers and Tenants.** `callbacks.md` says the Run's connection "must exist in the queue worker". With custom tenancy, a shared connection name such as `tenant` exists in every worker but points at whichever Tenant was set last. A queued listener could then load the wrong Tenant's Run, or the wrong App through `$run->app`. The note should say that the worker must restore the same Tenant's context.
+- **R4. Duplicate route names.** Calling `callbackRoutes()` in more than one group, or leaving `register_routes` on while also calling it, registers `route-connex.callbacks` twice. `php artisan route:cache` refuses duplicate route names. The docs should say to register the route once, or `callbackRoutes()` should take a name.
+- **R5. ADR 0007 is missing the Step 6 additions:** any tenancy setup, extra route parameters ignored, and the `RouteConnexCallbackUrlGenerator`. ADR 0005 lists the generator; ADR 0007 doesn't.
+
+**Consistency:**
+
+- **R6.** The `CHANGELOG.md` item for Step 6 covers only the decision records. The callback changes made in that step are missing: Callbacks work with any tenancy setup, `RouteConnexCallbackUrlGenerator` is a fourth extension point, and the vision's callback URL line. The Step 6 notes above don't mention them either, although they weren't in the plan.
+- **R7.** `sdk-layer.md` shows `$run->status; // 'created'`, but `run-tracking.md` casts `status` to the `RouteConnexRunStatus` enum (`RouteConnexRunStatus::Created`).
+- **R8.** `run-tracking.md` and ADR 0004 throw `RouteConnexConfigurationException` when a Run has both `app_name` and `app_id`, or neither. `sdk-layer.md` defines that exception as covering only missing Credentials, an unknown App, or no default App.
+- **R9.** It isn't stated whether `RouteConnexRunSucceeded` fires for `dry-run`. `RouteConnexRunFinished` includes `dry-run`, and the purge counts `dry-run` as successful. It also isn't stated what happens when a finished Run receives a different finished status (`succeeded` → `failed`).
+- **R10.** `concepts.md` says the package generates the Callback token. A config App reads it from `ROUTE_CONNEX_CALLBACK_TOKEN`, and nothing generates that value until `route-connex:callback-token` (a Next theme). `apps.md` doesn't say how to create one in the meantime.
+- **R11.** `docs/README.md` says a theme becomes `planned` only after its feature doc (`proposed`). Every Next and Later theme is `planned` with no feature doc.
+- **R12.** AGENTS.md → Phase 1 step 2 lists `vision.md`, `concepts.md` and the features, but not `docs/decisions/`, which now holds the reasons behind the designs.
+- **R13.** This file names RouteConnex's private repos (Context, and the Step 2 and 3 prompts) and a RouteConnex client plugin (Step 3 notes). It's committed and pushed. Blanking it at close doesn't remove it from history, so a rewording now only keeps it out of future commits.
+
+**Acceptance criteria:** all met except the CHANGELOG one (R6).
+
+**Fixes:** with the user's answers (Decisions → Review answers), R1–R5 and R9 go into Step 7, and R6–R8 and R10–R13 go into Step 8.
