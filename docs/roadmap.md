@@ -14,7 +14,7 @@ Target: `0.1` to `0.x`. The core of the package.
 - **Multiple Apps**: named Apps in config, like database connections, and App models (the shipped `RouteConnexApp` or the consumer app's own) for multi-tenant apps. Status: `planned`. Target: 0.x. Feature: [apps.md](features/apps.md).
 - **`RouteConnexRun` tracking**: Runs stored and kept up to date on MySQL, PostgreSQL, MongoDB and SQLite, with payloads of old successful Runs purged. Status: `planned`. Target: 0.x. Feature: [run-tracking.md](features/run-tracking.md).
 - **Callbacks as events**: the Callback route, the Callback token check and the events the consumer app listens to. Status: `planned`. Target: 0.x. Feature: [callbacks.md](features/callbacks.md).
-- **Overridable models and classes**: models set in config, and the package's replaceable classes bound in the container. Status: `planned`. Target: 0.x. Feature: [overrides.md](features/overrides.md).
+- **Overridable models and classes**: models set in config, and the package's replaceable classes bound in the container, including `RouteConnexTenancy` for apps with their own tenancy setup. Status: `planned`. Target: 0.x. Feature: [overrides.md](features/overrides.md).
 
 ## Next
 
@@ -22,8 +22,8 @@ Target: `0.x` up to 1.0.
 
 - **Sync calls**: ask the RouteConnex API to answer straight away and get the data back in the same call. Status: `planned`. Target: 0.x to 1.0.
 - **Credential checks**: check that an App's credentials work, for example when a Tenant saves them. Status: `planned`. Target: 0.x to 1.0.
-- **`stancl/tenancy` v3 preset**: the `tenancy` config section for a database per Tenant. Status: `planned`. Target: 0.x to 1.0.
-- **Artisan commands**: the callback configuration command, `route-connex:test-auth`, `route-connex:apps`, `route-connex:callback-token`, `route-connex:runs`, `route-connex:prune` and `route-connex:purge`. Every command works with Tenants. Status: `planned`. Target: 0.x to 1.0. Idea: [More Artisan commands](ideas.md#2026-11-17-more-artisan-commands).
+- **`stancl/tenancy` v3 preset**: the `tenancy` config section and a shipped `RouteConnexTenancy` subclass for a database per Tenant. Status: `planned`. Target: 0.x to 1.0.
+- **Artisan commands**: the callback configuration command, `route-connex:test-auth`, `route-connex:apps`, `route-connex:callback-token`, `route-connex:runs`, `route-connex:prune` and `route-connex:purge`. Every command works with Tenants through `RouteConnexTenancy`, with a preset or the app's own tenancy. Status: `planned`. Target: 0.x to 1.0. Idea: [More Artisan commands](ideas.md#2026-11-17-more-artisan-commands).
 - **Testing helpers**: `RouteConnex::fake()` and simulated Callbacks for consumer apps' tests. Status: `planned`. Target: 0.x to 1.0. Idea: [Testing helpers](ideas.md#2026-11-17-testing-helpers).
 
 ## Later

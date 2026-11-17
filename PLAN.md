@@ -1,6 +1,6 @@
 # Project documentation: vision, concepts, roadmap, ideas and features
 
-**Status:** in review
+**Status:** in progress
 **Branch:** `docs/project` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -53,11 +53,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Writing ADRs for decisions already taken in Steps 2–5 and checking links: the Step 5 session knows which decisions were made.
   - **Prompt:** Implement Step 6 of PLAN.md: Record decisions and cross-link the docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Write `docs/decisions/0001-project-documentation-structure.md` from `docs/decisions/_template.md` using PLAN.md → Decisions, then list the decisions taken while writing Steps 2–5 and ask the user which ones get an ADR. Check that every relative link in `docs/` and the README's docs link resolves, and that `docs/README.md` lists every file. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
-- [ ] **7. Callbacks and custom tenancy**
+- [x] **7. Callbacks and custom tenancy**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 301035d8-61c2-4388-b85e-f83b2e1c0f59` (gandalf)
   - **Why:** It designs a new public extension point (`RouteConnexTenancy`) that affects several docs and ADRs, and it needs judgement about tenancy, queues and routing. The review session already has the findings and the user's answers.
   - **Prompt:** Implement Step 7 of PLAN.md: Callbacks and custom tenancy. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The findings are R1–R5 and R9 in PLAN.md → Review, and the user's answers are in Decisions → "Review answers". Read `docs/features/callbacks.md`, `docs/features/overrides.md`, `docs/features/run-tracking.md`, `docs/vision.md`, `docs/concepts.md`, `docs/ideas.md`, `docs/roadmap.md` and ADRs 0005 and 0007 first. Propose the `RouteConnexTenancy` methods to the user, mark them as a proposal and get approval before writing them into the docs. Ask the user about the open point in R9 (a finished Run receiving a different finished status). Don't name consumer apps or private repos in the docs. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 8.
 - [ ] **8. Consistency fixes from the review**
@@ -114,6 +114,9 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
   - R1: add a replaceable tenancy class now, `RouteConnexTenancy`, as the fifth public extension point, with its own ADR. The `stancl/tenancy` preset becomes one implementation of it, and an app with its own tenancy binds its own subclass.
   - R8: `RouteConnexConfigurationException` also covers a Run with both `app_name` and `app_id`, or neither. Widen its definition; no new exception.
   - R9: a `dry-run` Run fires `RouteConnexRunSucceeded`, as well as `RouteConnexRunFinished`.
+  - R9 (Step 7): a finished Run's status is final, as in RouteConnex. A Callback with a different finished status is ignored, logged as a warning, and answered with `200`.
+  - R1 (Step 7): `RouteConnexTenancy` has `enabled()`, `current()`, `findTenant()`, `run()` and `forEachTenant()`. With tenancy enabled, commands on one App or Run require `--tenant`; `route-connex:purge` and `route-connex:prune` run for every Tenant unless `--tenant` is given.
+  - R4 (Step 7): `callbackRoutes()` takes an optional route name.
   - R13: reword this file so it no longer names RouteConnex's private repos or client plugin.
 
 ## Steps
@@ -222,18 +225,29 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 
 ### Step 7: Callbacks and custom tenancy
 
-**Status:** todo
+**Status:** done
 
-- [ ] R1: `RouteConnexTenancy`, a replaceable class bound in the container, documented in `docs/features/overrides.md` as the fifth extension point. A starting proposal, to confirm with the user: `enabled()` (`false` by default), `findTenant(string $id)` (the `--tenant` option of the Artisan commands), `run($tenant, Closure $callback)` (runs code in that Tenant's context), and `tenants()` (every Tenant, for example to purge once per Tenant). The default class does nothing, so single-tenant apps don't change. When `enabled()` is true, a command that needs a Tenant requires `--tenant` and doesn't guess.
-- [ ] R1: update every place that says "when a Tenancy preset is on" to say "when tenancy is enabled (a preset or the app's own `RouteConnexTenancy`)": `docs/vision.md` (callback setup goal, `stancl/tenancy` goal), `docs/concepts.md` (Tenancy preset, and a new glossary entry if the user agrees), `docs/ideas.md` (More Artisan commands, Other tenancy modes) and `docs/roadmap.md` (Artisan commands, the `stancl/tenancy` preset is an implementation of `RouteConnexTenancy`). In `docs/features/run-tracking.md`, purging once per Tenant can go through `tenants()` and `run()`.
-- [ ] R1: `docs/decisions/0010-replaceable-tenancy-class.md`, plus ADR 0005's list of extension points updated to five
-- [ ] R2: `docs/features/callbacks.md` names the handler's `protected` step methods and says that the Run lookup uses the same connection rule as storing a Run. The example shows a subclass that switches Tenants between finding the App and finding the Run.
-- [ ] R3: `docs/features/callbacks.md` → Tenancy: the queue worker must restore the same Tenant's context, not only a connection with the same name, before a queued listener uses `$event->run` or `$run->app`
-- [ ] R4: `docs/features/callbacks.md`: register the callback route once, and turn `register_routes` off when calling `callbackRoutes()`, because duplicate route names break `php artisan route:cache`. Or, if the user prefers, `callbackRoutes()` takes a route name.
-- [ ] R5 and R9: ADR 0007 and `docs/features/callbacks.md` record any tenancy setup, extra route parameters ignored, `RouteConnexCallbackUrlGenerator`, `dry-run` firing `RouteConnexRunSucceeded`, and the user's answer on a finished Run receiving a different finished status
-- [ ] `CHANGELOG.md`: items under `# docs/project`
+- [x] R1: `RouteConnexTenancy` (`RouteConnex\Laravel\Tenancy`), a replaceable class bound in the container, documented in `docs/features/overrides.md` as the fifth extension point, with an example subclass for an app's own tenancy. Methods, approved by the user: `enabled()` (`false` by default), `current()` (the Tenant in the current context, or `null`), `findTenant(string $id)` (the `--tenant` option; an unknown ID throws `RouteConnexConfigurationException`), `run($tenant, Closure $callback)` (runs code in that Tenant's context and restores the previous one) and `forEachTenant(Closure $callback)` (once per Tenant, or once with no Tenant when tenancy is off). The default class does nothing, so single-tenant apps don't change. When `enabled()` is true, a command that acts on one App or Run requires `--tenant` and doesn't guess, and `route-connex:purge` and `route-connex:prune` run for every Tenant unless `--tenant` is given.
+- [x] R1: "when a Tenancy preset is on" and "plug in through the overridable classes" now say "when tenancy is enabled (a preset or the app's own `RouteConnexTenancy`)" in `docs/vision.md` (callback setup and `stancl/tenancy` goals), `docs/concepts.md` (Tenancy preset: a shipped `RouteConnexTenancy` subclass; no new glossary entry), `docs/ideas.md` (More Artisan commands, Other tenancy modes) and `docs/roadmap.md` (Overridable models and classes, the `stancl/tenancy` preset, Artisan commands). `docs/features/run-tracking.md` schedules the purge through `forEachTenant()`.
+- [x] R1: `docs/decisions/0010-replaceable-tenancy-class.md`, plus ADR 0005's list of extension points updated to five
+- [x] R2: `docs/features/callbacks.md` names the handler's `protected` steps (`findApp()`, `checkToken()`, `runInAppContext()`, `findRun()`, `updateRun()`, `fireEvents()`) and says the Run lookup uses the same connection rule as storing a Run. The example is a subclass that overrides `runInAppContext()` to switch to the App's Tenant, for Apps in a central database with Runs on a `tenant` connection.
+- [x] R3: `docs/features/callbacks.md` → Tenancy: the queue worker must restore the same Tenant's context, not only a connection with the same name, before a queued listener uses `$event->run` or `$run->app`
+- [x] R4: `docs/features/callbacks.md`: `RouteConnex::callbackRoutes(?string $name = null)`, each registration gets its own route name, and `register_routes` is turned off when calling `callbackRoutes()`, because duplicate route names break `php artisan route:cache`
+- [x] R5 and R9: ADR 0007 and `docs/features/callbacks.md` record any tenancy setup, extra route parameters ignored, `callbackRoutes(name:)`, the named steps, `RouteConnexCallbackUrlGenerator`, `dry-run` firing `RouteConnexRunSucceeded`, and that a finished Run's status is final (a different finished status is ignored, logged as a warning, and still answered with `200`)
+- [x] `CHANGELOG.md`: items under `# docs/project`
 
 **Validate:** the user approves the changes; the link check from Step 6 lists only paths that exist; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed **Commit:** `Add a replaceable tenancy class and complete the callback docs for custom tenancy`
+
+**Notes:**
+
+- Same session as the review (`301035d8-…`).
+- Differs from the plan's starting proposal: `forEachTenant(Closure)` replaces `tenants()`, so the caller doesn't loop and `run()` always wraps each Tenant; `current()` was added for the URL generator. Approved by the user.
+- R2 needed one hook the review didn't name: `runInAppContext()` wraps finding the Run, updating it and firing the events. Switching the Tenant in `findRun()` alone would leave the update and the events outside the Tenant's context.
+- R9: checked read-only in RouteConnex that a finished Run can't change status there (it throws when a response arrives for a Run that already succeeded or errored); the user confirmed "finished is final" for the package.
+- R4: the user chose `callbackRoutes(name:)` over a docs-only note.
+- `docs/features/callbacks.md`: for Apps in a central database, the `RouteConnexRun` subclass sets its own connection, or the connection rule would store and look for Runs on the App's central connection.
+- `docs/features/overrides.md` → Database & compatibility notes: `run()` must restore the previous context even when the callback throws (long-running workers).
+- ADR 0003 is unchanged: facade calls still take the App passed in, and `RouteConnexTenancy` is only used where nothing else sets the Tenant (ADR 0010 says so).
 
 ### Step 8: Consistency fixes from the review
 

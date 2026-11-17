@@ -26,7 +26,7 @@ Besides the callback configuration command (a 1.0 goal in [vision.md](vision.md)
 - `route-connex:prune`: deletes old `RouteConnexRun` records.
 - `route-connex:purge`: clears the request and response of old successful Runs (see [`RouteConnexRun` tracking](features/run-tracking.md)).
 
-Every command must work with Tenants: App names can repeat across Tenants, so a command has to know which Tenant's App and `RouteConnexRun` records it acts on, and must not guess when the Tenancy preset is on.
+Every command must work with Tenants: App names can repeat across Tenants, so a command has to know which Tenant's App and `RouteConnexRun` records it acts on. When tenancy is enabled (a Tenancy preset or the app's own `RouteConnexTenancy`, see [Overridable models and classes](features/overrides.md)), a command that acts on one App or Run requires `--tenant` and doesn't guess, and `route-connex:purge` and `route-connex:prune` run for every Tenant unless `--tenant` limits them to one.
 
 ## 2026-11-17: Polling as a fallback for missed Callbacks
 
@@ -38,4 +38,4 @@ RouteConnex may change an App from one System to a whole customer (see Open ques
 
 ## 2026-11-17: Other tenancy modes
 
-Single-database tenancy (scoping by `tenant_id`) and `stancl/tenancy` version 4, after version 3 with a database per tenant, which is the first Tenancy preset. Apps with other setups can plug in through the overridable classes.
+Single-database tenancy (scoping by `tenant_id`) and `stancl/tenancy` version 4, after version 3 with a database per tenant, which is the first Tenancy preset. Each would be another shipped `RouteConnexTenancy` subclass. Apps with other setups bind their own (see [Overridable models and classes](features/overrides.md)).

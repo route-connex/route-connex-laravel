@@ -51,10 +51,14 @@ Purging the payloads of old successful Runs, from the consumer app's scheduler:
 
 ```php
 // routes/console.php
-Schedule::call(fn () => RouteConnexRun::purgePayloads())->daily();
+use RouteConnex\Laravel\Tenancy\RouteConnexTenancy;
+
+Schedule::call(fn () => app(RouteConnexTenancy::class)
+    ->forEachTenant(fn () => RouteConnexRun::purgePayloads())
+)->daily();
 ```
 
-A multi-tenant app calls it once per Tenant, in that Tenant's context.
+`forEachTenant()` runs the purge once per Tenant in that Tenant's context, or once when tenancy is off (see [Overridable models and classes](overrides.md)).
 
 Storing Runs on another connection than the Apps, for example Apps in MySQL and Runs in MongoDB:
 
@@ -85,7 +89,7 @@ class RouteConnexRun extends \RouteConnex\Laravel\Models\RouteConnexRun
 - `$run->refreshFromRouteConnex()`: gets the Run from RouteConnex through the SDK with the Run's own App, then updates its status, type, response and `finished_at`. It fires the same status events as a Callback (see [Callbacks as events](callbacks.md)).
 - `RouteConnexRun::purgePayloads()`: clears `request` and `response` on `succeeded` and `dry-run` Runs that finished more than `runs.purge_after_days` days ago, and sets `purged_at`. `failed`, `errored` and unfinished Runs keep their payloads. Returns the number of Runs purged.
 - A publish-only migration for `route_connex_runs`, under the existing `route-connex-laravel-migrations` tag.
-- The bundled Laravel Boost skill covers reading Runs, refreshing them and scheduling the purge.
+- The bundled Laravel Boost skill covers reading Runs, refreshing them and scheduling the purge for every Tenant.
 
 ## Non-goals
 
@@ -117,4 +121,4 @@ None at the moment.
 - Concepts: [RouteConnexRun](../concepts.md#routeconnexrun), [Run](../concepts.md#run), [Run status](../concepts.md#run-status), [Meta](../concepts.md#meta)
 - Ideas: [Polling as a fallback for missed Callbacks](../ideas.md#2026-11-17-polling-as-a-fallback-for-missed-callbacks), [Link Runs to models](../ideas.md#2026-11-17-link-runs-to-models), [More Artisan commands](../ideas.md#2026-11-17-more-artisan-commands)
 - Features: [Laravel layer over the SDK](sdk-layer.md), [Multiple Apps](apps.md), [Callbacks as events](callbacks.md), [Overridable models and classes](overrides.md)
-- Decisions: [0002: RouteConnex prefix on everything the package adds](../decisions/0002-routeconnex-prefix.md), [0004: Runs store `app_name` or `app_id`, resolved through `models.app`](../decisions/0004-runs-store-app-name-or-id.md), [0006: MongoDB through the consumer app's model subclass](../decisions/0006-mongodb-through-app-subclass.md), [0009: Purge payloads of old successful Runs instead of deleting Runs](../decisions/0009-purge-payloads-of-old-successful-runs.md)
+- Decisions: [0002: RouteConnex prefix on everything the package adds](../decisions/0002-routeconnex-prefix.md), [0004: Runs store `app_name` or `app_id`, resolved through `models.app`](../decisions/0004-runs-store-app-name-or-id.md), [0006: MongoDB through the consumer app's model subclass](../decisions/0006-mongodb-through-app-subclass.md), [0009: Purge payloads of old successful Runs instead of deleting Runs](../decisions/0009-purge-payloads-of-old-successful-runs.md), [0010: A replaceable tenancy class](../decisions/0010-replaceable-tenancy-class.md)

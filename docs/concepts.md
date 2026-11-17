@@ -108,7 +108,7 @@ A tenant of the consumer app, in multi-tenant apps. A Tenant can have its own Ap
 
 ### Tenancy preset
 
-The `tenancy` section of the package config, which sets the package up for a known tenancy setup in one place. The first preset is [`stancl/tenancy`](https://tenancyforlaravel.com) version 3 with a database per tenant. Other setups plug in through the overridable classes.
+The `tenancy` section of the package config, which sets the package up for a known tenancy setup in one place. A preset is a shipped subclass of `RouteConnexTenancy`, the replaceable class that tells the package whether tenancy is enabled, how to find a Tenant and how to run code in a Tenant's context. The first preset is [`stancl/tenancy`](https://tenancyforlaravel.com) version 3 with a database per tenant. An app with another setup binds its own `RouteConnexTenancy` subclass instead.
 
 **Related:** Tenant
 
