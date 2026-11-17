@@ -1,6 +1,6 @@
 # Cap PHPStan below 2.3.6 for the type coverage plugin
 
-**Status:** planning **Branch:** `hotfix/cap-phpstan-type-coverage` → **Target:** `release/0.x`
+**Status:** in review **Branch:** `hotfix/cap-phpstan-type-coverage` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
 
@@ -82,11 +82,17 @@ docker compose run --rm -e L='12.*' -e TB='10.*' -e S=prefer-stable app sh -c '
 
 ## Acceptance Criteria
 
-- [ ] `composer.json` → `require-dev` has `"phpstan/phpstan": "^2.0 <2.3.6"`, and nothing in `require` or `conflict` changed
-- [ ] `composer test:types` passes on the Laravel 12 and 13 lanes, `prefer-stable` and `prefer-lowest`, reproduced locally
+- [x] `composer.json` → `require-dev` has `"phpstan/phpstan": "^2.0 <2.3.6"`, and nothing in `require` or `conflict` changed
+- [x] `composer test:types` passes on the Laravel 12 and 13 lanes, `prefer-stable` and `prefer-lowest`, reproduced locally
 - [ ] CI is green on the pull request for this branch
-- [ ] `CHANGELOG.md` lists the cap under `# hotfix/cap-phpstan-type-coverage`, and `version` is `hotfix/cap-phpstan-type-coverage`
+- [x] `CHANGELOG.md` lists the cap under `# hotfix/cap-phpstan-type-coverage`, and `version` is `hotfix/cap-phpstan-type-coverage`
 
 ## Review
 
-Findings from Phase 3 (filled in by the reviewing agent).
+Reviewed in the same session as the implementation, against the code and not the ticked boxes.
+
+- **Step 1:** `composer.json` `require-dev` has `"phpstan/phpstan": "^2.0 <2.3.6"`; `require` and `conflict` are unchanged; `composer validate` passes. The lane results in the Step 1 notes were reproduced in Docker for all four lanes. The `release/0.x` merge base is already in the branch.
+- **Finding (fixed):** the two PHPStan lines in `composer.json` were indented with 6 spaces instead of 8 (probably an editor reformat). Re-indented; no behavior change.
+- **CHANGELOG:** lists the cap under `# hotfix/cap-phpstan-type-coverage`. `version` holds the branch name.
+- **Validation:** `make test` passes (65 tests, 100% type coverage). `make test-all` was not run: the change only touches a dev dependency constraint and no database code.
+- **Acceptance criterion left for CI:** CI green on the pull request.
