@@ -6,6 +6,7 @@
 - Vision goal for 1.0: an Artisan command that prints an App's callback configuration (URL, method, extra fields with the Callback token) as JSON for RouteConnex.
 - Ideas list in `docs/ideas.md` (dry-run mode, testing helpers, linking Runs to models, more Artisan commands that work with Tenants, a polling fallback, Apps tied to a customer, other tenancy modes) and roadmap in `docs/roadmap.md` with the vision goals and ideas grouped as Now / Next / Later.
 - Feature docs for the Now themes in `docs/features/`: the Laravel layer over the SDK (`sdk-layer.md`), Multiple Apps from config or App models (`apps.md`), `RouteConnexRun` tracking with payload purging (`run-tracking.md`), Callbacks as events (`callbacks.md`) and overridable models and classes (`overrides.md`), each with database and Laravel 12/13 compatibility notes.
+- Decision records in `docs/decisions/`: the documentation structure (0001), the `RouteConnex` prefix (0002), Apps from config or models (0003), Runs storing `app_name` or `app_id` (0004), models in config and classes in the container (0005), MongoDB through the app's model subclass (0006), Callbacks (0007), the facade mirroring the SDK with one exception base (0008) and purging payloads of old successful Runs (0009), linked from the feature docs.
 - Vision: a goal for a bundled Laravel Boost skill kept up to date by every feature, and a non-goal for queued Runs before 1.0. Roadmap: the Later themes are `planned`, and `route-connex:purge` joins the Artisan commands.
 
 ---

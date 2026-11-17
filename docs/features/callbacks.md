@@ -44,7 +44,9 @@ Placing the route in the consumer app's own group, for example a Tenant's routes
 ```php
 // config: 'register_routes' => false
 
-Route::middleware(['tenant'])->group(function () {
+// Whatever the app already uses to resolve its Tenant: a subdomain group,
+// its own middleware, a tenancy package's middleware...
+Route::domain('{tenant}.example.com')->middleware(['resolve-tenant'])->group(function () {
     RouteConnex::callbackRoutes();
 });
 ```
@@ -67,6 +69,8 @@ The Callback RouteConnex sends, configured for the App in RouteConnex (the [call
 
 - **Route:** `POST {prefix}/callbacks/{app}`, named `route-connex.callbacks`. `{app}` is a config App's name or a model App's key: a config App with that name wins, otherwise the key is looked up through `models.app` (see [Multiple Apps](apps.md)).
 - **Registration:** the package registers the route unless `callbacks.register_routes` is false; `RouteConnex::callbackRoutes()` registers it inside the consumer app's own group. The route doesn't use the `web` middleware group.
+- **Any tenancy setup:** the package assumes no tenancy library. How the Tenant is found (a subdomain, a path, a header, a package) is the consumer app's group and middleware. The Callback controller reads only the `app` route parameter and ignores any other, such as a `{tenant}` domain parameter that the app's middleware may or may not have removed.
+- **Callback URL:** the URL RouteConnex should call for an App (printed by the callback configuration command) is built by `RouteConnexCallbackUrlGenerator`, which by default uses `route('route-connex.callbacks', ...)` in the current URL context. An app whose Callbacks live on each Tenant's own domain binds its own subclass to return that Tenant's URL (see [Overridable models and classes](overrides.md)).
 - **Handling, in this order:**
   1. Find the App. Unknown App: `404`.
   2. Compare `route_connex_callback_token` with the App's Callback token in constant time (`hash_equals`). Missing or wrong token, or an App with no token: `403`. The code keeps a TODO where RouteConnex's own Callback authentication will go.
@@ -92,7 +96,7 @@ The Callback RouteConnex sends, configured for the App in RouteConnex (the [call
 ## Database & compatibility notes
 
 - **Databases:** one lookup by `run_id` and App (indexed) and one update per Callback; the same on MySQL, PostgreSQL, MongoDB and SQLite. The Run is updated on its own connection (see [`RouteConnexRun` tracking](run-tracking.md)).
-- **Tenancy:** the route must run in the Tenant's context, so multi-tenant apps register it in their Tenant route group. Queued listeners receive the Run through `SerializesModels`, which restores it on the same connection name, so that connection must exist in the queue worker; with `stancl/tenancy` its queue tenancy takes care of that.
+- **Tenancy:** the route must run in the Tenant's context, so multi-tenant apps register it in their Tenant route group. Queued listeners receive the Run through `SerializesModels`, which restores it on the same connection name, so that connection must exist in the queue worker; the consumer app's own tenancy (or a tenancy package's queue support) takes care of that.
 - **CSRF:** the package's route doesn't use the `web` group. An app that puts it in a group with `web` excludes it with `$middleware->validateCsrfTokens(except: [...])` in `bootstrap/app.php`.
 - **Laravel 12 and 13:** routes, route groups, events, queued listeners and `validateCsrfTokens()` exist in both.
 - **RouteConnex:** Callback handling in RouteConnex is still being completed. The body format above (`data` shaped like the SDK's get-Run response, and the token as an extra field) is the one the package is built for.
@@ -107,3 +111,4 @@ None at the moment.
 - Concepts: [Callback](../concepts.md#callback), [Callback token](../concepts.md#callback-token), [Run status](../concepts.md#run-status)
 - Ideas: [Polling as a fallback for missed Callbacks](../ideas.md#2026-11-17-polling-as-a-fallback-for-missed-callbacks), [More Artisan commands](../ideas.md#2026-11-17-more-artisan-commands)
 - Features: [Multiple Apps](apps.md), [`RouteConnexRun` tracking](run-tracking.md), [Overridable models and classes](overrides.md)
+- Decisions: [0007: Callbacks: token check, route outside `web`, events on change](../decisions/0007-callbacks.md)

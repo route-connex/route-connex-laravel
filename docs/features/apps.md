@@ -137,3 +137,4 @@ None at the moment.
 - Roadmap: [Multiple Apps](../roadmap.md#now)
 - Concepts: [App](../concepts.md#app), [Credentials](../concepts.md#credentials), [Callback token](../concepts.md#callback-token), [Tenant](../concepts.md#tenant)
 - Features: [Laravel layer over the SDK](sdk-layer.md), [`RouteConnexRun` tracking](run-tracking.md), [Callbacks as events](callbacks.md), [Overridable models and classes](overrides.md)
+- Decisions: [0002: RouteConnex prefix on everything the package adds](../decisions/0002-routeconnex-prefix.md), [0003: Apps come from config or from models, without a resolver](../decisions/0003-apps-from-config-or-models.md), [0006: MongoDB through the consumer app's model subclass](../decisions/0006-mongodb-through-app-subclass.md)

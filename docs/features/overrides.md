@@ -59,6 +59,7 @@ class TenantCallbackHandler extends RouteConnexCallbackHandler
   - `RouteConnexClientFactory`: builds the SDK client for an App, for example to add a proxy or a token store
   - `RouteConnexRunRecorder`: stores the `RouteConnexRun` after the API call, for example to fill extra columns
   - `RouteConnexCallbackHandler`: runs the Callback steps (see [Callbacks as events](callbacks.md)), for example to add checks
+  - `RouteConnexCallbackUrlGenerator`: builds the callback URL of an App, for example on a Tenant's own subdomain
 - Each of these classes has small `protected` methods per step, so a subclass overrides one step instead of copying the whole class.
 - The `stancl/tenancy` preset (a Next theme) makes the same kind of bindings for the consumer app.
 - The bundled Laravel Boost skill shows how to extend a model and bind a class.
@@ -84,3 +85,4 @@ None at the moment.
 - Roadmap: [Overridable models and classes](../roadmap.md#now)
 - Vision: "Everything is overridable" and "Defaults that work, everything overridable" ([vision.md](../vision.md))
 - Features: [Laravel layer over the SDK](sdk-layer.md), [Multiple Apps](apps.md), [`RouteConnexRun` tracking](run-tracking.md), [Callbacks as events](callbacks.md)
+- Decisions: [0005: Models in config, other classes bound in the container](../decisions/0005-models-in-config-classes-in-container.md), [0006: MongoDB through the consumer app's model subclass](../decisions/0006-mongodb-through-app-subclass.md)

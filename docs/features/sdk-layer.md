@@ -116,3 +116,4 @@ None at the moment.
 - Roadmap: [Laravel layer over the SDK](../roadmap.md#now)
 - Vision goals: a Laravel-flavoured API over the SDK, credentials from `.env`, ready for AI agents ([vision.md](../vision.md#goals))
 - Features: [Multiple Apps](apps.md), [`RouteConnexRun` tracking](run-tracking.md), [Callbacks as events](callbacks.md), [Overridable models and classes](overrides.md)
+- Decisions: [0002: RouteConnex prefix on everything the package adds](../decisions/0002-routeconnex-prefix.md), [0008: The facade mirrors the SDK, and errors are wrapped](../decisions/0008-facade-mirrors-sdk-and-exceptions.md)

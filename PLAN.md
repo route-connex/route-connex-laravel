@@ -46,11 +46,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Turning roadmap themes into concrete developer-facing APIs needs design judgement, Laravel package idioms and multi-database awareness. Builds directly on the roadmap from Step 4.
   - **Prompt:** Implement Step 5 of PLAN.md: Write the first feature docs with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 4 wrote `docs/roadmap.md`; write one `docs/features/<name>.md` from `docs/features/_template.md` for each roadmap theme in the Now group (ask the user if Next themes should get one too). Interview the user per feature; you may propose the developer-experience examples (config, facade, Artisan) in Laravel-native style, marked as proposals until the user approves. Fill the database & compatibility notes against every supported database and Laravel 12/13 (use the `package-compatibility` skill). Link each feature from `docs/roadmap.md` and the idea it came from in `docs/ideas.md`. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 6.
-- [ ] **6. Record decisions and cross-link the docs**
+- [x] **6. Record decisions and cross-link the docs**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 38eff6af-7cf1-4628-a206-708e786e894b` (gandalf)
   - **Why:** Writing ADRs for decisions already taken in Steps 2–5 and checking links: the Step 5 session knows which decisions were made.
   - **Prompt:** Implement Step 6 of PLAN.md: Record decisions and cross-link the docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Write `docs/decisions/0001-project-documentation-structure.md` from `docs/decisions/_template.md` using PLAN.md → Decisions, then list the decisions taken while writing Steps 2–5 and ask the user which ones get an ADR. Check that every relative link in `docs/` and the README's docs link resolves, and that `docs/README.md` lists every file. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -183,14 +183,23 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - Consumer apps aren't named in the docs (see the Step 2 notes).
 
 ### Step 6: Record decisions and cross-link the docs
-**Status:** todo
-- [ ] `docs/decisions/0001-project-documentation-structure.md`
-- [ ] ADRs for the decisions from Steps 2–5 that the user picks
-- [ ] Every relative link in `docs/` and the README's docs link resolves; `docs/README.md` lists every file
-- [ ] `CHANGELOG.md`: item under `# docs/project`
+
+**Status:** done
+
+- [x] `docs/decisions/0001-project-documentation-structure.md`
+- [x] ADRs for the decisions from Steps 2–5 that the user picks: 0002–0009 (the first eight of nine candidates; queued Runs got no ADR)
+- [x] Every relative link in `docs/` and the README's docs link resolves; `docs/README.md` lists every file
+- [x] `CHANGELOG.md`: item under `# docs/project`
 
 **Validate:** `grep -rnoE '\]\([^)#:]+\.md' docs README.md` lists only paths that exist; `git status` shows only files in `docs/`, `CHANGELOG.md` and `PLAN.md` changed
 **Commit:** `Record the documentation decisions and cross-link the docs`
+
+**Notes:**
+
+- Same session as Steps 4–5 (`38eff6af-…`).
+- ADRs: 0002 `RouteConnex` prefix, 0003 Apps from config or models, 0004 Runs store `app_name` or `app_id`, 0005 models in config and classes in the container, 0006 MongoDB through the app's subclass (`mongodb/laravel-mongodb` is a `suggest` and a `require-dev`), 0007 Callbacks, 0008 facade mirrors the SDK and one exception base, 0009 purging payloads.
+- Each feature doc's Related section now links to its ADRs (not in the original plan, part of cross-linking).
+- `docs/README.md` lists the `decisions/` and `features/` folders, not each file in them, so it needed no change.
 
 ## Acceptance Criteria
 - [ ] `docs/` holds every file listed in Decisions, and `docs/README.md` indexes them with the status labels and lifecycle
