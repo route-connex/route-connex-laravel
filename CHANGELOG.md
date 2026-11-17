@@ -1,9 +1,3 @@
-# docs/shorter-changelog-items
-
-- Shorter CHANGELOG items, with rules for their length in AGENTS.md and the release skill.
-
----
-
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.
@@ -23,3 +17,4 @@
 - Project docs in `docs/`: vision, concepts, ideas, roadmap, feature designs and decision records.
 - `RouteConnexTenancy` designed, so apps with their own tenancy get per-Tenant commands and scheduled work.
 - Callback design for custom tenancy: overridable handler steps, named routes and per-Tenant callback URLs.
+- Shorter CHANGELOG items, with rules for their length in AGENTS.md and the release skill.
