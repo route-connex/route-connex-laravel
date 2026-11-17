@@ -1,6 +1,6 @@
 # Shorter CHANGELOG items
 
-**Status:** planning **Branch:** `docs/shorter-changelog-items` → **Target:** `release/0.x`
+**Status:** in review **Branch:** `docs/shorter-changelog-items` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
 
@@ -90,10 +90,17 @@ The outcome: `v0.1.0-rc` has 17 items averaging 13 words (226 words, down from 2
 
 ## Acceptance Criteria
 
-- [ ] `# v0.1.0-rc` holds the 17 items from Decisions, none over 25 words
-- [ ] AGENTS.md and the `package-release` skill state the item rules
-- [ ] `CHANGELOG.md` lists this task under `# docs/shorter-changelog-items`, and `version` is `docs/shorter-changelog-items`
+- [x] `# v0.1.0-rc` holds the 17 items from Decisions, none over 25 words
+- [x] AGENTS.md and the `package-release` skill state the item rules
+- [x] `CHANGELOG.md` lists this task under `# docs/shorter-changelog-items`, and `version` is `docs/shorter-changelog-items`
 
 ## Review
 
-Findings from Phase 3 (filled in by the reviewing agent).
+Reviewed in the planning session against `9c713df`.
+
+- AGENTS.md (item rules, Phase 3 line) and the new `# v0.1.0-rc` section match Decisions word for word: 17 items, 12.3 words on average (dash excluded), none over 25. This task's item is under `# docs/shorter-changelog-items`, and `version` is `docs/shorter-changelog-items`.
+- `make test` passes (65 tests). No other file in the repo or `docs/` still says "one line each".
+- **R1, fixed here:** the `package-release` rule was appended to workflow step 1, not to step 4 as Decisions say, and the plan wasn't updated. It now opens step 4, right before the rc is renamed.
+- **R2, process:** the plan commit and the step commit went straight to `origin/release/0.x`. The branch was created from `origin/release/0.x` with that as its upstream, so `git push` pushed to the release branch. The upstream is now unset. The close commit goes through a pull request from `docs/shorter-changelog-items`, and release CI on `9c713df` doesn't fail on it (the `version` test accepts work branch names).
+
+Acceptance criteria: all met.
