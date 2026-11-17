@@ -14,7 +14,7 @@ Prepare a safe package release checklist and implementation without tagging, pus
 
 ## Workflow
 
-1. Work on the `release/<N>.x` branch being released (see Branching and Versioning in `AGENTS.md`). Review the open diff and pending package changes, `CHANGELOG.md` and any release workflows.
+1. Work on the `release/<N>.x` branch being released (see Branching and Versioning in `AGENTS.md`). Review the open diff and pending package changes, `CHANGELOG.md` and any release workflows. Check that the rc's items follow the item rules in `AGENTS.md` (one short sentence each) and shorten any that don't.
 2. Validate the release state with `make test` and `make test-all` before recommending a release.
 3. Composer takes the package version from the Git tag, so `composer.json` has no `version`. The `version` file must match the tag instead (step 5).
 4. Update `CHANGELOG.md`: rename the top `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)`. The release version is the rc's `vX.Y.Z`, and the tag is `vX.Y.Z`, matching that heading. The next task's close then asks for the next version and starts a new `# vX.Y.Z-rc` at the top, above a `---` line.
@@ -46,3 +46,4 @@ Prepare a safe package release checklist and implementation without tagging, pus
 - Skipping `make test` or `make test-all` before a release recommendation.
 - Treating generated release notes as a replacement for the meaningful entries in `CHANGELOG.md`.
 - Changing release workflows without checking the supported matrix in `.github/workflows/tests.yml`.
+- CHANGELOG items that list every file, method or term, or run past one short sentence.

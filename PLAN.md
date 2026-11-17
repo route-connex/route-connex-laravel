@@ -10,11 +10,11 @@ claude --ide --resume 301035d8-61c2-4388-b85e-f83b2e1c0f59
 
 ## Implementation
 
-- [ ] **1. Shorten the `v0.1.0-rc` items and add the item rules**
+- [x] **1. Shorten the `v0.1.0-rc` items and add the item rules**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 0fc88acb-3af9-4ed7-921f-c3b65089bfac` (gandalf)
   - **Why:** The new CHANGELOG section and the rule text are written out in full below, so the step is copying text into three places and checking the word counts. The planning session is long and was about other tasks.
   - **Prompt:** Implement Step 1 of PLAN.md: Shorten the `v0.1.0-rc` items and add the item rules. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Use the text in Decisions exactly as written, and ask the user before changing its wording. `.claude` is a symlink to `.agents`, so the `package-release` skill has only one file to edit. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -74,11 +74,11 @@ The outcome: `v0.1.0-rc` has 17 items averaging 13 words (226 words, down from 2
 
 ### Step 1: Shorten the `v0.1.0-rc` items and add the item rules
 
-**Status:** todo
+**Status:** done
 
-- [ ] `AGENTS.md`: the item rules and the Phase 3 line from Decisions
-- [ ] `.agents/skills/package-release/SKILL.md`: workflow step 4 and the anti-pattern from Decisions
-- [ ] `CHANGELOG.md`: `# docs/shorter-changelog-items` with this task's item, a `---`, then the new `# v0.1.0-rc` section from Decisions in place of the current one
+- [x] `AGENTS.md`: the item rules and the Phase 3 line from Decisions
+- [x] `.agents/skills/package-release/SKILL.md`: workflow step 4 and the anti-pattern from Decisions
+- [x] `CHANGELOG.md`: `# docs/shorter-changelog-items` with this task's item, a `---`, then the new `# v0.1.0-rc` section from Decisions in place of the current one
 
 **Validate:**
 

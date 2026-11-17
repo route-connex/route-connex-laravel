@@ -1,28 +1,25 @@
+# docs/shorter-changelog-items
+
+- Shorter CHANGELOG items, with rules for their length in AGENTS.md and the release skill.
+
+---
+
 # v0.1.0-rc
 
-- Docker toolchain for PHP 8.4 with Composer, driven by `make` targets (`make help` lists them): tests, lint, static analysis, the workbench server, Testbench and per-database test runs. No local PHP is needed.
-- Laravel package skeleton: config, routes, views, translations, an Artisan command, publish-only migrations, the `RouteConnex` facade, assets and the Laravel Boost skill. Publish tags: `route-connex-laravel` plus `-config`, `-views`, `-lang`, `-assets` and `-migrations`.
+- Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.
+- Package skeleton with the `RouteConnex` facade, publish-only migrations, a Boost skill and `route-connex-laravel-*` publish tags.
 - Support for Laravel 12 and 13 on PHP 8.3+.
-- Tests on SQLite, MySQL 8.0+, PostgreSQL 14+ and MongoDB 7.0+ (`mongodb/laravel-mongodb` is a suggestion, not a requirement), with the database image versions configurable through `MYSQL_VERSION`, `POSTGRES_VERSION` and `MONGO_VERSION`. The test connections start from Laravel's own database defaults.
-- CI on GitHub Actions: Laravel 12/13 × `prefer-lowest`/`prefer-stable` × PHP 8.3–8.5 on Linux and Windows with SQLite, plus a `databases` job that runs the minimum and latest version of each database with the same Laravel and stability axes. Documentation-only changes skip CI.
+- Tests on SQLite, MySQL 8.0+, PostgreSQL 14+ and MongoDB 7.0+, with configurable database versions.
+- CI across PHP 8.3–8.5, Laravel 12/13, both stability lanes and every database; docs-only changes skip it.
 - Tests for the facade and every publish tag.
-- Dev tooling (Docker files, `Makefile`, `PLAN.md`) stays out of the Composer dist archive.
-- Contributor and agent documentation for the Docker workflow, the minimum supported versions and the task plan workflow; the README credits link to the author's GitHub profile.
-- Branching model documented (`release/<major>.x` branches, `main` as the latest stable release, `feature/`, `hotfix/` and `docs/` work branches, `v<major>.<minor>.<patch>` tags), with branch-named CHANGELOG sections for work in progress and a `version` file at the repo root naming the tag or branch the code is on.
-- Pest test for the `version` file: it must hold one line that is a `vX.Y.Z` tag, a `vX.Y.Z-rc` release candidate or a `feature|hotfix|docs` work branch name.
-- CI runs on pushes to `release/*.x` branches (the old `*.x` filter missed them), and a tag push fails unless `version` equals the tag and the first CHANGELOG heading is `# <tag> (`.
-- The tag workflow also rejects any tag that isn't a plain `vX.Y.Z`, such as `vX.Y.Z-rc`.
-- Release candidates: unreleased work on a release branch is collected under `# vX.Y.Z-rc` in `CHANGELOG.md` (replacing `# Unreleased`), and `version` holds the same `vX.Y.Z-rc` instead of the release branch name. Only plain `vX.Y.Z` tags exist. A task's close now requires the target branch to be merged into the task branch first, adds its items to the existing rc or asks for the version to target, and the maintainer closes contributors' pull requests. `main` is fast-forwarded to the tag, not to the release branch.
-- PHPStan is capped below 2.3.6 in `require-dev`, because the type coverage plugin's 4.x line calls a method PHPStan 2.3.6 removed and CI failed on `composer test:types`. Apps that install the package aren't affected, and the cap goes once the plugin is fixed.
-- Project documentation scaffold in `docs/` (vision, concepts, roadmap, ideas, feature and decision templates), kept out of the Composer dist archive and linked from the README and AGENTS.md.
-- Project vision in `docs/vision.md`: the problem, who the package is for, goals (a Laravel layer over the SDK, `RouteConnexRun` tracking, callbacks as events, sync calls, credential checks, overridable models and classes, `stancl/tenancy` support), non-goals, guiding principles and where it fits in RouteConnex.
-- Concepts and glossary in `docs/concepts.md`: App, Callback, Callback token, Consumer app, Credentials, Meta, RouteConnex API, RouteConnexRun, Run, Run status, Run type, Service, Sync call, System, Tenant and Tenancy preset, how they relate, and the `RouteConnex` naming prefix.
-- Vision goal for 1.0: an Artisan command that prints an App's callback configuration (URL, method, extra fields with the Callback token) as JSON for RouteConnex.
-- Ideas list in `docs/ideas.md` (dry-run mode, testing helpers, linking Runs to models, more Artisan commands that work with Tenants, a polling fallback, Apps tied to a customer, other tenancy modes) and roadmap in `docs/roadmap.md` with the vision goals and ideas grouped as Now / Next / Later.
-- Feature docs for the Now themes in `docs/features/`: the Laravel layer over the SDK (`sdk-layer.md`), Multiple Apps from config or App models (`apps.md`), `RouteConnexRun` tracking with payload purging (`run-tracking.md`), Callbacks as events (`callbacks.md`) and overridable models and classes (`overrides.md`), each with database and Laravel 12/13 compatibility notes.
-- Decision records in `docs/decisions/`: the documentation structure (0001), the `RouteConnex` prefix (0002), Apps from config or models (0003), Runs storing `app_name` or `app_id` (0004), models in config and classes in the container (0005), MongoDB through the app's model subclass (0006), Callbacks (0007), the facade mirroring the SDK with one exception base (0008) and purging payloads of old successful Runs (0009), linked from the feature docs.
-- Vision: a goal for a bundled Laravel Boost skill kept up to date by every feature, and a non-goal for queued Runs before 1.0. Roadmap: the Later themes are `planned`, and `route-connex:purge` joins the Artisan commands.
-- `RouteConnexTenancy`, a fifth extension point (ADR 0010), designed in `docs/features/overrides.md`: `enabled()`, `current()`, `findTenant()`, `run()` and `forEachTenant()`. Tenancy presets are shipped subclasses, and apps with their own tenancy bind their own, so the Artisan commands and scheduled purges work per Tenant for both. Commands that act on one App or Run require `--tenant` when tenancy is enabled; `route-connex:purge` and `route-connex:prune` run for every Tenant unless `--tenant` is given.
-- Callback design for custom tenancy (`docs/features/callbacks.md`, ADR 0007): named handler steps with a `runInAppContext()` hook to switch to the App's Tenant, the Run lookup on the same connection a Run is stored on, `callbackRoutes(name:)` so the route can be registered in several groups without breaking `route:cache`, and a note that queue workers must restore the same Tenant. A `dry-run` Run fires `RouteConnexRunSucceeded`, and a finished Run's status is final: a different finished status is ignored with a warning and still gets `200`.
-- Doc consistency fixes: the Run status shown as the `RouteConnexRunStatus` enum, `RouteConnexConfigurationException` also covering a Run with both or neither of `app_name` and `app_id`, how a config App gets its Callback token, the lifecycle wording for themes without a feature doc, and AGENTS.md pointing planning agents to the roadmap and decision records.
-- Callbacks work with any tenancy setup (the controller ignores route parameters other than `{app}`), and `RouteConnexCallbackUrlGenerator` is a replaceable extension point that builds the callback URL, so the callback configuration command can print a Tenant's own domain.
+- Dev tooling stays out of the Composer dist archive.
+- Contributor and agent docs for the Docker workflow and the task plan workflow.
+- Branching model documented, with a `version` file and branch-named CHANGELOG sections.
+- Pest test for the `version` file format.
+- CI runs on `release/*.x` pushes, and a tag push must match `version` and the CHANGELOG.
+- Tag pushes are rejected unless they are a plain `vX.Y.Z`.
+- Release candidates: unreleased work collects under `# vX.Y.Z-rc`, and tasks close into it.
+- PHPStan capped below 2.3.6 in `require-dev` until the type coverage plugin supports it.
+- Project docs in `docs/`: vision, concepts, ideas, roadmap, feature designs and decision records.
+- `RouteConnexTenancy` designed, so apps with their own tenancy get per-Tenant commands and scheduled work.
+- Callback design for custom tenancy: overridable handler steps, named routes and per-Tenant callback URLs.

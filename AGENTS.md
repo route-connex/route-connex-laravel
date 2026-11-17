@@ -104,7 +104,7 @@ An agent, preferably one that didn't do the development, validates the whole tas
 
 - Check every step and acceptance criterion against the actual code, not against the ticked boxes.
 - Do a full review looking for gaps and errors: missing behavior, edge cases, untested paths, broken publish tags or config, documentation that doesn't match the code, and compatibility with Laravel 12/13 and every supported database.
-- Check that `CHANGELOG.md` lists what each step did under `# <task branch>`, and that `version` holds the task branch name.
+- Check that `CHANGELOG.md` lists what each step did under `# <task branch>`, following the item rules (see the `CHANGELOG.md` paragraph in Phase 4), and that `version` holds the task branch name.
 - Run the full validation: `make test` and `make test-all`.
 - Write the findings in the plan's **Review** section. Fixes for any findings get added as new steps, with the user's agreement, and then go through Phase 2.
   - New steps also get an entry in the **Implementation** list.
@@ -132,7 +132,13 @@ For a contributor's pull request, the maintainer does this close on the PR branc
 - On `release/<N>.x`, work that isn't released yet goes under `# vX.Y.Z-rc` (no date), above the released sections. There is no `# Unreleased`.
 - On a work branch, the top H1 is the branch name instead (e.g. `# docs/init`) and lists only what was done in that branch. Below it come a `---` and the sections the branch started from (the target's `# vX.Y.Z-rc`, if it has one, and older releases). Each step's commit adds its items there, creating the section with the first one. The close commit folds them into the rc, so a merged branch never leaves its name behind.
 
-Items are one line each, written for package users and maintainers. The release renames `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)` (see the `package-release` skill).
+Items are written for package users and maintainers, and kept short:
+
+- One line and one sentence per item, about 15 words and never more than 25: what changed, not how or why.
+- Name the area or the main API, not every file, method, option or term. The docs, commit messages and pull requests hold the details.
+- One item per change, not per step. A fix to something added since the last release updates that item instead of adding a new one.
+
+The release renames `# vX.Y.Z-rc` to `# vX.Y.Z (YYYY-MM-DD)` (see the `package-release` skill).
 
 ```markdown
 # docs/init
