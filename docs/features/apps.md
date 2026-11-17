@@ -110,6 +110,7 @@ class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 - `InteractsWithRouteConnexApp` (`RouteConnex\Laravel\Concerns`): implements the contract from the `client_id`, `client_secret`, `callback_token` and `base_url` attributes; each method can be overridden.
 - Config Apps are wrapped in a small value object that implements the same contract, so the rest of the package only works with the contract.
 - `RouteConnexApp` (`RouteConnex\Laravel\Models`): the shipped Eloquent model on the `route_connex_apps` table, with `name`, `client_id`, `client_secret`, `callback_token` and `base_url`. The secret and the Callback token use the `encrypted` cast, and a Callback token is generated when an App is created without one. Its class is set in `models.app` in config (see [Overridable models and classes](overrides.md)). A consumer app that uses its own model sets that model there instead, since Callbacks find model Apps through `models.app`.
+- **Callback token for config Apps:** nothing generates it, so the admin sets a long random value in `ROUTE_CONNEX_CALLBACK_TOKEN` (for example from `php -r 'echo bin2hex(random_bytes(32));'`) and adds the same value to the App's callback configuration in RouteConnex. The `route-connex:callback-token` command (see the Artisan commands theme) will generate and rotate it.
 - A publish-only migration for `route_connex_apps`, under the existing `route-connex-laravel-migrations` tag.
 - The bundled Laravel Boost skill shows both kinds of App and how to implement the contract on an existing model.
 

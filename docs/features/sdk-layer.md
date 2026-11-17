@@ -52,7 +52,7 @@ $run = RouteConnex::microsoftSharepoint()->files()->post([
     'file_name' => 'invoice.pdf',
 ], meta: ['invoice_id' => $invoice->id]);
 
-$run->status; // 'created'
+$run->status; // RouteConnexRunStatus::Created
 
 $about = RouteConnex::routeConnex()->about()->get();
 $about->json('data');
@@ -86,7 +86,7 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
   - `RouteConnexRequestException`: the API answered with an error; carries the `RouteConnexResponse`
   - `RouteConnexConnectionException`: the API couldn't be reached
   - `RouteConnexAuthenticationException`: the Credentials were rejected or no token was issued
-  - `RouteConnexConfigurationException`: missing Credentials, an unknown App, or no default App when a call doesn't name one
+  - `RouteConnexConfigurationException`: missing Credentials, an unknown App, no default App when a call doesn't name one, or a Run saved with both `app_name` and `app_id`, or neither
 - The bundled Laravel Boost skill (`resources/boost/skills/route-connex-laravel-development`) documents the config, the facade and the exceptions for coding agents in consumer apps.
 - New Composer requirements: `route-connex/route-connex-sdk-php` and `illuminate/http`.
 

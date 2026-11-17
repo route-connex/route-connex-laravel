@@ -28,8 +28,8 @@ Features and roadmap themes use one of these:
 
 1. A rough idea goes into [ideas.md](ideas.md).
 2. When it matures, it gets a `features/<name>.md` (`proposed`) and the idea entry links to it.
-3. Once agreed, it's placed on the [roadmap](roadmap.md) (`planned`).
-4. A `PLAN.md` task builds it (`in progress`); see the Task Plan Workflow in [AGENTS.md](../AGENTS.md).
+3. Once agreed, it's placed on the [roadmap](roadmap.md) (`planned`). A theme can be `planned` before it has a feature doc.
+4. The feature doc is written before the theme's `PLAN.md` task starts, which builds it (`in progress`); see the Task Plan Workflow in [AGENTS.md](../AGENTS.md).
 5. When released, the feature doc is marked `shipped (vX.Y.Z)`. Usage for package users goes in the README and the release notes in `CHANGELOG.md`; the feature doc stays as the design record.
 
 Decisions that shape the project go in [decisions/](decisions/) as numbered records (`NNNN-<kebab-title>.md`).

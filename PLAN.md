@@ -24,14 +24,14 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Session:** `same`
   - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** The vision comes from the user's head, not the code: it needs a careful interview and good judgement on goals and non-goals. Same session keeps the planning context about the ecosystem.
-  - **Prompt:** Implement Step 2 of PLAN.md: Write `docs/vision.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 created `docs/vision.md` with its section headings. Interview the user section by section, draft each section from their answers, and revise until they approve it. Don't invent goals, features or facts: anything the user hasn't decided goes under Open questions. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) for context, but confirm with the user before writing anything taken from them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
+  - **Prompt:** Implement Step 2 of PLAN.md: Write `docs/vision.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 created `docs/vision.md` with its section headings. Interview the user section by section, draft each section from their answers, and revise until they approve it. Don't invent goals, features or facts: anything the user hasn't decided goes under Open questions. You may read the sibling repos `../route-connex-sdk-php` and RouteConnex's private repos (read-only) for context, but confirm with the user before writing anything taken from them. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [x] **3. Write `docs/concepts.md` with the user**
   - **Model:** `opus`
   - **Effort:** `high`
   - **Session:** `same`
   - **Resume:** `claude --ide --resume 6ecefc09-0ad9-49f7-bff9-76d54376d8e3` (gandalf)
   - **Why:** Defining the domain vocabulary needs judgement and builds directly on the vision just written in the same session.
-  - **Prompt:** Implement Step 3 of PLAN.md: Write `docs/concepts.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 wrote `docs/vision.md`; reuse its terms. Interview the user for each term and how the terms relate, draft, and revise until they approve. You may read the sibling repos `../route-connex-web`, `../route-connex-agent` and `../route-connex-sdk-php` (read-only) to keep the terms consistent with them, but confirm with the user before using anything from them. Don't invent definitions: unclear terms go under Open questions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
+  - **Prompt:** Implement Step 3 of PLAN.md: Write `docs/concepts.md` with the user. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 2 wrote `docs/vision.md`; reuse its terms. Interview the user for each term and how the terms relate, draft, and revise until they approve. You may read the sibling repos `../route-connex-sdk-php` and RouteConnex's private repos (read-only) to keep the terms consistent with them, but confirm with the user before using anything from them. Don't invent definitions: unclear terms go under Open questions. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
 - [x] **4. Write `docs/ideas.md` and `docs/roadmap.md` with the user**
   - **Model:** `sonnet`
   - **Effort:** `high`
@@ -60,11 +60,11 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
   - **Resume:** `claude --ide --resume 301035d8-61c2-4388-b85e-f83b2e1c0f59` (gandalf)
   - **Why:** It designs a new public extension point (`RouteConnexTenancy`) that affects several docs and ADRs, and it needs judgement about tenancy, queues and routing. The review session already has the findings and the user's answers.
   - **Prompt:** Implement Step 7 of PLAN.md: Callbacks and custom tenancy. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The findings are R1–R5 and R9 in PLAN.md → Review, and the user's answers are in Decisions → "Review answers". Read `docs/features/callbacks.md`, `docs/features/overrides.md`, `docs/features/run-tracking.md`, `docs/vision.md`, `docs/concepts.md`, `docs/ideas.md`, `docs/roadmap.md` and ADRs 0005 and 0007 first. Propose the `RouteConnexTenancy` methods to the user, mark them as a proposal and get approval before writing them into the docs. Ask the user about the open point in R9 (a finished Run receiving a different finished status). Don't name consumer apps or private repos in the docs. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 8.
-- [ ] **8. Consistency fixes from the review**
+- [x] **8. Consistency fixes from the review**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 301035d8-61c2-4388-b85e-f83b2e1c0f59` (gandalf)
   - **Why:** Small, already-decided wording fixes across the docs, AGENTS.md and PLAN.md. The Step 7 session knows what changed and can keep the CHANGELOG and the plan in line with it.
   - **Prompt:** Implement Step 8 of PLAN.md: Consistency fixes from the review. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The findings are R6–R8 and R10–R13 in PLAN.md → Review, and the user's answers are in Decisions → "Review answers". Step 7 has added `RouteConnexTenancy` and changed the callback docs: keep the wording consistent with that. Don't name consumer apps or private repos anywhere. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start another review.
 
@@ -72,7 +72,7 @@ claude --ide --resume 88963194-682b-472c-9d64-33580c4b6038
 
 The package is still a bare skeleton (service provider, publish tags, Docker toolchain) with no RouteConnex behavior. Before building features, the user wants to write down why the package exists, the vocabulary it uses, where it's heading and which features are planned, so that later `PLAN.md` tasks can start from written requirements instead of from scratch.
 
-The package is one part of the RouteConnex ecosystem, next to `route-connex-web`, `route-connex-agent` and `route-connex-sdk-php`, so the docs also say where it fits.
+The package is one part of the RouteConnex ecosystem, next to RouteConnex's private repos and `route-connex-sdk-php`, so the docs also say where it fits.
 
 The outcome is a `docs/` folder for maintainers and contributors (not shipped in the Composer archive), with a clear path from a raw idea to a shipped feature.
 
@@ -162,8 +162,8 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 
 **Notes:**
 - `docs/vision.md`: two lines changed to allow several credential pairs (Apps) per tenant or app, as decided here.
-- Terms checked against the private web repo and the WordPress plugin's callback handling (read-only), with each fact confirmed by the user before it was written.
-- Decided: "Service" for any API call, "Run type" for the kind of Run a System Service creates; each credential pair is an App, named in config like database connections; Callbacks are checked with a per-App Callback token (like the WordPress plugin's) plus a Run ID match, with a TODO for RouteConnex-side authentication.
+- Terms checked against a RouteConnex private repo and a RouteConnex client plugin's callback handling (read-only), with each fact confirmed by the user before it was written.
+- Decided: "Service" for any API call, "Run type" for the kind of Run a System Service creates; each credential pair is an App, named in config like database connections; Callbacks are checked with a per-App Callback token (like the client plugin's) plus a Run ID match, with a TODO for RouteConnex-side authentication.
 - Added at the user's request: a 1.0 goal in `docs/vision.md` for an Artisan command that takes an App and prints the JSON for its callback configuration in RouteConnex (URL, method, extra fields with the Callback token); the Callback token entry in `docs/concepts.md` mentions it.
 - For Step 4 (`ideas.md`): RouteConnex could tie an App to a customer instead of a single System (needs care: RouteConnex is in production); a way for API clients to request dry runs.
 
@@ -251,19 +251,25 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 
 ### Step 8: Consistency fixes from the review
 
-**Status:** todo
+**Status:** done
 
-- [ ] R6: `CHANGELOG.md`: an item for the Step 6 callback changes (Callbacks work with any tenancy setup, `RouteConnexCallbackUrlGenerator` as an extension point, the vision's callback URL line). The Step 6 notes in this file record that these changes weren't planned.
-- [ ] R7: `docs/features/sdk-layer.md`: `$run->status` shows `RouteConnexRunStatus::Created`
-- [ ] R8: `docs/features/sdk-layer.md`: `RouteConnexConfigurationException` also covers a Run with both `app_name` and `app_id`, or neither
-- [ ] R10: `docs/features/apps.md` says how a config App gets its Callback token until `route-connex:callback-token` exists (a random value set in `ROUTE_CONNEX_CALLBACK_TOKEN`), and `docs/concepts.md` → Callback token says the package generates it for model Apps
-- [ ] R11: `docs/README.md` lifecycle: a theme can be `planned` before it has a feature doc, and the doc is written before the theme's `PLAN.md` task starts
-- [ ] R12: `AGENTS.md` → Phase 1 step 2 also lists `docs/roadmap.md` and the relevant `docs/decisions/*.md`
-- [ ] R13: this file: Context and the Step 2 and 3 prompts mention "RouteConnex's private repos" and the public SDK only; the Step 3 notes say "a RouteConnex client plugin" instead of naming it
-- [ ] `CHANGELOG.md`: items under `# docs/project`
+- [x] R6: `CHANGELOG.md`: an item for the Step 6 callback changes (Callbacks work with any tenancy setup, `RouteConnexCallbackUrlGenerator` as an extension point, the vision's callback URL line). The Step 6 notes in this file record that these changes weren't planned.
+- [x] R7: `docs/features/sdk-layer.md`: `$run->status` shows `RouteConnexRunStatus::Created`
+- [x] R8: `docs/features/sdk-layer.md`: `RouteConnexConfigurationException` also covers a Run with both `app_name` and `app_id`, or neither
+- [x] R10: `docs/features/apps.md` says how a config App gets its Callback token until `route-connex:callback-token` exists (a random value set in `ROUTE_CONNEX_CALLBACK_TOKEN`), and `docs/concepts.md` → Callback token says the package generates it for model Apps
+- [x] R11: `docs/README.md` lifecycle: a theme can be `planned` before it has a feature doc, and the doc is written before the theme's `PLAN.md` task starts
+- [x] R12: `AGENTS.md` → Phase 1 step 2 also lists `docs/roadmap.md` and the relevant `docs/decisions/*.md`
+- [x] R13: this file: Context and the Step 2 and 3 prompts mention "RouteConnex's private repos" and the public SDK only; the Step 3 notes say "a RouteConnex client plugin" instead of naming it
+- [x] `CHANGELOG.md`: items under `# docs/project`
 
 **Validate:** the link check from Step 6 lists only paths that exist; `grep -rniE 'route-connex-(we[b]|agen[t])|wordpres[s]' docs README.md CHANGELOG.md PLAN.md AGENTS.md` prints nothing (the brackets keep the pattern from matching this line); `make test`
 **Commit:** `Fix documentation inconsistencies found in the review`
+
+**Notes:**
+
+- Same session as Step 7 (`301035d8-…`), on `sonnet`/`medium` as planned.
+- R6: besides the CHANGELOG item for the Step 6 callback changes, Step 7's CHANGELOG item already covered the tenancy additions.
+- R13: the private repos are now "RouteConnex's private repos" and the plugin "a RouteConnex client plugin"; the old names stay in git history.
 
 ## Acceptance Criteria
 
@@ -273,7 +279,7 @@ The outcome is a `docs/` folder for maintainers and contributors (not shipped in
 - [x] `docs/` is export-ignored (`git archive HEAD | tar -t | grep '^docs/'` prints nothing)
 - [x] AGENTS.md points planning agents to the project docs, and the README links to `docs/README.md`
 - [x] All relative links in `docs/` resolve
-- [ ] `CHANGELOG.md` lists each step's items under `# docs/project`, and `version` is `docs/project`
+- [x] `CHANGELOG.md` lists each step's items under `# docs/project`, and `version` is `docs/project`
 
 ## Review
 
