@@ -55,6 +55,8 @@ class TenantCallbackHandler extends RouteConnexCallbackHandler
 An app with its own tenancy binds its own `RouteConnexTenancy`, so Artisan commands and scheduled work can run for a Tenant:
 
 ```php
+use Closure;
+use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
 use RouteConnex\Laravel\Tenancy\RouteConnexTenancy;
 
 class AppTenancy extends RouteConnexTenancy
@@ -107,7 +109,7 @@ $this->app->bind(RouteConnexTenancy::class, AppTenancy::class);
   - `run(mixed $tenant, Closure $callback): mixed`: runs the callback in that Tenant's context and restores the previous context afterwards.
   - `forEachTenant(Closure $callback): void`: runs the callback once per Tenant, or once with no Tenant when tenancy is off, for example to purge payloads.
   - A Tenant is whatever the consumer app uses for one (a model, an ID); the package only passes it back to these methods.
-  - The package uses it only where nothing else sets the Tenant: Artisan commands and scheduled work. Calls through the facade still take the App the consumer app passes in (see [Multiple Apps](apps.md)), and Callbacks get their Tenant from the app's route group (see [Callbacks as events](callbacks.md)).
+  - The package uses it only where nothing else sets the Tenant: Artisan commands and scheduled work. Calls through the facade still take the App the consumer app passes in (see [Multiple Apps](apps.md)), and Callbacks get their Tenant from the app's route group, or from a handler subclass that calls `run()` in `runInAppContext()` (see [Callbacks as events](callbacks.md)).
 - The `stancl/tenancy` preset (a Next theme) is a shipped subclass of `RouteConnexTenancy` that the `tenancy` config section binds. An app with its own tenancy binds its own subclass instead.
 - The bundled Laravel Boost skill shows how to extend a model, bind a class and implement `RouteConnexTenancy`.
 
