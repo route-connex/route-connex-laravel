@@ -6,3 +6,7 @@ parameters:
         - database
         - routes
     tmpDir: build/phpstan
+    # The package's own config folder, where env() is allowed (Larastan only
+    # knows the app's config_path() by default).
+    configDirectories:
+        - %currentWorkingDirectory%/config

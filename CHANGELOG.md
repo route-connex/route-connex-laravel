@@ -18,3 +18,16 @@
 - `RouteConnexTenancy` designed, so apps with their own tenancy get per-Tenant commands and scheduled work.
 - Callback design for custom tenancy: overridable handler steps, named routes and per-Tenant callback URLs.
 - Shorter CHANGELOG items, with rules for their length in AGENTS.md and the release skill.
+- Package config with the RouteConnex base URL, a default App and named Apps from `.env`.
+- `RouteConnex::app()` and `RouteConnex::sdk()` give a config App's client and its SDK client.
+- `RouteConnexClientFactory` builds each App's SDK client and can be replaced in the container.
+- `RouteConnexConfigurationException` for a missing default App, an unknown App or empty Credentials.
+- The facade mirrors the SDK's endpoints: `routeConnex()`, `run()`, `microsoftSharepoint()` and `hpeContentManager()`.
+- Calls return a `RouteConnexResponse`, with Laravel's HTTP client helpers such as `json()` and `status()`.
+- Calls that create a Run take a `meta:` argument, sent where the API expects it.
+- `RouteConnexRequestException` for an error answer from the API, carrying the `RouteConnexResponse`.
+- `RouteConnexAuthenticationException` when the token request is rejected or issues no usable token.
+- `RouteConnexConnectionException` when the API can't be reached.
+- Every package exception extends `RouteConnexException`; `RouteConnex::sdk()` still throws the SDK's own.
+- Boost skill and README document the config, the facade, Meta, responses and exceptions.
+- Project docs mark the SDK layer `in progress` and note what Apps, run tracking and overrides build on.
