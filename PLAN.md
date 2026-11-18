@@ -52,11 +52,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume 927e5213-903c-4b2f-9a4d-9e22b343582e` (gandalf)
   - **Why:** Small, well-specified changes to `RouteConnexClient` and the endpoints, each with a test, using the existing `FakeApi` harness. Independent of Step 5's context.
   - **Prompt:** Implement Step 6 of PLAN.md: Review fix: token margin, request-data errors, token error message, `result()` test. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 3–6 and the "Review fixes" entries in Decisions. The code is in `src/RouteConnexClient.php`, `src/Endpoints/RouteConnexSystemEndpoint.php` and `src/Exceptions/RouteConnexAuthenticationException.php`; the SDK is in `vendor/route-connex/route-connex-sdk-php/src` (`Concerns/AuthenticatesApp.php`, `Concerns/RunsHttpRequests.php`); tests use `fakeRouteConnexApi()` and `tests/Fixtures/FakeApi.php`. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run `make lint` before validating. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 7.
-- [ ] **7. Review fix: docs**
+- [x] **7. Review fix: docs**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 927e5213-903c-4b2f-9a4d-9e22b343582e` (gandalf)
   - **Why:** Short doc edits whose wording is given in the step. The Step 6 session knows the new `\InvalidArgumentException` behaviour the docs must describe; switch with `/model`.
   - **Prompt:** Implement Step 7 of PLAN.md: Review fix: docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 7–10. Step 6 made request data that can't be encoded as JSON throw `\InvalidArgumentException`, and a token close to expiry renewed before a call; read `src/RouteConnexClient.php` and `src/Endpoints/RouteConnexSystemEndpoint.php` before writing. Use the `package-generate-skill` skill for the Boost skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -240,16 +240,22 @@ Notes:
 
 ### Step 7: Review fix: docs
 
-**Status:** todo
+**Status:** done
 
-- [ ] `docs/features/sdk-layer.md` Scope: the `RouteConnexConfigurationException` bullet lists only what the code throws today (no default App, an unknown App, empty Credentials); the `app_name`/`app_id` case stays in `run-tracking.md` and decision 0004 (Review finding 7)
-- [ ] `docs/features/sdk-layer.md` Scope and the exceptions sections of `README.md` and the Boost skill: request data that can't be encoded as JSON throws `\InvalidArgumentException`, not a package exception
-- [ ] `docs/features/sdk-layer.md` compatibility notes and the `README.md` Requirements: the SDK requires `guzzlehttp/guzzle` `^7.9`, so a Laravel 13 app that needs Guzzle 8 can't install the package yet (Review finding 8)
-- [ ] Boost skill Rules: "one client per App is kept for the life of the PHP process; its token is reused until it is about to expire" (Review finding 9)
-- [ ] Boost skill and `README.md`: a short "Testing" note: `Http::fake()` doesn't see these calls, because the SDK uses its own Guzzle client; mock the facade instead, e.g. `RouteConnex::shouldReceive('microsoftSharepoint->files->post')->andReturn(...)`, until `RouteConnex::fake()` (roadmap: Testing helpers) ships. Check that the example works with a quick test before documenting it, and don't keep the test unless it covers package behaviour (Review finding 10)
-- [ ] No new CHANGELOG items; reword the Boost skill/README item only if it became wrong
+- [x] `docs/features/sdk-layer.md` Scope: the `RouteConnexConfigurationException` bullet lists only what the code throws today (no default App, an unknown App, empty Credentials); the `app_name`/`app_id` case stays in `run-tracking.md` and decision 0004 (Review finding 7)
+- [x] `docs/features/sdk-layer.md` Scope and the exceptions sections of `README.md` and the Boost skill: request data that can't be encoded as JSON throws `\InvalidArgumentException`, not a package exception
+- [x] `docs/features/sdk-layer.md` compatibility notes and the `README.md` Requirements: the SDK requires `guzzlehttp/guzzle` `^7.9`, so a Laravel 13 app that needs Guzzle 8 can't install the package yet (Review finding 8)
+- [x] Boost skill Rules: "one client per App is kept for the life of the PHP process; its token is reused until it is about to expire" (Review finding 9)
+- [x] Boost skill and `README.md`: a short "Testing" note: `Http::fake()` doesn't see these calls, because the SDK uses its own Guzzle client; mock the facade instead, e.g. `RouteConnex::shouldReceive('microsoftSharepoint->files->post')->andReturn(...)`, until `RouteConnex::fake()` (roadmap: Testing helpers) ships. Check that the example works with a quick test before documenting it, and don't keep the test unless it covers package behaviour (Review finding 10)
+- [x] No new CHANGELOG items; reword the Boost skill/README item only if it became wrong
 
-**Validate:** `make test`; read every changed example against `src/`
+Notes:
+
+- Finding 10: the facade-mock example in the Boost skill and README was checked with a throwaway test before documenting it. `RouteConnex::shouldReceive('microsoftSharepoint->files->post')` works, and the scratch test was deleted. The typed-object variant (`shouldReceive('microsoftSharepoint')->andReturn(mock)`) fails because the facade method's return type is enforced, so it isn't documented.
+- The Boost skill was edited directly and checked against the `package-generate-skill` guidance; it wasn't regenerated.
+- The Guzzle 8 note is in `sdk-layer.md` and the README Requirements. The SDK issue is still for the user to open.
+
+**Validate:**
 **Commit:** `Align the SDK layer docs with the review fixes`
 
 ## Acceptance Criteria

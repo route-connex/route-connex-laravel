@@ -89,8 +89,9 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - Exceptions, all extending `RouteConnexException`, which wrap the SDK's and Guzzle's:
   - `RouteConnexRequestException`: the API answered a Service call with an error, including 401 and 403; carries the `RouteConnexResponse`
   - `RouteConnexConnectionException`: the API couldn't be reached
-  - `RouteConnexAuthenticationException`: the token request was rejected or no token was issued; carries the `RouteConnexResponse` when there is one
-  - `RouteConnexConfigurationException`: missing Credentials, an unknown App, no default App when a call doesn't name one, or a Run saved with both `app_name` and `app_id`, or neither
+  - `RouteConnexAuthenticationException`: the token request failed or issued no usable token; carries the `RouteConnexResponse` when there is one
+  - `RouteConnexConfigurationException`: no default App, an unknown App, or empty Credentials, checked on first use. [Run tracking](run-tracking.md) adds its own case (a Run saved with both or neither of `app_name` and `app_id`, see [decision 0004](../decisions/0004-runs-store-app-name-or-id.md))
+- Request data that can't be encoded as JSON (invalid UTF-8 in a body, or Meta on `GET`) throws `\InvalidArgumentException`, not a package exception, with the original as `previous`. It's a bug in the calling code, so `dontReport(RouteConnexException::class)` doesn't hide it.
 - The bundled Laravel Boost skill (`resources/boost/skills/route-connex-laravel-development`) documents the config, the facade and the exceptions for coding agents in consumer apps.
 - New Composer requirements: `route-connex/route-connex-sdk-php` and `illuminate/http`.
 
@@ -108,7 +109,7 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - **Databases:** this feature doesn't touch the database itself; storing Runs is covered in [`RouteConnexRun` tracking](run-tracking.md). It behaves the same on MySQL, PostgreSQL, MongoDB and SQLite.
 - **Laravel 12 and 13:** uses only APIs both have: `mergeConfigFrom`, container singletons, facades, `Illuminate\Http\Client\Response` (which wraps a PSR-7 response) and `withExceptions()->dontReport()` in `bootstrap/app.php`.
 - **PHP 8.3+:** the SDK requires PHP 8.1+, so it fits.
-- **Guzzle:** the SDK requires `guzzlehttp/guzzle` `^7.9`. Laravel 13 allows `^7.8.2 || ^8.0`; Laravel 12's constraint and the `prefer-lowest` lane must resolve to Guzzle 7.9 or later, which CI checks.
+- **Guzzle:** the SDK requires `guzzlehttp/guzzle` `^7.9`. Laravel 13 allows `^7.8.2 || ^8.0`; Laravel 12's constraint and the `prefer-lowest` lane must resolve to Guzzle 7.9 or later, which CI checks. Until the SDK allows `^8.0`, a Laravel 13 app that needs Guzzle 8 can't install the package.
 - **Windows:** nothing path- or shell-specific.
 
 ## Open questions

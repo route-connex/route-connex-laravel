@@ -115,7 +115,7 @@ Every exception extends `RouteConnex\Laravel\Exceptions\RouteConnexException` (a
 | Exception                            | When                                                                                                          |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | `RouteConnexConfigurationException`  | no default App, an unknown App name, or an empty client ID or secret                                          |
-| `RouteConnexAuthenticationException` | the token request was rejected or issued no usable token; `response()` is the `RouteConnexResponse` or `null` |
+| `RouteConnexAuthenticationException` | the token request failed or issued no usable token; `response()` is the `RouteConnexResponse` or `null` |
 | `RouteConnexConnectionException`     | the API couldn't be reached                                                                                   |
 | `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` has the API's error body         |
 
@@ -127,6 +127,8 @@ try {
     $e->response()->json();
 }
 ```
+
+Request data that can't be encoded as JSON (invalid UTF-8 in a body, or Meta on `GET`) throws `\InvalidArgumentException`, not a package exception. It's a bug in the calling code: fix the data rather than catching it as a `RouteConnexException`.
 
 To silence them all in the app's `bootstrap/app.php`:
 
@@ -140,7 +142,20 @@ To silence them all in the app's `bootstrap/app.php`:
 
 `RouteConnex::sdk()` (or `RouteConnex::app('hpe')->sdk()`) returns the configured SDK `ErClient` as it is. Calls made through it return raw PSR-7 responses and throw the SDK's and Guzzle's own exceptions, not the package's.
 
-### 7. Change how SDK clients are built
+### 7. Test code that calls the API
+
+`Http::fake()` doesn't see these calls, because the SDK sends them with its own Guzzle client. Mock the facade instead, with the chained method names:
+
+```php
+use GuzzleHttp\Psr7\Response;
+use RouteConnex\Laravel\Facades\RouteConnex;
+use RouteConnex\Laravel\Http\RouteConnexResponse;
+
+RouteConnex::shouldReceive('microsoftSharepoint->files->post')
+    ->andReturn(new RouteConnexResponse(new Response(200, [], '{"data":"ok"}')));
+```
+
+### 8. Change how SDK clients are built
 
 Extend `RouteConnex\Laravel\RouteConnexClientFactory` and bind it in a service provider, for example to add a proxy. The factory is resolved from the container each time an App's client is first built:
 
@@ -159,7 +174,8 @@ Read before executing:
 
 Rules:
 
-- one client (and one token) is kept per App for the life of the PHP process
+- one client per App is kept for the life of the PHP process; its token is reused until it is about to expire
+- the SDK requires Guzzle 7 (`guzzlehttp/guzzle` `^7.9`): on Laravel 13, an app that needs Guzzle 8 can't install the package yet
 - Apps are config-only for now; do not pass models or objects to `RouteConnex::app()`
 - the package does not store Runs or handle Callbacks yet
 

@@ -22,6 +22,7 @@ Laravel plugin for route-connex
   - PostgreSQL 14+
   - MongoDB 7.0+ (requires [`mongodb/laravel-mongodb`](https://github.com/mongodb/laravel-mongodb) ^5.12 and the `mongodb` PHP extension)
   - SQLite
+- Guzzle 7 (required through the SDK, `guzzlehttp/guzzle` ^7.9): a Laravel 13 app that needs Guzzle 8 can't install the package yet
 
 ## Installation
 
@@ -160,7 +161,7 @@ Every exception extends `RouteConnexException` and keeps the original as `getPre
 | Exception                            | When                                                                                                    |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------|
 | `RouteConnexConfigurationException`  | no default App, an unknown App, or empty Credentials                                                    |
-| `RouteConnexAuthenticationException` | the token request was rejected or issued no token; `response()` holds the API's answer, if any          |
+| `RouteConnexAuthenticationException` | the token request failed or issued no usable token; `response()` holds the API's answer, if any        |
 | `RouteConnexConnectionException`     | the API couldn't be reached                                                                             |
 | `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` holds the API's error body |
 
@@ -174,11 +175,24 @@ try {
 }
 ```
 
-To silence them all, add `$exceptions->dontReport(RouteConnexException::class);` in the `withExceptions()` callback of `bootstrap/app.php`.
+Request data that can't be encoded as JSON (invalid UTF-8 in a body, or Meta on `GET`) throws `\InvalidArgumentException` instead, since it's a bug in the calling code.
+
+To silence the package's exceptions, add `$exceptions->dontReport(RouteConnexException::class);` in the `withExceptions()` callback of `bootstrap/app.php`. This doesn't hide the `\InvalidArgumentException` above.
 
 ### The SDK client
 
 `RouteConnex::sdk()` returns the default App's configured SDK `ErClient`, for anything the facade doesn't cover. Calls made through it return raw PSR-7 responses and throw the SDK's and Guzzle's own exceptions, not the package's.
+
+### Testing
+
+`Http::fake()` doesn't see these calls, because the SDK sends them with its own Guzzle client. Mock the facade instead:
+
+```php
+RouteConnex::shouldReceive('microsoftSharepoint->files->post')
+    ->andReturn(new RouteConnexResponse(new Response(200, [], '{"data":"ok"}')));
+```
+
+`RouteConnex::fake()` is planned for a later release.
 
 ### Replacing how SDK clients are built
 
