@@ -28,8 +28,7 @@ class RouteConnex
     public function __construct(
         protected Container $container,
         protected Config $config,
-    )
-    {
+    ) {
         //
     }
 
@@ -100,7 +99,7 @@ class RouteConnex
     {
         $name = $this->config->get('route-connex-laravel.default');
 
-        if (!is_string($name) || $name === '') {
+        if (! is_string($name) || $name === '') {
             throw RouteConnexConfigurationException::noDefaultApp();
         }
 
@@ -114,7 +113,7 @@ class RouteConnex
     {
         $config = $this->config->get("route-connex-laravel.apps.{$name}");
 
-        if (!is_array($config)) {
+        if (! is_array($config)) {
             throw RouteConnexConfigurationException::unknownApp($name);
         }
 

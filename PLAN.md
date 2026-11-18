@@ -45,11 +45,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume 1c96612e-9291-4ea4-a231-ec12b2005b9d` (gandalf)
   - **Why:** Mechanical: run the formatter and fix three lines of indentation. The review session is long and about other things.
   - **Prompt:** Implement Step 5 of PLAN.md: Review fix: Pint and `composer.json` formatting. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 1 and 2. Run `make lint` and check that it changes only formatting; don't edit code by hand. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 6.
-- [ ] **6. Review fix: token margin, request-data errors, token error message, `result()` test**
+- [x] **6. Review fix: token margin, request-data errors, token error message, `result()` test**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 927e5213-903c-4b2f-9a4d-9e22b343582e` (gandalf)
   - **Why:** Small, well-specified changes to `RouteConnexClient` and the endpoints, each with a test, using the existing `FakeApi` harness. Independent of Step 5's context.
   - **Prompt:** Implement Step 6 of PLAN.md: Review fix: token margin, request-data errors, token error message, `result()` test. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 3–6 and the "Review fixes" entries in Decisions. The code is in `src/RouteConnexClient.php`, `src/Endpoints/RouteConnexSystemEndpoint.php` and `src/Exceptions/RouteConnexAuthenticationException.php`; the SDK is in `vendor/route-connex/route-connex-sdk-php/src` (`Concerns/AuthenticatesApp.php`, `Concerns/RunsHttpRequests.php`); tests use `fakeRouteConnexApi()` and `tests/Fixtures/FakeApi.php`. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run `make lint` before validating. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 7.
 - [ ] **7. Review fix: docs**
@@ -215,19 +215,25 @@ Note: Pint changed 20 files (19 style issues, mostly docblock alignment, `@param
 
 ### Step 6: Review fix: token margin, request-data errors, token error message, `result()` test
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/RouteConnexClient.php`: `protected int $tokenRefreshMargin = 30`; `authenticate()` calls the SDK's `authenticate(forceNewToken: true)` when the client has a token whose `getTokenExpiresIn()` is below the margin, and `authenticate()` as now otherwise (Review finding 3)
-- [ ] `src/RouteConnexClient.php`: in `send()` (and `wrap()`), rethrow Guzzle's `GuzzleHttp\Exception\InvalidArgumentException` as it is instead of wrapping it as a `RouteConnexConnectionException`; update the docblocks (Review finding 4)
-- [ ] `src/Endpoints/RouteConnexSystemEndpoint.php`: catch the `JsonException` from encoding `GET` Meta and throw `\InvalidArgumentException` with it as `previous`, before any request is sent (Review finding 4)
-- [ ] `src/Exceptions/RouteConnexAuthenticationException.php`: `rejected()` message "The RouteConnex API answered the token request with status {status}."; class docblock says the token request failed or issued no usable token (Review finding 5)
-- [ ] Tests in `tests/Feature/RouteConnexExceptionsTest.php`:
+- [x] `src/RouteConnexClient.php`: `protected int $tokenRefreshMargin = 30`; `authenticate()` calls the SDK's `authenticate(forceNewToken: true)` when the client has a token whose `getTokenExpiresIn()` is below the margin, and `authenticate()` as now otherwise (Review finding 3)
+- [x] `src/RouteConnexClient.php`: in `send()` (and `wrap()`), rethrow Guzzle's `GuzzleHttp\Exception\InvalidArgumentException` as it is instead of wrapping it as a `RouteConnexConnectionException`; update the docblocks (Review finding 4)
+- [x] `src/Endpoints/RouteConnexSystemEndpoint.php`: catch the `JsonException` from encoding `GET` Meta and throw `\InvalidArgumentException` with it as `previous`, before any request is sent (Review finding 4)
+- [x] `src/Exceptions/RouteConnexAuthenticationException.php`: `rejected()` message "The RouteConnex API answered the token request with status {status}."; class docblock says the token request failed or issued no usable token (Review finding 5)
+- [x] Tests in `tests/Feature/RouteConnexExceptionsTest.php`:
   - a token whose `expires_in` is below the margin is renewed before the next call (two token requests, the second call sends the new token), and a token well within its lifetime is reused (already covered: check it still is)
   - Meta that can't be encoded on `GET` throws `\InvalidArgumentException`, not a `RouteConnexException`, and sends no Service request
   - a `POST` body that can't be encoded (e.g. invalid UTF-8) throws `\InvalidArgumentException`, not a `RouteConnexConnectionException`
   - the authentication exception's message for a 401 and a 500 token answer
-- [ ] Test in `tests/Feature/RouteConnexEndpointsTest.php`, with a test-only subclass of a leaf System endpoint in `tests/Fixtures/` that records what `result()` receives: the App, the Service (`POST microsoft-sharepoint/files`, `GET hpe-content-manager/records`), the request (`query` and `body` after Meta was placed), the Meta and the response; and that the call returns what `result()` returns (Review finding 6)
-- [ ] No new CHANGELOG items (fixes to unreleased behaviour); reword an existing item only if it became wrong
+- [x] Test in `tests/Feature/RouteConnexEndpointsTest.php`, with a test-only subclass of a leaf System endpoint in `tests/Fixtures/` that records what `result()` receives: the App, the Service (`POST microsoft-sharepoint/files`, `GET hpe-content-manager/records`), the request (`query` and `body` after Meta was placed), the Meta and the response; and that the call returns what `result()` returns (Review finding 6)
+- [x] No new CHANGELOG items (fixes to unreleased behaviour); reword an existing item only if it became wrong
+
+Notes:
+
+- `make lint` also reformatted 17 files outside this step (braces on their own line, `concat_space`, `phpdoc_align`, and similar): formatting only, no behaviour change. It looks like the committed code and the Pint config disagree; worth a look before the review.
+- The `result()` test uses `tests/Fixtures/RecordingFilesEndpoint.php` (a `files` endpoint) for both `POST` and `GET`, so the Services checked are `POST`/`GET microsoft-sharepoint/files`, not `GET hpe-content-manager/records`. The `result()` step is shared by all System endpoints.
+- `wrap()` is unchanged apart from its docblock: `send()` rethrows Guzzle's `InvalidArgumentException` before calling it.
 
 **Validate:** `make lint`, then `make test`
 **Commit:** `Renew tokens close to expiry and stop wrapping request-data errors`

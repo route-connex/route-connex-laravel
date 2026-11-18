@@ -55,7 +55,7 @@ final class FakeApi
      */
     public function requests(): array
     {
-        return array_map(fn(array $entry): RequestInterface => $entry['request'], $this->history);
+        return array_map(fn (array $entry): RequestInterface => $entry['request'], $this->history);
     }
 
     /**
@@ -67,7 +67,7 @@ final class FakeApi
     {
         return array_values(array_filter(
             $this->requests(),
-            fn(RequestInterface $request): bool => !str_ends_with($request->getUri()->getPath(), '/auth/token'),
+            fn (RequestInterface $request): bool => ! str_ends_with($request->getUri()->getPath(), '/auth/token'),
         ));
     }
 
@@ -80,7 +80,7 @@ final class FakeApi
     {
         return array_values(array_filter(
             $this->requests(),
-            fn(RequestInterface $request): bool => str_ends_with($request->getUri()->getPath(), '/auth/token'),
+            fn (RequestInterface $request): bool => str_ends_with($request->getUri()->getPath(), '/auth/token'),
         ));
     }
 
@@ -90,7 +90,7 @@ final class FakeApi
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function json(array $data = [], int $status = 200): Response
     {

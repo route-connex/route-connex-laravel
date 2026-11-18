@@ -75,7 +75,8 @@ it('keeps one client per App', function () {
 });
 
 it('builds SDK clients with the factory bound in the container', function () {
-    $factory = new class extends RouteConnexClientFactory {
+    $factory = new class extends RouteConnexClientFactory
+    {
         /** @var list<string> */
         public array $built = [];
 
@@ -122,7 +123,7 @@ it('throws when an App\'s Credentials are empty', function (string $key, mixed $
 ])->throws(RouteConnexConfigurationException::class, 'RouteConnex App [hpe] has no client ID or client secret.');
 
 it('throws configuration errors as RouteConnex exceptions', function () {
-    expect(fn() => RouteConnex::app('missing'))->toThrow(RouteConnexException::class);
+    expect(fn () => RouteConnex::app('missing'))->toThrow(RouteConnexException::class);
 });
 
 it('boots without Credentials', function () {

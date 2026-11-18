@@ -14,8 +14,7 @@ class RouteConnexHpeContentManagerEndpoint
 {
     public function __construct(
         protected RouteConnexClient $client,
-    )
-    {
+    ) {
         //
     }
 

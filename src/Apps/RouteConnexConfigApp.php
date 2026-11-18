@@ -16,8 +16,7 @@ final readonly class RouteConnexConfigApp
         public string $clientId,
         public string $clientSecret,
         public ?string $baseUrl = null,
-    )
-    {
+    ) {
         //
     }
 
@@ -25,7 +24,7 @@ final readonly class RouteConnexConfigApp
      * Build the App from its config entry. The App's own `base_url` wins over
      * the global one; empty values count as unset.
      *
-     * @param array<array-key, mixed> $config
+     * @param  array<array-key, mixed>  $config
      *
      * @throws RouteConnexConfigurationException
      */

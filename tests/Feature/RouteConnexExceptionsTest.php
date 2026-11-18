@@ -81,6 +81,40 @@ describe('getting the token', function () {
         expect($this->api->serviceRequests())->toBeEmpty();
     });
 
+    it('words the message by the status of the token answer', function (int $status) {
+        $this->api->queue(FakeApi::json([], $status));
+
+        expect(fn () => RouteConnex::routeConnex()->testAuth()->get())
+            ->toThrow(RouteConnexAuthenticationException::class, "The RouteConnex API answered the token request with status {$status}.");
+    })->with([401, 500]);
+
+    it('renews a token that expires within the margin before the next call', function () {
+        $this->api->queue(
+            FakeApi::json(['access_token' => 'old', 'token_type' => 'Bearer', 'expires_in' => 10]),
+            FakeApi::json(),
+            FakeApi::token('new'),
+            FakeApi::json(),
+        );
+
+        RouteConnex::routeConnex()->testAuth()->get();
+        RouteConnex::routeConnex()->testAuth()->get();
+
+        [$first, $second] = $this->api->serviceRequests();
+
+        expect($this->api->tokenRequests())->toHaveCount(2)
+            ->and($first->getHeaderLine('Authorization'))->toBe('Bearer old')
+            ->and($second->getHeaderLine('Authorization'))->toBe('Bearer new');
+    });
+
+    it('reuses a token well within its lifetime', function () {
+        $this->api->queue(FakeApi::token('abc'), FakeApi::json(), FakeApi::json());
+
+        RouteConnex::routeConnex()->testAuth()->get();
+        RouteConnex::routeConnex()->testAuth()->get();
+
+        expect($this->api->tokenRequests())->toHaveCount(1);
+    });
+
     it('throws a connection exception when the API can\'t be reached', function () {
         $this->api->queue($failure = connectionFailure());
 
@@ -169,6 +203,29 @@ describe('calling a Service', function () {
 
         expect(RouteConnex::run()->_id_('run-1')->get()->json('data'))->toBe('ok')
             ->and($this->api->tokenRequests())->toHaveCount(1);
+    });
+});
+
+describe('request data that can\'t be encoded', function () {
+    it('throws an InvalidArgumentException for Meta that can\'t be encoded on GET, without sending a request', function () {
+        $this->api->queue(FakeApi::token());
+
+        $e = thrownBy(fn () => RouteConnex::hpeContentManager()->records()->get(meta: ['name' => "\xB1\x31"]));
+
+        expect($e)->toBeInstanceOf(InvalidArgumentException::class)
+            ->and($e)->not->toBeInstanceOf(RouteConnexException::class)
+            ->and($e->getPrevious())->toBeInstanceOf(JsonException::class)
+            ->and($this->api->serviceRequests())->toBeEmpty();
+    });
+
+    it('throws an InvalidArgumentException for a POST body that can\'t be encoded', function () {
+        $this->api->queue(FakeApi::token());
+
+        $e = thrownBy(fn () => RouteConnex::microsoftSharepoint()->files()->post(['name' => "\xB1\x31"]));
+
+        expect($e)->toBeInstanceOf(InvalidArgumentException::class)
+            ->and($e)->not->toBeInstanceOf(RouteConnexException::class)
+            ->and($this->api->serviceRequests())->toBeEmpty();
     });
 });
 

@@ -15,8 +15,7 @@ final class FakeClientFactory extends RouteConnexClientFactory
 {
     public function __construct(
         private readonly FakeApi $api,
-    )
-    {
+    ) {
         //
     }
 

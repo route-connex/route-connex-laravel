@@ -15,10 +15,10 @@ use RouteConnex\RouteConnexSdkPhp\HttpMethod;
 class RouteConnexRecordsEndpoint extends RouteConnexSystemEndpoint
 {
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
+     * @param  array<string, mixed>  $meta
      */
     public function get(array $query = [], array $body = [], array $headers = [], array $meta = []): RouteConnexResponse
     {
@@ -26,10 +26,10 @@ class RouteConnexRecordsEndpoint extends RouteConnexSystemEndpoint
     }
 
     /**
-     * @param array<string, mixed> $body
-     * @param array<string, mixed> $query
-     * @param array<string, string> $headers
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $body
+     * @param  array<string, mixed>  $query
+     * @param  array<string, string>  $headers
+     * @param  array<string, mixed>  $meta
      */
     public function post(array $body = [], array $query = [], array $headers = [], array $meta = []): RouteConnexResponse
     {

@@ -16,9 +16,9 @@ use RouteConnex\RouteConnexSdkPhp\HttpMethod;
 class RouteConnexAboutEndpoint extends RouteConnexEndpoint
 {
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
      */
     public function get(array $query = [], array $body = [], array $headers = []): RouteConnexResponse
     {

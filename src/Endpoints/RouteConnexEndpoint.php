@@ -17,8 +17,7 @@ abstract class RouteConnexEndpoint
 {
     public function __construct(
         protected RouteConnexClient $client,
-    )
-    {
+    ) {
         //
     }
 
@@ -28,9 +27,9 @@ abstract class RouteConnexEndpoint
     abstract protected function sdkEndpoint(): Endpoint;
 
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
      */
     protected function send(HttpMethod $method, array $query, array $body, array $headers): RouteConnexResponse
     {

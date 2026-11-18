@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RouteConnex\Laravel\Endpoints;
 
+use InvalidArgumentException;
+use JsonException;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
 use RouteConnex\Laravel\Http\RouteConnexResponse;
 use RouteConnex\RouteConnexSdkPhp\HttpMethod;
@@ -19,16 +21,22 @@ abstract class RouteConnexSystemEndpoint extends RouteConnexEndpoint
      * `GET`, as an array in the body otherwise), send the request and return
      * the call's result.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
+     * @param  array<string, mixed>  $meta
+     *
+     * @throws InvalidArgumentException When the Meta can't be encoded as JSON
      */
     protected function call(HttpMethod $method, array $query, array $body, array $headers, array $meta): RouteConnexResponse
     {
         if ($meta !== []) {
             if ($method === HttpMethod::GET) {
-                $query['_meta_'] = json_encode($meta, JSON_THROW_ON_ERROR);
+                try {
+                    $query['_meta_'] = json_encode($meta, JSON_THROW_ON_ERROR);
+                } catch (JsonException $e) {
+                    throw new InvalidArgumentException('The Meta can\'t be encoded as JSON: '.$e->getMessage(), 0, $e);
+                }
             } else {
                 $body['_meta_'] = $meta;
             }
@@ -38,7 +46,7 @@ abstract class RouteConnexSystemEndpoint extends RouteConnexEndpoint
 
         return $this->result(
             app: $this->client->getApp(),
-            service: strtoupper($method->value) . ' ' . $this->sdkEndpoint()::getPath(),
+            service: strtoupper($method->value).' '.$this->sdkEndpoint()::getPath(),
             request: ['query' => $query, 'body' => $body],
             meta: $meta,
             response: $response,
@@ -50,9 +58,9 @@ abstract class RouteConnexSystemEndpoint extends RouteConnexEndpoint
      * itself for now; `RouteConnexRun` tracking changes this step to store
      * and return the Run.
      *
-     * @param string $service The Service and HTTP method, e.g. `POST microsoft-sharepoint/files`.
-     * @param array{query: array<string, mixed>, body: array<string, mixed>} $request
-     * @param array<string, mixed> $meta
+     * @param  string  $service  The Service and HTTP method, e.g. `POST microsoft-sharepoint/files`.
+     * @param  array{query: array<string, mixed>, body: array<string, mixed>}  $request
+     * @param  array<string, mixed>  $meta
      */
     protected function result(RouteConnexConfigApp $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexResponse
     {

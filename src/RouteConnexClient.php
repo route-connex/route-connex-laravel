@@ -6,7 +6,9 @@ namespace RouteConnex\Laravel;
 
 use ErrorException;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\InvalidArgumentException as GuzzleInvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
+use InvalidArgumentException;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
 use RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint;
 use RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint;
@@ -27,11 +29,16 @@ use TypeError;
  */
 class RouteConnexClient
 {
+    /**
+     * Seconds before expiry from which a token is renewed instead of reused,
+     * so it can't expire between getting it and the Service receiving it.
+     */
+    protected int $tokenRefreshMargin = 30;
+
     public function __construct(
         protected RouteConnexConfigApp $app,
         protected ErClient $sdk,
-    )
-    {
+    ) {
         //
     }
 
@@ -75,13 +82,14 @@ class RouteConnexClient
      * the endpoint needs one, and wraps the SDK's and Guzzle's exceptions in
      * package exceptions.
      *
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
      *
      * @throws RouteConnexAuthenticationException
      * @throws RouteConnexConnectionException
      * @throws RouteConnexRequestException
+     * @throws InvalidArgumentException When the request data can't be encoded (invalid UTF-8 in the body, say)
      */
     public function send(Endpoint $endpoint, HttpMethod $method, array $query = [], array $body = [], array $headers = []): RouteConnexResponse
     {
@@ -91,13 +99,17 @@ class RouteConnexClient
 
         try {
             return new RouteConnexResponse($endpoint->request($method, $query, $body, $headers));
+        } catch (GuzzleInvalidArgumentException $e) {
+            // The caller's data can't be encoded: not a failure of the API.
+            throw $e;
         } catch (GuzzleException $e) {
             throw $this->wrap($e, authenticating: false);
         }
     }
 
     /**
-     * Get a token if there is no valid one. It is a separate step so a failure
+     * Get a token if there is no valid one, or the one held expires within the
+     * refresh margin. It is a separate step so a failure
      * to authenticate can't be confused with an error answer to a Service call.
      *
      * @throws RouteConnexAuthenticationException
@@ -106,7 +118,9 @@ class RouteConnexClient
     protected function authenticate(): void
     {
         try {
-            $this->sdk->authenticate();
+            $expiresIn = $this->sdk->getTokenExpiresIn();
+
+            $this->sdk->authenticate(forceNewToken: $expiresIn !== null && $expiresIn < $this->tokenRefreshMargin);
         } catch (GuzzleException $e) {
             throw $this->wrap($e, authenticating: true);
         } catch (ErrorException|TypeError $e) {
@@ -115,11 +129,15 @@ class RouteConnexClient
             throw RouteConnexAuthenticationException::noToken($e);
         }
 
-        if (!$this->sdk->isAuthenticated()) {
+        if (! $this->sdk->isAuthenticated()) {
             throw RouteConnexAuthenticationException::noToken();
         }
     }
 
+    /**
+     * Wrap a Guzzle failure. Guzzle's `InvalidArgumentException` never gets
+     * here: `send()` rethrows it, as it is the caller's data and not the API.
+     */
     protected function wrap(GuzzleException $e, bool $authenticating): RouteConnexException
     {
         $response = $e instanceof RequestException ? $e->getResponse() : null;

@@ -18,15 +18,14 @@ class RouteConnexRunIdEndpoint extends RouteConnexEndpoint
     public function __construct(
         RouteConnexClient $client,
         protected string $runId,
-    )
-    {
+    ) {
         parent::__construct($client);
     }
 
     /**
-     * @param array<string, mixed> $query
-     * @param array<string, mixed> $body
-     * @param array<string, string> $headers
+     * @param  array<string, mixed>  $query
+     * @param  array<string, mixed>  $body
+     * @param  array<string, string>  $headers
      */
     public function get(array $query = [], array $body = [], array $headers = []): RouteConnexResponse
     {
