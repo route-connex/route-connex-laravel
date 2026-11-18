@@ -4,6 +4,9 @@
 - `RouteConnex::app()` and `RouteConnex::sdk()` give a config App's client and its SDK client.
 - `RouteConnexClientFactory` builds each App's SDK client and can be replaced in the container.
 - `RouteConnexConfigurationException` for a missing default App, an unknown App or empty Credentials.
+- The facade mirrors the SDK's endpoints: `routeConnex()`, `run()`, `microsoftSharepoint()` and `hpeContentManager()`.
+- Calls return a `RouteConnexResponse`, with Laravel's HTTP client helpers such as `json()` and `status()`.
+- Calls that create a Run take a `meta:` argument, sent where the API expects it.
 
 ---
 

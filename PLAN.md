@@ -17,11 +17,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** Sets the shape every later step and feature builds on (manager, App-bound client, factory seam, exceptions base). The planning session already holds the design and the SDK's internals.
   - **Prompt:** Implement Step 1 of PLAN.md: Dependencies, config, Apps by name and the client factory. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions. Read the SDK in `../route-connex-sdk-php` (`ErClient`, `Concerns/AuthenticatesApp.php`) and use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. The mirrored endpoint tree and `RouteConnexResponse`**
+- [x] **2. The mirrored endpoint tree and `RouteConnexResponse`**
   - **Model:** `sonnet`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** Typical feature work with tests, but many small classes and a test harness (Guzzle `MockHandler` through the factory) that have to be right. It builds directly on Step 1's classes.
   - **Prompt:** Implement Step 2 of PLAN.md: The mirrored endpoint tree and `RouteConnexResponse`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions. Step 1 added the `RouteConnex` manager with `app()` and `sdk()`, the App-bound `RouteConnexClient`, `RouteConnexConfigApp` and `RouteConnexClientFactory`. Mirror the SDK endpoints in `../route-connex-sdk-php/src/Endpoints`; use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [ ] **3. Package exceptions wrapping the SDK's and Guzzle's**
@@ -120,17 +120,24 @@ State found during planning:
 
 ### Step 2: The mirrored endpoint tree and `RouteConnexResponse`
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/Http/RouteConnexResponse.php`: extends `Illuminate\Http\Client\Response`
-- [ ] `src/Endpoints/RouteConnexEndpoint.php`: abstract base; holds the `RouteConnexClient`, builds its SDK endpoint, sends the request through the client's single sending method, returns a `RouteConnexResponse`
-- [ ] `src/Endpoints/RouteConnexSystemEndpoint.php`: abstract; adds `meta:` placement (`_meta_` JSON in the query for `GET`, array in the body otherwise) and the single protected step that turns the response into the call's result (returns the `RouteConnexResponse` for now; the run-tracking task changes it). The step receives what run-tracking will need: the App, the Service (`<METHOD> <path>`), the request data, the Meta and the response.
-- [ ] Group and leaf classes as in Decisions, each offering only the SDK's allowed methods with the signatures from Decisions
-- [ ] `RouteConnexClient` and `RouteConnex`: `routeConnex()`, `run()`, `microsoftSharepoint()`, `hpeContentManager()`; facade `@method` docblocks for them
-- [ ] Test harness: a test `RouteConnexClientFactory` subclass and a test-only `ErClient` subclass using Guzzle's `MockHandler` with a history middleware (e.g. under `tests/Fixtures/`, with a Pest helper to set it up)
-- [ ] Tests (`tests/Feature/RouteConnexEndpointsTest.php`): each endpoint and method sends the right HTTP method, URI (base URL, `v1`, path, Run ID), query, JSON body and `Authorization` header; `about()` sends no token request; the token is requested once per App across several calls; `meta:` placement for `GET` and `POST`, and replacing an existing `_meta_`; empty `meta:` leaves the data alone; headers are passed through; `app('name')` uses that App's Credentials and base URL; `RouteConnexResponse` exposes `json()` and `status()`
-- [ ] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
-  **Validate:** `make test`
+- [x] `src/Http/RouteConnexResponse.php`: extends `Illuminate\Http\Client\Response`
+- [x] `src/Endpoints/RouteConnexEndpoint.php`: abstract base for the leaf endpoints; holds the `RouteConnexClient`, builds its SDK endpoint, sends the request through `RouteConnexClient::send()` (the single sending method), returns a `RouteConnexResponse`
+- [x] `src/Endpoints/RouteConnexSystemEndpoint.php`: abstract; adds `meta:` placement (`_meta_` JSON in the query for `GET`, array in the body otherwise) and the single protected step that turns the response into the call's result (returns the `RouteConnexResponse` for now; the run-tracking task changes it). The step receives what run-tracking will need: the App, the Service (`<METHOD> <path>`), the request data, the Meta and the response.
+- [x] Group and leaf classes as in Decisions (groups are plain classes that return the leaves; only leaves extend the base), each offering only the SDK's allowed methods with the signatures from Decisions
+- [x] `RouteConnexClient` and `RouteConnex`: `routeConnex()`, `run()`, `microsoftSharepoint()`, `hpeContentManager()`; facade `@method` docblocks for them
+- [x] Test harness in `tests/Fixtures/`: `FakeApi` (a queue of answers through Guzzle's `MockHandler`, plus a history of the requests), `FakeErClient` (an `ErClient` whose Guzzle client uses it) and `FakeClientFactory`; the `fakeRouteConnexApi()` helper in `tests/Pest.php` binds them
+- [x] Tests (`tests/Feature/RouteConnexEndpointsTest.php`): each endpoint and method sends the right HTTP method, URI (base URL, `v1`, path, Run ID), query, JSON body and `Authorization` header; `about()` sends no token request; the token is requested once per App across several calls; `meta:` placement for `GET` and `POST`, and replacing an existing `_meta_`; empty `meta:` leaves the data alone; headers are passed through; `app('name')` uses that App's Credentials and base URL; `RouteConnexResponse` exposes `json()` and `status()`
+- [x] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
+
+**Notes:**
+
+- `RouteConnexClient::send()` is where Step 3 adds the authenticate-then-send split and the exception mapping.
+- `RouteConnexSystemEndpoint::result()` receives the App, the Service (`POST microsoft-sharepoint/files`), the request (`query` and `body` after the Meta was placed), the Meta and the response.
+- The IDE had reformatted four Step 1 files (braces on their own line); `make lint` restored the Pint style, so they show up in this step's diff.
+
+**Validate:** `make test`
   **Commit:** `Mirror the SDK endpoint tree in the facade, returning RouteConnexResponse`
 
 ### Step 3: Package exceptions wrapping the SDK's and Guzzle's

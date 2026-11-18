@@ -7,6 +7,10 @@ namespace RouteConnex\Laravel;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Container\Container;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint;
+use RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint;
+use RouteConnex\Laravel\Endpoints\RouteConnexRouteConnexEndpoint;
+use RouteConnex\Laravel\Endpoints\RouteConnexRunEndpoint;
 use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
 use RouteConnex\RouteConnexSdkPhp\ErClient;
 
@@ -37,6 +41,46 @@ class RouteConnex
     public function app(string $name): RouteConnexClient
     {
         return $this->clients[$name] ??= $this->makeClient($this->configApp($name));
+    }
+
+    /**
+     * The default App's `route-connex/*` services.
+     *
+     * @throws RouteConnexConfigurationException
+     */
+    public function routeConnex(): RouteConnexRouteConnexEndpoint
+    {
+        return $this->defaultApp()->routeConnex();
+    }
+
+    /**
+     * The default App's `run/*` services.
+     *
+     * @throws RouteConnexConfigurationException
+     */
+    public function run(): RouteConnexRunEndpoint
+    {
+        return $this->defaultApp()->run();
+    }
+
+    /**
+     * The default App's `microsoft-sharepoint/*` services.
+     *
+     * @throws RouteConnexConfigurationException
+     */
+    public function microsoftSharepoint(): RouteConnexMicrosoftSharepointEndpoint
+    {
+        return $this->defaultApp()->microsoftSharepoint();
+    }
+
+    /**
+     * The default App's `hpe-content-manager/*` services.
+     *
+     * @throws RouteConnexConfigurationException
+     */
+    public function hpeContentManager(): RouteConnexHpeContentManagerEndpoint
+    {
+        return $this->defaultApp()->hpeContentManager();
     }
 
     /**

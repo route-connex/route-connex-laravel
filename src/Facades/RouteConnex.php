@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static \RouteConnex\Laravel\RouteConnexClient app(string $name)
+ * @method static \RouteConnex\Laravel\Endpoints\RouteConnexRouteConnexEndpoint routeConnex()
+ * @method static \RouteConnex\Laravel\Endpoints\RouteConnexRunEndpoint run()
+ * @method static \RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint microsoftSharepoint()
+ * @method static \RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint hpeContentManager()
  * @method static \RouteConnex\RouteConnexSdkPhp\ErClient sdk()
  *
  * @see \RouteConnex\Laravel\RouteConnex
