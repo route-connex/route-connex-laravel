@@ -111,6 +111,10 @@ class RouteConnexRun extends \RouteConnex\Laravel\Models\RouteConnexRun
 - **MongoDB 7.0+:** the consumer app extends the model with laravel-mongodb's `DocumentModel` trait. JSON values are stored as subdocuments, and purging sets them to null. A Run on MongoDB can belong to an App on an SQL connection, and the other way round.
 - **Laravel 12 and 13:** enum casts, `array` casts, model events and the scheduler's `Schedule::call()` exist in both.
 
+## Already in the code
+
+[Laravel layer over the SDK](sdk-layer.md) already sends every System call through one protected step (`RouteConnexSystemEndpoint::result()`), which receives the App, the Service, the request data, the Meta and the response, and returns the `RouteConnexResponse`. This feature changes that step to store the Run and return a `RouteConnexRun`.
+
 ## Open questions
 
 None at the moment.

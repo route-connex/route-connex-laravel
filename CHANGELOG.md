@@ -11,6 +11,8 @@
 - `RouteConnexAuthenticationException` when the token request is rejected or issues no usable token.
 - `RouteConnexConnectionException` when the API can't be reached.
 - Every package exception extends `RouteConnexException`; `RouteConnex::sdk()` still throws the SDK's own.
+- Boost skill and README document the config, the facade, Meta, responses and exceptions.
+- Project docs mark the SDK layer `in progress` and note what Apps, run tracking and overrides build on.
 
 ---
 

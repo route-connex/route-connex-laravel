@@ -126,6 +126,10 @@ $this->app->bind(RouteConnexTenancy::class, AppTenancy::class);
 - **Tenancy:** `run()` must restore the previous context even when the callback throws, so a long-running worker (queues, Octane) never stays in the wrong Tenant.
 - **Laravel 12 and 13:** container bindings, `$connection` and `$table` overrides exist in both.
 
+## Already in the code
+
+`RouteConnexClientFactory` already ships with [Laravel layer over the SDK](sdk-layer.md): it builds each App's SDK client, is resolved from the container every time a new App's client is built, and has small protected steps (`newClient()`, `configure()`). Binding a subclass already works; this feature documents it alongside the other replaceable classes.
+
 ## Open questions
 
 None at the moment.

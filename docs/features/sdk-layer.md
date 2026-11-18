@@ -1,6 +1,6 @@
 # Laravel layer over the SDK
 
-**Status:** planned
+**Status:** in progress
 **Target version:** 0.x
 
 ## Summary
@@ -40,25 +40,27 @@ return [
 ];
 ```
 
-The facade mirrors the SDK's endpoint tree. A Service that works with a System returns the `RouteConnexRun` the package stored; the others return a `RouteConnexResponse`. Meta is a named argument, and the package puts it where the API expects it (JSON in the query for `GET`, in the body otherwise):
+The facade mirrors the SDK's endpoint tree, with the SDK's names and signatures. Calls return a `RouteConnexResponse` (once [`RouteConnexRun` tracking](run-tracking.md) lands, a Service that works with a System returns the `RouteConnexRun` the package stored instead). Meta is a named argument on System endpoints, and the package puts it where the API expects it (JSON in the query for `GET`, in the body otherwise); a non-empty `meta:` replaces any `_meta_` already in the data. `RouteConnex::app('name')` returns the same API for another config App:
 
 ```php
 use RouteConnex\Laravel\Facades\RouteConnex;
 
-$run = RouteConnex::microsoftSharepoint()->files()->post([
+$response = RouteConnex::microsoftSharepoint()->files()->post([
     'site_name' => 'Finance',
     'channel' => 'Invoices',
     'file_path' => $path,
     'file_name' => 'invoice.pdf',
 ], meta: ['invoice_id' => $invoice->id]);
 
-$run->status; // RouteConnexRunStatus::Created
+$response->json('data');
 
 $about = RouteConnex::routeConnex()->about()->get();
 $about->json('data');
+
+RouteConnex::app('hpe')->hpeContentManager()->records()->get();
 ```
 
-For anything the layer doesn't cover yet, the configured SDK client is available:
+For anything the layer doesn't cover yet, the configured SDK client is available. Calls made through it return raw PSR-7 responses and throw the SDK's and Guzzle's own exceptions:
 
 ```php
 RouteConnex::sdk()->run()->_id_($runId)->get();
@@ -78,19 +80,21 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - `config/route-connex-laravel.php` with the base URL, the default App and the `apps` list (Apps are detailed in [Multiple Apps](apps.md)). The base URL is global; an App can override it.
 - The `RouteConnex` facade over a container singleton, which builds one SDK `ErClient` per App.
 - A fluent API that mirrors the SDK's endpoints, each one mapped explicitly, so return types are known and the Boost skill can list them. A new SDK endpoint needs a small change here before the facade offers it; until then it's reachable through `RouteConnex::sdk()`.
-  - endpoints under a System (`microsoftSharepoint()`, `hpeContentManager()`) create a Run and return a `RouteConnexRun` (see [`RouteConnexRun` tracking](run-tracking.md))
-  - the others (`routeConnex()`, `run()`) return a `RouteConnexResponse`, which extends Laravel's HTTP client `Response` (`json()`, `status()`, `successful()`, `throw()`)
-  - a `meta:` argument on every call that creates a Run
-- `RouteConnex::sdk()` returns the configured `ErClient` as a fallback.
+  - every call returns a `RouteConnexResponse`, which extends Laravel's HTTP client `Response` (`json()`, `status()`, `successful()`); Guzzle throws on 4xx/5xx, so a returned response is always successful
+  - endpoints under a System (`microsoftSharepoint()`, `hpeContentManager()`) all go through one protected step that turns the response into the call's result. It returns the response for now; [`RouteConnexRun` tracking](run-tracking.md) changes it to store and return a `RouteConnexRun`
+  - full SDK signatures (`get(array $query, array $body, array $headers)`, `post(array $body, array $query, array $headers)`), plus a `meta:` argument on every call under a System
+  - `RouteConnex::app(string $name)` returns the client of a config App; [Multiple Apps](apps.md) widens it to App models
+- `RouteConnex::sdk()` returns the configured `ErClient` as a fallback; it throws the SDK's and Guzzle's own exceptions.
+- `RouteConnexClientFactory` builds each App's SDK client and is resolved from the container, so a bound subclass changes how clients are built (see [Overridable models and classes](overrides.md)).
 - Exceptions, all extending `RouteConnexException`, which wrap the SDK's and Guzzle's:
-  - `RouteConnexRequestException`: the API answered with an error; carries the `RouteConnexResponse`
+  - `RouteConnexRequestException`: the API answered a Service call with an error, including 401 and 403; carries the `RouteConnexResponse`
   - `RouteConnexConnectionException`: the API couldn't be reached
-  - `RouteConnexAuthenticationException`: the Credentials were rejected or no token was issued
+  - `RouteConnexAuthenticationException`: the token request was rejected or no token was issued; carries the `RouteConnexResponse` when there is one
   - `RouteConnexConfigurationException`: missing Credentials, an unknown App, no default App when a call doesn't name one, or a Run saved with both `app_name` and `app_id`, or neither
 - The bundled Laravel Boost skill (`resources/boost/skills/route-connex-laravel-development`) documents the config, the facade and the exceptions for coding agents in consumer apps.
 - New Composer requirements: `route-connex/route-connex-sdk-php` and `illuminate/http`.
 
-**Needs from the SDK:** a way to give an `ErClient` an access token from outside (or a token store), so the package can cache each App's token in Laravel's cache instead of requesting a new one in every PHP request. Until the SDK has it, each new client requests its own token.
+**Needs from the SDK (not done yet):** a way to give an `ErClient` an access token from outside (or a token store), so the package can cache each App's token in Laravel's cache instead of requesting a new one in every PHP request. Until the SDK has it, each new client requests its own token.
 
 ## Non-goals
 

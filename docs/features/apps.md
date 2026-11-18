@@ -129,6 +129,10 @@ class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 - **Tenancy:** the model uses its connection as usual, so on a database-per-Tenant setup it's read from and written to the Tenant's database. The package keeps no static state per App across Tenants: an SDK client cached for a model is keyed by its connection, class and key, so long-running workers (queues, Octane) don't mix Tenants.
 - **Laravel 12 and 13:** `encrypted` casts, `publishesMigrations` and model events exist in both.
 
+## Already in the code
+
+[Laravel layer over the SDK](sdk-layer.md) already ships `RouteConnex::app(string $name)` for config Apps. Config Apps are held in the readonly `RouteConnexConfigApp` (name, client ID, client secret, base URL). This feature widens `app()` to `string|RouteConnexAppContract`, adds the contract and the models, and makes `RouteConnexConfigApp` implement the contract.
+
 ## Open questions
 
 None at the moment.

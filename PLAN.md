@@ -31,11 +31,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** A precise mapping table with one test per row; the error cases of the SDK's `authenticate()` need care. Same area and test harness as Step 2.
   - **Prompt:** Implement Step 3 of PLAN.md: Package exceptions wrapping the SDK's and Guzzle's. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the mapping is in PLAN.md → Decisions. Step 1 added `RouteConnexException` and `RouteConnexConfigurationException`; Step 2 added the endpoint tree, the single place where requests are sent, and the `MockHandler` test harness. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
-- [ ] **4. Boost skill, README and project docs**
+- [x] **4. Boost skill, README and project docs**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume de36c929-6f91-4387-811f-3148d7c1ef3b` (gandalf)
   - **Why:** Documentation that must match the code exactly; a fresh session reads the code as it is instead of remembering what was intended.
   - **Prompt:** Implement Step 4 of PLAN.md: Boost skill, README and project docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 1–3 added the config, the `RouteConnex` facade with `app()`, the mirrored endpoint tree, `RouteConnexResponse`, `RouteConnexClientFactory` and the package exceptions; read them in `src/` and the tests before writing anything, and document what the code does. Use the `package-generate-skill` skill for the Boost skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -162,29 +162,29 @@ State found during planning:
 
 ### Step 4: Boost skill, README and project docs
 
-**Status:** todo
+**Status:** done
 
-- [ ] `resources/boost/skills/route-connex-laravel-development/SKILL.md`: config and `.env` keys, the facade and `app()`, the mirrored endpoints with their signatures and `meta:`, `RouteConnexResponse`, `sdk()` and its raw exceptions, the exception classes, binding a `RouteConnexClientFactory` subclass (with the `package-generate-skill` skill)
-- [ ] `README.md`: a Configuration section (`.env` keys, publishing the config) and a Usage section (calls, `app()`, Meta, responses, exceptions, `sdk()`); keep the "under development" banner
-- [ ] `docs/features/sdk-layer.md`: status `in progress`; align the Developer experience and Scope with what was built (System endpoints return `RouteConnexResponse` until run-tracking; `app('name')` for config Apps; full SDK signatures plus `meta:`; `meta:` replaces `_meta_`; the 401/403 mapping; `sdk()` throws raw exceptions; `RouteConnexClientFactory` ships here)
-- [ ] `docs/roadmap.md`: the "Laravel layer over the SDK" theme to `in progress`
-- [ ] `docs/features/apps.md`, `docs/features/run-tracking.md`, `docs/features/overrides.md`: short notes on what already exists and what each task changes (widen `app()` to the contract and make `RouteConnexConfigApp` implement it; change the System endpoints' result step to return a `RouteConnexRun`; `RouteConnexClientFactory` already shipped)
-- [ ] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
+- [x] `resources/boost/skills/route-connex-laravel-development/SKILL.md`: config and `.env` keys, the facade and `app()`, the mirrored endpoints with their signatures and `meta:`, `RouteConnexResponse`, `sdk()` and its raw exceptions, the exception classes, binding a `RouteConnexClientFactory` subclass (with the `package-generate-skill` skill)
+- [x] `README.md`: a Configuration section (`.env` keys, publishing the config) and a Usage section (calls, `app()`, Meta, responses, exceptions, `sdk()`); keep the "under development" banner
+- [x] `docs/features/sdk-layer.md`: status `in progress`; align the Developer experience and Scope with what was built (System endpoints return `RouteConnexResponse` until run-tracking; `app('name')` for config Apps; full SDK signatures plus `meta:`; `meta:` replaces `_meta_`; the 401/403 mapping; `sdk()` throws raw exceptions; `RouteConnexClientFactory` ships here)
+- [x] `docs/roadmap.md`: the "Laravel layer over the SDK" theme to `in progress`
+- [x] `docs/features/apps.md`, `docs/features/run-tracking.md`, `docs/features/overrides.md`: short notes on what already exists and what each task changes (widen `app()` to the contract and make `RouteConnexConfigApp` implement it; change the System endpoints' result step to return a `RouteConnexRun`; `RouteConnexClientFactory` already shipped)
+- [x] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
   **Validate:** `make test`; read the Boost skill and README examples against `src/`
   **Commit:** `Document the SDK layer in the Boost skill, README and project docs`
 
 ## Acceptance Criteria
 
-- [ ] With `ROUTE_CONNEX_CLIENT_ID` and `ROUTE_CONNEX_CLIENT_SECRET` set, `RouteConnex::routeConnex()->testAuth()->get()` authenticates and returns a `RouteConnexResponse`.
-- [ ] `RouteConnex::app('name')` uses that config App's Credentials and base URL; the App's `base_url` overrides the global one.
-- [ ] Every SDK endpoint and HTTP method is offered by the facade with the SDK's own names and signatures; System endpoints also take `meta:` and put it where the API expects it.
-- [ ] Every System endpoint call goes through one protected step that the run-tracking task can change to return a `RouteConnexRun`.
-- [ ] Missing or unknown Apps and empty Credentials throw `RouteConnexConfigurationException` on first use, not at boot.
-- [ ] Token, connection and Service failures throw the package exceptions from the table in Decisions, all extending `RouteConnexException`, with the API's response available where there is one.
-- [ ] `RouteConnex::sdk()` returns the configured `ErClient`.
-- [ ] Binding a `RouteConnexClientFactory` subclass changes how SDK clients are built.
-- [ ] The Boost skill, README, `sdk-layer.md` and the roadmap describe what the code does; the feature and theme are `in progress`.
-- [ ] `make test` passes, and CI passes on PHP 8.3–8.5, Laravel 12/13 and both stability lanes.
+- [x] With `ROUTE_CONNEX_CLIENT_ID` and `ROUTE_CONNEX_CLIENT_SECRET` set, `RouteConnex::routeConnex()->testAuth()->get()` authenticates and returns a `RouteConnexResponse`.
+- [x] `RouteConnex::app('name')` uses that config App's Credentials and base URL; the App's `base_url` overrides the global one.
+- [x] Every SDK endpoint and HTTP method is offered by the facade with the SDK's own names and signatures; System endpoints also take `meta:` and put it where the API expects it.
+- [x] Every System endpoint call goes through one protected step that the run-tracking task can change to return a `RouteConnexRun`.
+- [x] Missing or unknown Apps and empty Credentials throw `RouteConnexConfigurationException` on first use, not at boot.
+- [x] Token, connection and Service failures throw the package exceptions from the table in Decisions, all extending `RouteConnexException`, with the API's response available where there is one.
+- [x] `RouteConnex::sdk()` returns the configured `ErClient`.
+- [x] Binding a `RouteConnexClientFactory` subclass changes how SDK clients are built.
+- [x] The Boost skill, README, `sdk-layer.md` and the roadmap describe what the code does; the feature and theme are `in progress`.
+- [x] `make test` passes, and CI passes on PHP 8.3–8.5, Laravel 12/13 and both stability lanes.
 
 ## Review
 

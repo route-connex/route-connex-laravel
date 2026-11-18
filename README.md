@@ -45,6 +45,8 @@ Or, you may publish each resource individually:
 php artisan vendor:publish --tag="route-connex-laravel-config"
 ```
 
+See [Configuration](#configuration) for what the config holds.
+
 ### Publishing and Running the Migrations
 
 ```bash
@@ -70,9 +72,121 @@ php artisan vendor:publish --tag="route-connex-laravel-lang"
 php artisan vendor:publish --tag="route-connex-laravel-assets"
 ```
 
+## Configuration
+
+Set the App's Credentials in `.env`:
+
+```dotenv
+ROUTE_CONNEX_CLIENT_ID=your-client-id
+ROUTE_CONNEX_CLIENT_SECRET=your-client-secret
+
+# Optional
+ROUTE_CONNEX_BASE_URL=https://app.routeconnex.com/api
+ROUTE_CONNEX_APP=default
+```
+
+`ROUTE_CONNEX_BASE_URL` is the API URL for every App, and `ROUTE_CONNEX_APP` names the default App. To add Apps, [publish the config](#publishing-the-configuration-file) and list them under `apps` in `config/route-connex-laravel.php`. An App can set its own `base_url`, which wins over the global one:
+
+```php
+'apps' => [
+    'default' => [
+        'client_id' => env('ROUTE_CONNEX_CLIENT_ID'),
+        'client_secret' => env('ROUTE_CONNEX_CLIENT_SECRET'),
+    ],
+    'hpe' => [
+        'client_id' => env('ROUTE_CONNEX_HPE_CLIENT_ID'),
+        'client_secret' => env('ROUTE_CONNEX_HPE_CLIENT_SECRET'),
+        'base_url' => env('ROUTE_CONNEX_HPE_BASE_URL'),
+    ],
+],
+```
+
+The config is checked when an App is first used, not at boot, so an app without Credentials still boots.
+
 ## Usage
 
-<!-- Add a basic usage example here. -->
+The `RouteConnex` facade mirrors the endpoints of [`route-connex/route-connex-sdk-php`](https://packagist.org/packages/route-connex/route-connex-sdk-php), with the SDK's names. Calls go to the default App:
+
+```php
+use RouteConnex\Laravel\Facades\RouteConnex;
+
+RouteConnex::routeConnex()->about()->get();
+RouteConnex::routeConnex()->testAuth()->get();
+RouteConnex::run()->_id_($runId)->get();
+RouteConnex::microsoftSharepoint()->files()->get();
+RouteConnex::microsoftSharepoint()->files()->post($body);
+RouteConnex::microsoftSharepoint()->driveColumns()->get();
+RouteConnex::hpeContentManager()->records()->get();
+RouteConnex::hpeContentManager()->records()->post($body);
+```
+
+Another config App:
+
+```php
+RouteConnex::app('hpe')->hpeContentManager()->records()->get();
+```
+
+Each call takes the SDK's arguments: `get(array $query = [], array $body = [], array $headers = [])` and, where the SDK allows it, `post(array $body = [], array $query = [], array $headers = [])`.
+
+### Meta
+
+Calls to a System (`microsoftSharepoint()` and `hpeContentManager()`) also take `meta:`. The package sends it where the API expects it: `_meta_` as JSON in the query for `GET`, as an array in the body otherwise. A non-empty `meta:` replaces any `_meta_` already in the data.
+
+```php
+RouteConnex::microsoftSharepoint()->files()->post([
+    'site_name' => 'Finance',
+    'channel' => 'Invoices',
+    'file_path' => $path,
+    'file_name' => 'invoice.pdf',
+], meta: ['invoice_id' => $invoice->id]);
+```
+
+### Responses
+
+Calls return a `RouteConnexResponse`, which extends Laravel's HTTP client `Response`:
+
+```php
+$response = RouteConnex::routeConnex()->about()->get();
+
+$response->status();
+$response->successful();
+$response->json('data');
+```
+
+### Exceptions
+
+Every exception extends `RouteConnexException` and keeps the original as `getPrevious()`:
+
+| Exception                            | When                                                                                                    |
+|--------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `RouteConnexConfigurationException`  | no default App, an unknown App, or empty Credentials                                                    |
+| `RouteConnexAuthenticationException` | the token request was rejected or issued no token; `response()` holds the API's answer, if any          |
+| `RouteConnexConnectionException`     | the API couldn't be reached                                                                             |
+| `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` holds the API's error body |
+
+```php
+use RouteConnex\Laravel\Exceptions\RouteConnexRequestException;
+
+try {
+    RouteConnex::microsoftSharepoint()->files()->post($body);
+} catch (RouteConnexRequestException $e) {
+    $e->response()->json();
+}
+```
+
+To silence them all, add `$exceptions->dontReport(RouteConnexException::class);` in the `withExceptions()` callback of `bootstrap/app.php`.
+
+### The SDK client
+
+`RouteConnex::sdk()` returns the default App's configured SDK `ErClient`, for anything the facade doesn't cover. Calls made through it return raw PSR-7 responses and throw the SDK's and Guzzle's own exceptions, not the package's.
+
+### Replacing how SDK clients are built
+
+Bind a subclass of `RouteConnex\Laravel\RouteConnexClientFactory` in the container to change how the SDK client is built, for example to add a proxy:
+
+```php
+$this->app->bind(RouteConnexClientFactory::class, MyClientFactory::class);
+```
 
 ## Development
 
