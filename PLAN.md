@@ -38,11 +38,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume de36c929-6f91-4387-811f-3148d7c1ef3b` (gandalf)
   - **Why:** Documentation that must match the code exactly; a fresh session reads the code as it is instead of remembering what was intended.
   - **Prompt:** Implement Step 4 of PLAN.md: Boost skill, README and project docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 1–3 added the config, the `RouteConnex` facade with `app()`, the mirrored endpoint tree, `RouteConnexResponse`, `RouteConnexClientFactory` and the package exceptions; read them in `src/` and the tests before writing anything, and document what the code does. Use the `package-generate-skill` skill for the Boost skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
-- [ ] **5. Review fix: Pint and `composer.json` formatting**
+- [x] **5. Review fix: Pint and `composer.json` formatting**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 1c96612e-9291-4ea4-a231-ec12b2005b9d` (gandalf)
   - **Why:** Mechanical: run the formatter and fix three lines of indentation. The review session is long and about other things.
   - **Prompt:** Implement Step 5 of PLAN.md: Review fix: Pint and `composer.json` formatting. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 1 and 2. Run `make lint` and check that it changes only formatting; don't edit code by hand. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 6.
 - [ ] **6. Review fix: token margin, request-data errors, token error message, `result()` test**
@@ -202,11 +202,13 @@ State found during planning:
 
 ### Step 5: Review fix: Pint and `composer.json` formatting
 
-**Status:** todo
+**Status:** done
 
-- [ ] `make lint`, then check with `git diff` that only formatting changed (Review finding 1)
-- [ ] `composer.json`: indent the `illuminate/http`, `illuminate/support` and `route-connex/route-connex-sdk-php` lines in `require` with 8 spaces, like the rest of the file (Review finding 2)
-- [ ] No CHANGELOG item (formatting only)
+- [x] `make lint`, then check with `git diff` that only formatting changed (Review finding 1)
+- [x] `composer.json`: indent the `illuminate/http`, `illuminate/support` and `route-connex/route-connex-sdk-php` lines in `require` with 8 spaces, like the rest of the file (Review finding 2)
+- [x] No CHANGELOG item (formatting only)
+
+Note: Pint changed 20 files (19 style issues, mostly docblock alignment, `@param` spacing and brace placement). Lint reports PASS on 50 files after the fix.
 
 **Validate:** `make test` passes end to end (PHPStan, Pint, type coverage, Pest); `make composer ARGS="validate --strict"`
 **Commit:** `Format the SDK layer with Pint and fix composer.json indentation`
