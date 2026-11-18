@@ -1,3 +1,12 @@
+# feature/sdk-layer
+
+- Package config with the RouteConnex base URL, a default App and named Apps from `.env`.
+- `RouteConnex::app()` and `RouteConnex::sdk()` give a config App's client and its SDK client.
+- `RouteConnexClientFactory` builds each App's SDK client and can be replaced in the container.
+- `RouteConnexConfigurationException` for a missing default App, an unknown App or empty Credentials.
+
+---
+
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.

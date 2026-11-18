@@ -1,6 +1,6 @@
 # Laravel layer over the SDK
 
-**Status:** planning **Branch:** `feature/sdk-layer` → **Target:** `release/0.x`
+**Status:** in progress **Branch:** `feature/sdk-layer` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
 
@@ -10,11 +10,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
 
 ## Implementation
 
-- [ ] **1. Dependencies, config, Apps by name and the client factory**
+- [x] **1. Dependencies, config, Apps by name and the client factory**
   - **Model:** `opus`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** Sets the shape every later step and feature builds on (manager, App-bound client, factory seam, exceptions base). The planning session already holds the design and the SDK's internals.
   - **Prompt:** Implement Step 1 of PLAN.md: Dependencies, config, Apps by name and the client factory. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions. Read the SDK in `../route-connex-sdk-php` (`ErClient`, `Concerns/AuthenticatesApp.php`) and use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. The mirrored endpoint tree and `RouteConnexResponse`**
@@ -93,19 +93,29 @@ State found during planning:
 
 ### Step 1: Dependencies, config, Apps by name and the client factory
 
-**Status:** todo
+**Status:** done
 
-- [ ] `composer.json`: require `route-connex/route-connex-sdk-php: ^1.1` and `illuminate/http: ^12.0||^13.0`; `make composer ARGS="update"`
-- [ ] `config/route-connex-laravel.php`: `base_url`, `default`, `apps.default` as in Decisions; remove `placeholder`
-- [ ] `src/Exceptions/RouteConnexException.php` and `src/Exceptions/RouteConnexConfigurationException.php`
-- [ ] `src/Apps/RouteConnexConfigApp.php`: readonly value object built from an App's config entry
-- [ ] `src/RouteConnexClientFactory.php`: builds and configures the SDK `ErClient` for a `RouteConnexConfigApp`, in small protected steps
-- [ ] `src/RouteConnexClient.php`: holds the App and its `ErClient`; `sdk()` for now
-- [ ] `src/RouteConnex.php`: lazy config, `app(string $name)`, default App resolution, one `RouteConnexClient` per App name, `sdk()`; `RouteConnexConfigurationException` cases from Decisions
-- [ ] `src/RouteConnexServiceProvider.php`: build the singleton with what it needs; bind the factory only if needed (it resolves on its own)
-- [ ] `src/Facades/RouteConnex.php`: `@method` docblocks for `app()` and `sdk()`
-- [ ] Tests (`tests/Feature/RouteConnexAppsTest.php`, update `tests/Feature/ExampleTest.php`): config defaults merged; `sdk()` uses the default App's Credentials and base URL; `app('name')` for a named App; per-App `base_url` overrides the global one and falls back to it; the same `ErClient` comes back for the same App across calls; a bound factory subclass is used; each `RouteConnexConfigurationException` case. Credentials are read from the built `ErClient` (e.g. through a test factory that records the App it was given), not by sending requests.
-- [ ] `CHANGELOG.md`: create `# feature/sdk-layer` above `---` and `# v0.1.0-rc`, with this step's items **Validate:** `make test`; `make composer ARGS="update --prefer-lowest"` then `make test-unit`, then `make composer ARGS="update"` again (Laravel 12's lowest lane runs in CI)
+- [x] `composer.json`: require `route-connex/route-connex-sdk-php: ^1.1` and `illuminate/http: ^12.0||^13.0`; `make composer ARGS="update"`
+- [x] `config/route-connex-laravel.php`: `base_url`, `default`, `apps.default` as in Decisions; remove `placeholder`
+- [x] `src/Exceptions/RouteConnexException.php` and `src/Exceptions/RouteConnexConfigurationException.php`
+- [x] `src/Apps/RouteConnexConfigApp.php`: readonly value object built from an App's config entry
+- [x] `src/RouteConnexClientFactory.php`: builds and configures the SDK `ErClient` for a `RouteConnexConfigApp`, in small protected steps
+- [x] `src/RouteConnexClient.php`: holds the App and its `ErClient`; `getApp()` and `sdk()` for now
+- [x] `src/RouteConnex.php`: lazy config, `app(string $name)`, default App resolution, one `RouteConnexClient` per App name, `sdk()`; `RouteConnexConfigurationException` cases from Decisions
+- [x] `src/RouteConnexServiceProvider.php`: no change needed: the existing `singleton(RouteConnex::class)` autowires the container and config, and the factory resolves on its own
+- [x] `src/Facades/RouteConnex.php`: `@method` docblocks for `app()` and `sdk()`
+- [x] Tests (`tests/Feature/RouteConnexAppsTest.php`, update `tests/Feature/ExampleTest.php`): config defaults merged; `sdk()` uses the default App's Credentials and base URL; `app('name')` for a named App; per-App `base_url` overrides the global one and falls back to it; the same `ErClient` comes back for the same App across calls; a bound factory subclass is used; each `RouteConnexConfigurationException` case. Credentials are read from the built `ErClient` through reflection, not by sending requests.
+- [x] `CHANGELOG.md`: create `# feature/sdk-layer` above `---` and `# v0.1.0-rc`, with this step's items
+- [x] `phpstan.neon.dist`: `configDirectories` set to the package's `config/` folder
+
+**Notes:**
+
+- Larastan reported `env()` in `config/route-connex-laravel.php` as a call outside the config directory, because it only knows the app's `config_path()`. `configDirectories` (available since Larastan 3.9.0, the lowest allowed) fixes it without an ignore rule.
+- The SDK requires `guzzlehttp/guzzle` `^7.9`, so installing it downgraded the locked Guzzle 8.3 to 7.16 on Laravel 13. Consumer apps on Laravel 13 that need Guzzle 8 can't install the package until the SDK allows `^8.0`; worth an SDK issue.
+- Merged config is checked in `tests/Feature/ExampleTest.php` (replacing the placeholder test); App resolution in `tests/Feature/RouteConnexAppsTest.php`, which reads the SDK client's Credentials through reflection since the SDK has no getters for them.
+- `prefer-lowest` resolved Laravel 12.71, Guzzle 7.15.2 and Larastan 3.9.0: 83 tests pass.
+
+**Validate:** `make test`; `make composer ARGS="update --prefer-lowest"` then `make test-unit`, then `make composer ARGS="update"` again (Laravel 12's lowest lane runs in CI)
   **Commit:** `Add the SDK dependency, config, Apps by name and the client factory`
 
 ### Step 2: The mirrored endpoint tree and `RouteConnexResponse`

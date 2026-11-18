@@ -7,6 +7,9 @@ namespace RouteConnex\Laravel\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \RouteConnex\Laravel\RouteConnexClient app(string $name)
+ * @method static \RouteConnex\RouteConnexSdkPhp\ErClient sdk()
+ *
  * @see \RouteConnex\Laravel\RouteConnex
  */
 class RouteConnex extends Facade

@@ -13,7 +13,9 @@ it('returns the same instance from the container', function () {
 });
 
 it('merges the package config', function () {
-    expect(config('route-connex-laravel.placeholder'))->toBe('default');
+    expect(config('route-connex-laravel.base_url'))->toBe('https://app.routeconnex.com/api')
+        ->and(config('route-connex-laravel.default'))->toBe('default')
+        ->and(config('route-connex-laravel.apps.default'))->toBe(['client_id' => null, 'client_secret' => null]);
 });
 
 it('loads the package translations', function () {
