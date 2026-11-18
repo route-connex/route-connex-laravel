@@ -24,11 +24,11 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** Typical feature work with tests, but many small classes and a test harness (Guzzle `MockHandler` through the factory) that have to be right. It builds directly on Step 1's classes.
   - **Prompt:** Implement Step 2 of PLAN.md: The mirrored endpoint tree and `RouteConnexResponse`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions. Step 1 added the `RouteConnex` manager with `app()` and `sdk()`, the App-bound `RouteConnexClient`, `RouteConnexConfigApp` and `RouteConnexClientFactory`. Mirror the SDK endpoints in `../route-connex-sdk-php/src/Endpoints`; use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
-- [ ] **3. Package exceptions wrapping the SDK's and Guzzle's**
+- [x] **3. Package exceptions wrapping the SDK's and Guzzle's**
   - **Model:** `sonnet`
   - **Effort:** `high`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d` (gandalf)
   - **Why:** A precise mapping table with one test per row; the error cases of the SDK's `authenticate()` need care. Same area and test harness as Step 2.
   - **Prompt:** Implement Step 3 of PLAN.md: Package exceptions wrapping the SDK's and Guzzle's. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the mapping is in PLAN.md → Decisions. Step 1 added `RouteConnexException` and `RouteConnexConfigurationException`; Step 2 added the endpoint tree, the single place where requests are sent, and the `MockHandler` test harness. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
 - [ ] **4. Boost skill, README and project docs**
@@ -142,13 +142,22 @@ State found during planning:
 
 ### Step 3: Package exceptions wrapping the SDK's and Guzzle's
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/Exceptions/RouteConnexRequestException.php` (`response(): RouteConnexResponse`), `RouteConnexConnectionException.php`, `RouteConnexAuthenticationException.php` (`response(): ?RouteConnexResponse`)
-- [ ] The single sending method: authenticate first (own `try`) when the SDK endpoint requires auth for the method, then send; map every row of the table in Decisions, keeping the original as `previous`
-- [ ] Tests (`tests/Feature/RouteConnexExceptionsTest.php`), one per table row: 401 from `auth/token`; a token response without a token; connection failure while getting the token and while calling a Service; 4xx and 5xx from a Service, with the API's error body readable from the exception's response; 401/403 from a Service after a token was issued is a `RouteConnexRequestException`; every package exception is a `RouteConnexException`
-- [ ] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
-  **Validate:** `make test`
+- [x] `src/Exceptions/RouteConnexRequestException.php` (`response(): RouteConnexResponse`), `RouteConnexConnectionException.php`, `RouteConnexAuthenticationException.php` (`response(): ?RouteConnexResponse`)
+- [x] The single sending method, `RouteConnexClient::send()`: authenticate first (own `try`, in `authenticate()`) when the SDK endpoint requires auth for the method, then send; every row of the table in Decisions is mapped in `wrap()` and `authenticate()`, keeping the original as `previous`
+- [x] Tests (`tests/Feature/RouteConnexExceptionsTest.php`), one per table row: 401 from `auth/token`; a token response without a token; connection failure while getting the token and while calling a Service; 4xx and 5xx from a Service, with the API's error body readable from the exception's response; 401/403 from a Service after a token was issued is a `RouteConnexRequestException`; every package exception is a `RouteConnexException`
+- [x] `CHANGELOG.md`: this step's items under `# feature/sdk-layer`
+
+**Notes:**
+
+- A token that is already expired (`expires_in` of 0) makes the SDK's `authenticate()` return without a valid token, and its own request would then throw `NotAuthenticatedException`; `authenticate()` checks `isAuthenticated()` afterwards and throws `RouteConnexAuthenticationException` instead.
+- Any error answer to the token request is an authentication exception, including 5xx (the table says so); the tests cover 400, 401 and 500.
+- A failed token request is not cached: the next call asks again. A failed Service call keeps the token.
+- The SDK's `InvalidEndpointException` and `InvalidHttpMethodException` are not wrapped: the facade only offers valid endpoints and methods, so they can't happen.
+- `make lint` again reformatted files the IDE had put in another style (braces, `phpdoc_align`, spacing), in Step 1 and 2 files too, so they appear in this step's diff.
+
+**Validate:** `make test`
   **Commit:** `Wrap the SDK's and Guzzle's exceptions in package exceptions`
 
 ### Step 4: Boost skill, README and project docs

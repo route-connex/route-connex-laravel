@@ -7,6 +7,10 @@
 - The facade mirrors the SDK's endpoints: `routeConnex()`, `run()`, `microsoftSharepoint()` and `hpeContentManager()`.
 - Calls return a `RouteConnexResponse`, with Laravel's HTTP client helpers such as `json()` and `status()`.
 - Calls that create a Run take a `meta:` argument, sent where the API expects it.
+- `RouteConnexRequestException` for an error answer from the API, carrying the `RouteConnexResponse`.
+- `RouteConnexAuthenticationException` when the token request is rejected or issues no usable token.
+- `RouteConnexConnectionException` when the API can't be reached.
+- Every package exception extends `RouteConnexException`; `RouteConnex::sdk()` still throws the SDK's own.
 
 ---
 

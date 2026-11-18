@@ -9,6 +9,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
+use Throwable;
 
 /**
  * A stand-in for the RouteConnex API, shared by every SDK client the fake
@@ -37,12 +38,13 @@ final class FakeApi
     }
 
     /**
-     * Queue the answers to the next requests, in order.
+     * Queue the answers to the next requests, in order. A throwable is
+     * thrown instead of answering, like a failed connection.
      */
-    public function queue(Response ...$responses): self
+    public function queue(Response|Throwable ...$answers): self
     {
-        foreach ($responses as $response) {
-            $this->mock->append($response);
+        foreach ($answers as $answer) {
+            $this->mock->append($answer);
         }
 
         return $this;
