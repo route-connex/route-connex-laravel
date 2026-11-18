@@ -38,6 +38,27 @@ claude --ide --resume 03d9dabd-20f9-4527-8635-11f1ccfd9d5d
   - **Resume:** `claude --ide --resume de36c929-6f91-4387-811f-3148d7c1ef3b` (gandalf)
   - **Why:** Documentation that must match the code exactly; a fresh session reads the code as it is instead of remembering what was intended.
   - **Prompt:** Implement Step 4 of PLAN.md: Boost skill, README and project docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 1–3 added the config, the `RouteConnex` facade with `app()`, the mirrored endpoint tree, `RouteConnexResponse`, `RouteConnexClientFactory` and the package exceptions; read them in `src/` and the tests before writing anything, and document what the code does. Use the `package-generate-skill` skill for the Boost skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/sdk-layer`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
+- [ ] **5. Review fix: Pint and `composer.json` formatting**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** Mechanical: run the formatter and fix three lines of indentation. The review session is long and about other things.
+  - **Prompt:** Implement Step 5 of PLAN.md: Review fix: Pint and `composer.json` formatting. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 1 and 2. Run `make lint` and check that it changes only formatting; don't edit code by hand. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 6.
+- [ ] **6. Review fix: token margin, request-data errors, token error message, `result()` test**
+  - **Model:** `sonnet`
+  - **Effort:** `medium`
+  - **Session:** `new`
+  - **Resume:** –
+  - **Why:** Small, well-specified changes to `RouteConnexClient` and the endpoints, each with a test, using the existing `FakeApi` harness. Independent of Step 5's context.
+  - **Prompt:** Implement Step 6 of PLAN.md: Review fix: token margin, request-data errors, token error message, `result()` test. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 3–6 and the "Review fixes" entries in Decisions. The code is in `src/RouteConnexClient.php`, `src/Endpoints/RouteConnexSystemEndpoint.php` and `src/Exceptions/RouteConnexAuthenticationException.php`; the SDK is in `vendor/route-connex/route-connex-sdk-php/src` (`Concerns/AuthenticatesApp.php`, `Concerns/RunsHttpRequests.php`); tests use `fakeRouteConnexApi()` and `tests/Fixtures/FakeApi.php`. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run `make lint` before validating. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 7.
+- [ ] **7. Review fix: docs**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** –
+  - **Why:** Short doc edits whose wording is given in the step. The Step 6 session knows the new `\InvalidArgumentException` behaviour the docs must describe; switch with `/model`.
+  - **Prompt:** Implement Step 7 of PLAN.md: Review fix: docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the background is Review findings 7–10. Step 6 made request data that can't be encoded as JSON throw `\InvalidArgumentException`, and a token close to expiry renewed before a call; read `src/RouteConnexClient.php` and `src/Endpoints/RouteConnexSystemEndpoint.php` before writing. Use the `package-generate-skill` skill for the Boost skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
 ## Context
 
@@ -88,6 +109,12 @@ State found during planning:
 - **Composer:** require `route-connex/route-connex-sdk-php: ^1.1` and `illuminate/http: ^12.0||^13.0`. Guzzle comes through the SDK (`^7.9`), which keeps Laravel 12's `prefer-lowest` lane on 7.9+.
 - **Only the config placeholder is removed** (the `placeholder` key and its test). The placeholder command, view, translation, route file and migration stay for the tasks that replace them.
 - **Status:** `docs/features/sdk-layer.md` and its roadmap theme move to `in progress`. They become `shipped (vX.Y.Z)` at release.
+- **Review fixes** (from the Phase 3 review; the user agreed to Steps 5–7):
+  - **Token margin:** before a call that needs a token, `RouteConnexClient::authenticate()` requests a new token when the current one expires within 30 seconds (a protected `$tokenRefreshMargin = 30`, so a subclass can change it), so the SDK's own check inside the request can't find it expired.
+  - **Request data that can't be encoded as JSON** throws `\InvalidArgumentException`, not a package exception: it's a programming error in the calling code, and `dontReport(RouteConnexException::class)` must not hide it. Meta on `GET` rethrows the `JsonException` as `\InvalidArgumentException` (keeping it as `previous`); Guzzle's own `InvalidArgumentException` (already an `\InvalidArgumentException`) is rethrown as it is, not wrapped as a `RouteConnexConnectionException`.
+  - **Token error message:** "The RouteConnex API answered the token request with status {status}." instead of "rejected", since a 5xx is an outage, not bad Credentials. The class and the `rejected()` factory keep their names.
+  - **Fixes to unreleased behaviour add no CHANGELOG items**; an existing item is reworded only if it became wrong.
+  - **Guzzle 8:** the user opens an SDK issue to allow `guzzlehttp/guzzle: ^8.0` (agents don't post to GitHub); the docs say that until then the package needs Guzzle 7.
 
 ## Steps
 
@@ -173,6 +200,50 @@ State found during planning:
   **Validate:** `make test`; read the Boost skill and README examples against `src/`
   **Commit:** `Document the SDK layer in the Boost skill, README and project docs`
 
+### Step 5: Review fix: Pint and `composer.json` formatting
+
+**Status:** todo
+
+- [ ] `make lint`, then check with `git diff` that only formatting changed (Review finding 1)
+- [ ] `composer.json`: indent the `illuminate/http`, `illuminate/support` and `route-connex/route-connex-sdk-php` lines in `require` with 8 spaces, like the rest of the file (Review finding 2)
+- [ ] No CHANGELOG item (formatting only)
+
+**Validate:** `make test` passes end to end (PHPStan, Pint, type coverage, Pest); `make composer ARGS="validate --strict"`
+**Commit:** `Format the SDK layer with Pint and fix composer.json indentation`
+
+### Step 6: Review fix: token margin, request-data errors, token error message, `result()` test
+
+**Status:** todo
+
+- [ ] `src/RouteConnexClient.php`: `protected int $tokenRefreshMargin = 30`; `authenticate()` calls the SDK's `authenticate(forceNewToken: true)` when the client has a token whose `getTokenExpiresIn()` is below the margin, and `authenticate()` as now otherwise (Review finding 3)
+- [ ] `src/RouteConnexClient.php`: in `send()` (and `wrap()`), rethrow Guzzle's `GuzzleHttp\Exception\InvalidArgumentException` as it is instead of wrapping it as a `RouteConnexConnectionException`; update the docblocks (Review finding 4)
+- [ ] `src/Endpoints/RouteConnexSystemEndpoint.php`: catch the `JsonException` from encoding `GET` Meta and throw `\InvalidArgumentException` with it as `previous`, before any request is sent (Review finding 4)
+- [ ] `src/Exceptions/RouteConnexAuthenticationException.php`: `rejected()` message "The RouteConnex API answered the token request with status {status}."; class docblock says the token request failed or issued no usable token (Review finding 5)
+- [ ] Tests in `tests/Feature/RouteConnexExceptionsTest.php`:
+  - a token whose `expires_in` is below the margin is renewed before the next call (two token requests, the second call sends the new token), and a token well within its lifetime is reused (already covered: check it still is)
+  - Meta that can't be encoded on `GET` throws `\InvalidArgumentException`, not a `RouteConnexException`, and sends no Service request
+  - a `POST` body that can't be encoded (e.g. invalid UTF-8) throws `\InvalidArgumentException`, not a `RouteConnexConnectionException`
+  - the authentication exception's message for a 401 and a 500 token answer
+- [ ] Test in `tests/Feature/RouteConnexEndpointsTest.php`, with a test-only subclass of a leaf System endpoint in `tests/Fixtures/` that records what `result()` receives: the App, the Service (`POST microsoft-sharepoint/files`, `GET hpe-content-manager/records`), the request (`query` and `body` after Meta was placed), the Meta and the response; and that the call returns what `result()` returns (Review finding 6)
+- [ ] No new CHANGELOG items (fixes to unreleased behaviour); reword an existing item only if it became wrong
+
+**Validate:** `make lint`, then `make test`
+**Commit:** `Renew tokens close to expiry and stop wrapping request-data errors`
+
+### Step 7: Review fix: docs
+
+**Status:** todo
+
+- [ ] `docs/features/sdk-layer.md` Scope: the `RouteConnexConfigurationException` bullet lists only what the code throws today (no default App, an unknown App, empty Credentials); the `app_name`/`app_id` case stays in `run-tracking.md` and decision 0004 (Review finding 7)
+- [ ] `docs/features/sdk-layer.md` Scope and the exceptions sections of `README.md` and the Boost skill: request data that can't be encoded as JSON throws `\InvalidArgumentException`, not a package exception
+- [ ] `docs/features/sdk-layer.md` compatibility notes and the `README.md` Requirements: the SDK requires `guzzlehttp/guzzle` `^7.9`, so a Laravel 13 app that needs Guzzle 8 can't install the package yet (Review finding 8)
+- [ ] Boost skill Rules: "one client per App is kept for the life of the PHP process; its token is reused until it is about to expire" (Review finding 9)
+- [ ] Boost skill and `README.md`: a short "Testing" note: `Http::fake()` doesn't see these calls, because the SDK uses its own Guzzle client; mock the facade instead, e.g. `RouteConnex::shouldReceive('microsoftSharepoint->files->post')->andReturn(...)`, until `RouteConnex::fake()` (roadmap: Testing helpers) ships. Check that the example works with a quick test before documenting it, and don't keep the test unless it covers package behaviour (Review finding 10)
+- [ ] No new CHANGELOG items; reword the Boost skill/README item only if it became wrong
+
+**Validate:** `make test`; read every changed example against `src/`
+**Commit:** `Align the SDK layer docs with the review fixes`
+
 ## Acceptance Criteria
 
 - [x] With `ROUTE_CONNEX_CLIENT_ID` and `ROUTE_CONNEX_CLIENT_SECRET` set, `RouteConnex::routeConnex()->testAuth()->get()` authenticates and returns a `RouteConnexResponse`.
@@ -184,8 +255,38 @@ State found during planning:
 - [x] `RouteConnex::sdk()` returns the configured `ErClient`.
 - [x] Binding a `RouteConnexClientFactory` subclass changes how SDK clients are built.
 - [x] The Boost skill, README, `sdk-layer.md` and the roadmap describe what the code does; the feature and theme are `in progress`.
-- [x] `make test` passes, and CI passes on PHP 8.3–8.5, Laravel 12/13 and both stability lanes.
+- [ ] `make test` passes, and CI passes on PHP 8.3–8.5, Laravel 12/13 and both stability lanes.
 
 ## Review
 
-Findings from Phase 3 (filled in by the reviewing agent).
+Reviewed on 2026-11-19 against the code at `5da76b0`, the SDK `v1.1.0` in `vendor/`, `docs/` and the Decisions above.
+
+**Validation run:**
+
+- `make test`: **fails** at `composer lint:check` (Pint: 19 files, 19 style issues), so type coverage and Pest don't run through it.
+- Run on their own: PHPStan no errors; type coverage 100.0 %; Pest 129 passed (292 assertions).
+- `make test-all`: 129 passed on SQLite, MySQL, PostgreSQL and MongoDB.
+- CI has not run on this branch (pushes trigger CI only on `main` and `release/*.x`, and there's no PR yet). The `prefer-lowest` lane from Step 1 was not re-run.
+
+**Verified, matches the plan:** config keys and defaults; `base_url` precedence (App, then global, then the SDK's); config checked on first use with the three `RouteConnexConfigurationException` cases; one client per App name; the factory resolved from the container per new App, with `newClient()`/`configure()`; the mirrored tree with the SDK's names, allowed methods and signatures; `meta:` placement and replacement; one sending method with a separate token step; every row of the exception table, keeping `previous`; `sdk()` throwing raw exceptions; class names per decision 0002; facade `@method` docblocks; Composer requirements; CHANGELOG items under `# feature/sdk-layer` within the length rules; `version` is `feature/sdk-layer`; roadmap and feature status `in progress`; the "Already in the code" notes in `apps.md`, `run-tracking.md` and `overrides.md` match the code.
+
+**Findings** (most severe first):
+
+1. **Code style fails (blocks CI).** 19 committed files under `src/` and `tests/` are not Pint-clean (`braces_position`, `phpdoc_align`, `not_operator_with_successor_space`, `concat_space`, `function_declaration`, `cast_spaces`). The CI Linter step would fail on every job, so the last acceptance criterion is unticked. The Step 2 and 3 notes say `make lint` fixed this, but the committed files are back in the IDE's style, so the IDE (PhpStorm, `.idea` is git-ignored) reformats them after Pint. Fix: `make lint`; set the IDE to Laravel/Pint style or turn off reformat-on-save.
+2. **`composer.json` indentation.** The three `require` lines added in Step 1 use 6 spaces instead of 8, repeating what `5bfd083` fixed.
+3. **Token can expire between the package's check and the SDK's.** `RouteConnexClient::authenticate()` checks the token, then the SDK's `runHttpRequest()` checks it again inside `send()`'s `try`. The SDK's check works to the second, so a token that expires in between makes the SDK request a new one there. A rejected token request then becomes a `RouteConnexRequestException` carrying the `auth/token` response, and a malformed token answer (`ErrorException`/`TypeError`) or the SDK's `NotAuthenticatedException` escapes unwrapped. A token that is about to expire can also expire while the request is in flight. Suggested fix: in `authenticate()`, request a new token (`authenticate(forceNewToken: true)`) when `getTokenExpiresIn()` is below a small margin (e.g. 30 s), with a test.
+4. **Invalid request data is reported inconsistently.** With `meta:` on `GET`, `json_encode(..., JSON_THROW_ON_ERROR)` throws a `JsonException`, which isn't a `RouteConnexException`. A body Guzzle can't encode (e.g. invalid UTF-8 in a `POST` body or Meta) throws Guzzle's `InvalidArgumentException`, which implements `GuzzleException` and has no response. It is then wrapped as `RouteConnexConnectionException` with the message "Could not reach the RouteConnex API: json_encode error…". This follows the table ("another `GuzzleException` without a response"), but the table didn't plan for it. Decision needed: let both surface as `\InvalidArgumentException` (a programming error), or map both to one package exception.
+5. **5xx from `auth/token`.** As planned, it's a `RouteConnexAuthenticationException`, but the message ("rejected the token request with status 503") reads like bad Credentials during an outage. Suggest a neutral message ("answered the token request with status 503"); `response()->status()` already tells the cases apart.
+6. **Untested hand-off to run-tracking.** No test checks what `RouteConnexSystemEndpoint::result()` receives (the App, `POST microsoft-sharepoint/files`, the request after Meta was placed, the Meta, the response), which is the contract the run-tracking task builds on. Suggest a test with a test-only subclass of a leaf endpoint that records the arguments.
+7. **`sdk-layer.md` Scope describes code that isn't there.** The `RouteConnexConfigurationException` bullet still lists "a Run saved with both `app_name` and `app_id`, or neither", which belongs to run-tracking (already in `run-tracking.md` and decision 0004). Mark it as added by run-tracking, or drop it.
+8. **Guzzle 8 isn't documented.** Step 1 found that the SDK's `guzzlehttp/guzzle: ^7.9` keeps Laravel 13 apps on Guzzle 7. The compatibility notes in `sdk-layer.md` don't say that a Laravel 13 app that needs Guzzle 8 can't install the package, and neither do the README Requirements. No SDK issue exists for it yet. Suggest a line in both, and an SDK issue to allow `^8.0`.
+9. **Boost skill wording.** The rule "one client (and one token) is kept per App for the life of the PHP process" is wrong about the token, which is renewed when it expires. Suggest: "one client per App for the life of the PHP process; its token is reused until it expires".
+10. **Testing in consumer apps (optional).** The Boost skill and the README don't say how a consumer app tests code that calls the facade. `Http::fake()` doesn't see the SDK's requests, so an agent is likely to try it and fail. Until `RouteConnex::fake()` (roadmap: Testing helpers), one line would help: mock the facade, e.g. `RouteConnex::shouldReceive('microsoftSharepoint->files->post')`.
+11. **Note for Multiple Apps (no change now).** The `RouteConnex` singleton caches clients by name for the life of the process and keeps the container and config it was first resolved with. Config changed after first use is ignored, and there's no `purge()`. That's fine for config Apps. The Multiple Apps task must keep it in mind for long-running workers, as `apps.md` already says.
+
+**Fix steps** (agreed with the user; see Steps 5–7 and "Review fixes" in Decisions):
+
+- Step 5: Pint and `composer.json` formatting (findings 1, 2).
+- Step 6: Token margin, request-data exceptions, token error message, and a test for `result()` (findings 3–6).
+- Step 7: Docs (findings 7–10).
+- Not a step: the user opens an SDK issue to allow `guzzlehttp/guzzle: ^8.0` (finding 8).
