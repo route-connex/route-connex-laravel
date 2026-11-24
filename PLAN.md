@@ -24,6 +24,13 @@ claude --ide --resume 55d2a5fd-90b3-42a4-b1fd-513e990658b1
   - **Resume:** `claude --ide --resume e622c416-3f6b-4df1-aca5-5de4527446a9` (gandalf)
   - **Why:** Mechanical wording changes in three docs, building directly on Step 1's session.
   - **Prompt:** Implement Step 2 of PLAN.md: Docs: Guzzle 8 and the connection exception. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 bumped the SDK to `^1.2`, required `guzzlehttp/guzzle: ^7.9 || ^8.0` directly and made only 4xx/5xx answers throw `RouteConnexRequestException`. Edit the Boost skill directly, checking it against the `package-generate-skill` guidance. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message.
+- [x] **3. Align the connection exception docs (review fixes)**
+  - **Model:** `haiku`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** `claude --ide --resume d41da745-3521-4823-af72-0908d01ca8a3` (gandalf)
+  - **Why:** Two wording fixes found by the review, done in the review session that has the context.
+  - **Prompt:** Implement Step 3 of PLAN.md: Align the connection exception docs (review fixes). Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the reasons are in PLAN.md → Review, findings 1 and 2. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message.
 
 ## Context
 
@@ -92,6 +99,19 @@ The outcome: the package installs and works on Guzzle 7.9+ and Guzzle 8, and the
 **Validate:** `make test`; `grep -rn "Guzzle 7\|\^7\.9\b\|\^1\.1" README.md docs resources/boost` shows no stale constraint
 **Commit:** `Document Guzzle 8 support and the connection exception`
 
+### Step 3: Align the connection exception docs (review fixes)
+
+**Status:** done
+
+- [x] `src/Exceptions/RouteConnexConnectionException.php` docblock: the API couldn't be reached, or a request failed without a 4xx or 5xx answer (Review finding 1)
+- [x] `docs/features/sdk-layer.md` Scope: `RouteConnexRequestException` is a 4xx or 5xx answer to a Service call (Review finding 2)
+- [x] No new CHANGELOG items; the rc items already say this
+
+**Notes:** Also added `guzzlehttp/guzzle` to the "New Composer requirements" line in `sdk-layer.md` Scope, which Step 1 made a direct requirement and the line still left out. The exception's message ("Could not reach the RouteConnex API: …") is unchanged: it's runtime behavior and the previous exception's message says what happened.
+
+**Validate:** `make test`
+**Commit:** `Align the connection exception docs with Guzzle 8 handling`
+
 ## Acceptance Criteria
 
 - [ ] `composer.json` requires `route-connex/route-connex-sdk-php` `^1.2` and `guzzlehttp/guzzle` `^7.9 || ^8.0`.
@@ -113,4 +133,6 @@ Findings from Phase 3 (filled in by the reviewing agent).
 
 1. `src/Exceptions/RouteConnexConnectionException.php` docblock still says the request "failed before the API answered". Since Step 1, a `TooManyRedirectsException` (the API answered 3xx) and Guzzle 8's `ResponseTransferException` (headers received) also become this exception. It should match the README row: the API couldn't be reached, or a request failed without a 4xx or 5xx answer.
 2. `docs/features/sdk-layer.md:90` (Scope) describes `RouteConnexRequestException` as "the API answered a Service call with an error". Step 2 asked to check it says 4xx/5xx, as the README, Boost skill and class docblock do; it doesn't.
+Findings 1 and 2 fixed in Step 3, with the user's agreement.
+
 3. (No action: `PLAN.md` is blanked on close.) Step 1's commit left a stray `[RouteConnexExceptionsTest.php](…)` link on the Step 1 **Model** line.

@@ -87,13 +87,13 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - `RouteConnex::sdk()` returns the configured `ErClient` as a fallback; it throws the SDK's and Guzzle's own exceptions.
 - `RouteConnexClientFactory` builds each App's SDK client and is resolved from the container, so a bound subclass changes how clients are built (see [Overridable models and classes](overrides.md)).
 - Exceptions, all extending `RouteConnexException`, which wrap the SDK's and Guzzle's:
-  - `RouteConnexRequestException`: the API answered a Service call with an error, including 401 and 403; carries the `RouteConnexResponse`
+  - `RouteConnexRequestException`: the API answered a Service call with 4xx or 5xx, including 401 and 403; carries the `RouteConnexResponse`
   - `RouteConnexConnectionException`: the API couldn't be reached, or a request failed without a 4xx or 5xx answer
   - `RouteConnexAuthenticationException`: the token request failed or issued no usable token; carries the `RouteConnexResponse` when there is one
   - `RouteConnexConfigurationException`: no default App, an unknown App, or empty Credentials, checked on first use. [Run tracking](run-tracking.md) adds its own case (a Run saved with both or neither of `app_name` and `app_id`, see [decision 0004](../decisions/0004-runs-store-app-name-or-id.md))
 - Request data that can't be encoded as JSON (invalid UTF-8 in a body, or Meta on `GET`) throws `\InvalidArgumentException`, not a package exception, with the original as `previous`. It's a bug in the calling code, so `dontReport(RouteConnexException::class)` doesn't hide it.
 - The bundled Laravel Boost skill (`resources/boost/skills/route-connex-laravel-development`) documents the config, the facade and the exceptions for coding agents in consumer apps.
-- New Composer requirements: `route-connex/route-connex-sdk-php` and `illuminate/http`.
+- New Composer requirements: `route-connex/route-connex-sdk-php`, `guzzlehttp/guzzle` and `illuminate/http`.
 
 **Needs from the SDK (not done yet):** a way to give an `ErClient` an access token from outside (or a token store), so the package can cache each App's token in Laravel's cache instead of requesting a new one in every PHP request. Until the SDK has it, each new client requests its own token.
 

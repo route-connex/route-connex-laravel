@@ -7,8 +7,8 @@ namespace RouteConnex\Laravel\Exceptions;
 use Throwable;
 
 /**
- * The RouteConnex API couldn't be reached, or the request failed before the
- * API answered.
+ * The RouteConnex API couldn't be reached, or a request failed without a 4xx
+ * or 5xx answer (too many redirects, or a transfer that broke, say).
  */
 class RouteConnexConnectionException extends RouteConnexException
 {
