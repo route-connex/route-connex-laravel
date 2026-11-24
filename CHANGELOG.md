@@ -1,9 +1,3 @@
-# feature/guzzle-8
-
-- Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2.
-
----
-
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.
@@ -37,3 +31,4 @@
 - Every package exception extends `RouteConnexException`; `RouteConnex::sdk()` still throws the SDK's own.
 - Boost skill and README document the config, the facade, Meta, responses and exceptions.
 - Project docs mark the SDK layer `in progress` and note what Apps, run tracking and overrides build on.
+- Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2.
