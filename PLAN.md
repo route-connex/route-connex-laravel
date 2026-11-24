@@ -10,11 +10,11 @@ claude --ide --resume 55d2a5fd-90b3-42a4-b1fd-513e990658b1
 
 ## Implementation
 
-- [ ] **1. SDK 1.2, Guzzle 8 and version-agnostic error answers**
-  - **Model:** `sonnet`
+- [x] **1. SDK 1.2, Guzzle 8 and version-agnostic error answers**
+  - **Model:** `sonnet`[RouteConnexExceptionsTest.php](tests/Feature/RouteConnexExceptionsTest.php)
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume e622c416-3f6b-4df1-aca5-5de4527446a9` (gandalf)
   - **Why:** Small, fully decided code change with tests, but it has to be checked on two Guzzle majors. The planning session is long and mostly about the previous task, so a fresh one with this plan is enough.
   - **Prompt:** Implement Step 1 of PLAN.md: SDK 1.2, Guzzle 8 and version-agnostic error answers. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the reasons are in PLAN.md → Context and Decisions. The Guzzle 8 exception hierarchy is in Guzzle's `UPGRADING.md` (8.x), and the SDK's 1.2 changes are in `../route-connex-sdk-php` (`CHANGELOG.md`, `src/Concerns/RunsHttpRequests.php`). Use the `package-testing` and `package-compatibility` skills. `composer.lock` is git-ignored, so switching Guzzle versions locally leaves no trace in git; leave the local install on Guzzle 8 when done. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's CHANGELOG items as the step says. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. Docs: Guzzle 8 and the connection exception**
@@ -55,16 +55,18 @@ The outcome: the package installs and works on Guzzle 7.9+ and Guzzle 8, and the
 
 ### Step 1: SDK 1.2, Guzzle 8 and version-agnostic error answers
 
-**Status:** todo
+**Status:** done
 
-- [ ] `composer.json` `require`: `"guzzlehttp/guzzle": "^7.9 || ^8.0"` and `"route-connex/route-connex-sdk-php": "^1.2"` (8-space indent, like the rest of the file)
-- [ ] `src/RouteConnexClient.php` `wrap()`: take the response only from a `GuzzleHttp\Exception\BadResponseException` (`$e instanceof BadResponseException ? $e->getResponse() : null`); swap the `RequestException` import for `BadResponseException`; update the docblocks of `wrap()` and, if needed, `send()`/`authenticate()` to say that only a 4xx/5xx answer carries a response and every other Guzzle failure is a connection failure
-- [ ] Tests in `tests/Feature/RouteConnexExceptionsTest.php`, written to run unchanged on Guzzle 7 and 8 (`new RequestException($message, $request)` and `new TooManyRedirectsException($message, $request, $response)` have compatible constructors in both):
+- [x] `composer.json` `require`: `"guzzlehttp/guzzle": "^7.9 || ^8.0"` and `"route-connex/route-connex-sdk-php": "^1.2"` (8-space indent, like the rest of the file)
+- [x] `src/RouteConnexClient.php` `wrap()`: take the response only from a `GuzzleHttp\Exception\BadResponseException` (`$e instanceof BadResponseException ? $e->getResponse() : null`); swap the `RequestException` import for `BadResponseException`; update the docblocks of `wrap()` and, if needed, `send()`/`authenticate()` to say that only a 4xx/5xx answer carries a response and every other Guzzle failure is a connection failure
+- [x] Tests in `tests/Feature/RouteConnexExceptionsTest.php`, written to run unchanged on Guzzle 7 and 8 (`new RequestException($message, $request)` and `new TooManyRedirectsException($message, $request, $response)` have compatible constructors in both):
   - calling a Service: a plain `RequestException` without a response throws `RouteConnexConnectionException`, keeping it as `previous`
   - calling a Service: a `TooManyRedirectsException` carrying a 3xx response throws `RouteConnexConnectionException`, not `RouteConnexRequestException`
   - getting the token: a plain `RequestException` throws `RouteConnexConnectionException`, not `RouteConnexAuthenticationException`
   - the existing 4xx/5xx tests still pass unchanged
-- [ ] `CHANGELOG.md`: create `# feature/guzzle-8` above `---` and `# v0.1.0-rc`, with the item "Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2." The exceptions aren't released yet, so reword the existing `v0.1.0-rc` items instead of adding new ones: `RouteConnexRequestException` is for "a 4xx or 5xx answer from the API", and `RouteConnexConnectionException` is for when "the API can't be reached or a request fails without an error answer" (within the item length rules)
+- [x] `CHANGELOG.md`: create `# feature/guzzle-8` above `---` and `# v0.1.0-rc`, with the item "Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2." The exceptions aren't released yet, so reword the existing `v0.1.0-rc` items instead of adding new ones: `RouteConnexRequestException` is for "a 4xx or 5xx answer from the API", and `RouteConnexConnectionException` is for when "the API can't be reached or a request fails without an error answer" (within the item length rules)
+
+**Notes:** Validated on Guzzle 8.6.0 and 7.15.2 (the `--prefer-lowest` update resolved to 7.15.2, the lowest Guzzle 7 the other constraints allow): 140 tests and PHPStan pass on both; local install left on 8.6.0. The first `validate --strict` fails until `composer update` regenerates the git-ignored lock.
 
 **Validate:**
 

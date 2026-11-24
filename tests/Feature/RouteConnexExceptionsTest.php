@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\TooManyRedirectsException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use RouteConnex\Laravel\Exceptions\RouteConnexAuthenticationException;
@@ -126,6 +128,17 @@ describe('getting the token', function () {
             ->and($this->api->serviceRequests())->toBeEmpty();
     });
 
+    it('throws a connection exception, not an authentication one, for a failure without an error answer', function () {
+        $this->api->queue($failure = new RequestException('Could not read the request body', new Request('POST', 'https://app.routeconnex.com/oauth/token')));
+
+        $e = thrownBy(fn () => RouteConnex::routeConnex()->testAuth()->get());
+
+        expect($e)->toBeInstanceOf(RouteConnexConnectionException::class)
+            ->and($e)->not->toBeInstanceOf(RouteConnexAuthenticationException::class)
+            ->and($e->getPrevious())->toBe($failure)
+            ->and($this->api->serviceRequests())->toBeEmpty();
+    });
+
     it('asks for a token again after a failure', function () {
         $this->api->queue(FakeApi::json([], 401), FakeApi::token(), FakeApi::json(['data' => 'ok']));
 
@@ -194,6 +207,27 @@ describe('calling a Service', function () {
         $this->api->queue(connectionFailure());
 
         expect(fn () => RouteConnex::routeConnex()->about()->get())->toThrow(RouteConnexConnectionException::class);
+    });
+
+    it('throws a connection exception for a request failure without a response', function () {
+        $request = new Request('POST', 'https://app.routeconnex.com/api');
+        $this->api->queue(FakeApi::token(), $failure = new RequestException('Could not read the request body', $request));
+
+        $e = thrownBy(fn () => RouteConnex::run()->_id_('run-1')->get());
+
+        expect($e)->toBeInstanceOf(RouteConnexConnectionException::class)
+            ->and($e->getPrevious())->toBe($failure);
+    });
+
+    it('throws a connection exception, not a request exception, when there are too many redirects', function () {
+        $request = new Request('GET', 'https://app.routeconnex.com/api');
+        $this->api->queue(FakeApi::token(), $failure = new TooManyRedirectsException('Will not follow more than 5 redirects', $request, new Response(302)));
+
+        $e = thrownBy(fn () => RouteConnex::run()->_id_('run-1')->get());
+
+        expect($e)->toBeInstanceOf(RouteConnexConnectionException::class)
+            ->and($e)->not->toBeInstanceOf(RouteConnexRequestException::class)
+            ->and($e->getPrevious())->toBe($failure);
     });
 
     it('keeps the token after a failed Service call', function () {

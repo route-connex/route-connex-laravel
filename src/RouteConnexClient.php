@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace RouteConnex\Laravel;
 
 use ErrorException;
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\InvalidArgumentException as GuzzleInvalidArgumentException;
-use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
 use RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint;
@@ -135,12 +135,15 @@ class RouteConnexClient
     }
 
     /**
-     * Wrap a Guzzle failure. Guzzle's `InvalidArgumentException` never gets
-     * here: `send()` rethrows it, as it is the caller's data and not the API.
+     * Wrap a Guzzle failure. Only a 4xx or 5xx answer (a `BadResponseException`)
+     * is an error answer from the API; every other failure, such as no
+     * connection, too many redirects or a transfer that broke, is a connection
+     * failure. Guzzle's `InvalidArgumentException` never gets here: `send()`
+     * rethrows it, as it is the caller's data and not the API.
      */
     protected function wrap(GuzzleException $e, bool $authenticating): RouteConnexException
     {
-        $response = $e instanceof RequestException ? $e->getResponse() : null;
+        $response = $e instanceof BadResponseException ? $e->getResponse() : null;
 
         if ($response === null) {
             return new RouteConnexConnectionException($e);
