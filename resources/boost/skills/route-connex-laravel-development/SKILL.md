@@ -116,7 +116,7 @@ Every exception extends `RouteConnex\Laravel\Exceptions\RouteConnexException` (a
 |--------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | `RouteConnexConfigurationException`  | no default App, an unknown App name, or an empty client ID or secret                                          |
 | `RouteConnexAuthenticationException` | the token request failed or issued no usable token; `response()` is the `RouteConnexResponse` or `null` |
-| `RouteConnexConnectionException`     | the API couldn't be reached                                                                                   |
+| `RouteConnexConnectionException`     | the API couldn't be reached, or a request failed without a 4xx or 5xx answer                                  |
 | `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` has the API's error body         |
 
 ```php
@@ -175,7 +175,7 @@ Read before executing:
 Rules:
 
 - one client per App is kept for the life of the PHP process; its token is reused until it is about to expire
-- the SDK requires Guzzle 7 (`guzzlehttp/guzzle` `^7.9`): on Laravel 13, an app that needs Guzzle 8 can't install the package yet
+- the package works with Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
 - Apps are config-only for now; do not pass models or objects to `RouteConnex::app()`
 - the package does not store Runs or handle Callbacks yet
 

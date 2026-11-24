@@ -1,6 +1,6 @@
 # Guzzle 8 support
 
-**Status:** planning **Branch:** `feature/guzzle-8` → **Target:** `release/0.x`
+**Status:** in review **Branch:** `feature/guzzle-8` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
 
@@ -17,11 +17,11 @@ claude --ide --resume 55d2a5fd-90b3-42a4-b1fd-513e990658b1
   - **Resume:** `claude --ide --resume e622c416-3f6b-4df1-aca5-5de4527446a9` (gandalf)
   - **Why:** Small, fully decided code change with tests, but it has to be checked on two Guzzle majors. The planning session is long and mostly about the previous task, so a fresh one with this plan is enough.
   - **Prompt:** Implement Step 1 of PLAN.md: SDK 1.2, Guzzle 8 and version-agnostic error answers. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the reasons are in PLAN.md → Context and Decisions. The Guzzle 8 exception hierarchy is in Guzzle's `UPGRADING.md` (8.x), and the SDK's 1.2 changes are in `../route-connex-sdk-php` (`CHANGELOG.md`, `src/Concerns/RunsHttpRequests.php`). Use the `package-testing` and `package-compatibility` skills. `composer.lock` is git-ignored, so switching Guzzle versions locally leaves no trace in git; leave the local install on Guzzle 8 when done. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's CHANGELOG items as the step says. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. Docs: Guzzle 8 and the connection exception**
+- [x] **2. Docs: Guzzle 8 and the connection exception**
   - **Model:** `haiku`
   - **Effort:** `low`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume e622c416-3f6b-4df1-aca5-5de4527446a9` (gandalf)
   - **Why:** Mechanical wording changes in three docs, building directly on Step 1's session.
   - **Prompt:** Implement Step 2 of PLAN.md: Docs: Guzzle 8 and the connection exception. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Step 1 bumped the SDK to `^1.2`, required `guzzlehttp/guzzle: ^7.9 || ^8.0` directly and made only 4xx/5xx answers throw `RouteConnexRequestException`. Edit the Boost skill directly, checking it against the `package-generate-skill` guidance. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message.
 
@@ -79,13 +79,15 @@ The outcome: the package installs and works on Guzzle 7.9+ and Guzzle 8, and the
 
 ### Step 2: Docs: Guzzle 8 and the connection exception
 
-**Status:** todo
+**Status:** done
 
-- [ ] `README.md` Requirements: replace the Guzzle 7 line with Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
-- [ ] `docs/features/sdk-layer.md` compatibility notes: the package and the SDK (`^1.2`) allow `^7.9 || ^8.0`; Laravel 12 stays on Guzzle 7 and Laravel 13 can use either; CI covers both majors through the Laravel and stability lanes. Drop "Until the SDK allows `^8.0`…"
-- [ ] `resources/boost/skills/route-connex-laravel-development/SKILL.md`: replace the "the SDK requires Guzzle 7" rule with Guzzle 7.9+ or 8
-- [ ] `RouteConnexConnectionException` rows in the README and Boost skill exception tables, and the bullet in `docs/features/sdk-layer.md` Scope: "the API couldn't be reached, or the request failed without a 4xx/5xx answer". Check that the `RouteConnexRequestException` rows and bullet still say 4xx/5xx
-- [ ] No new CHANGELOG items; this is the same change as Step 1's
+- [x] `README.md` Requirements: replace the Guzzle 7 line with Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
+- [x] `docs/features/sdk-layer.md` compatibility notes: the package and the SDK (`^1.2`) allow `^7.9 || ^8.0`; Laravel 12 stays on Guzzle 7 and Laravel 13 can use either; CI covers both majors through the Laravel and stability lanes. Drop "Until the SDK allows `^8.0`…"
+- [x] `resources/boost/skills/route-connex-laravel-development/SKILL.md`: replace the "the SDK requires Guzzle 7" rule with Guzzle 7.9+ or 8
+- [x] `RouteConnexConnectionException` rows in the README and Boost skill exception tables, and the bullet in `docs/features/sdk-layer.md` Scope: "the API couldn't be reached, or the request failed without a 4xx/5xx answer". Check that the `RouteConnexRequestException` rows and bullet still say 4xx/5xx
+- [x] No new CHANGELOG items; this is the same change as Step 1's
+
+**Notes:** Kept the README Requirements wording as "Guzzle 7.9+ or 8" and the Boost skill's rule as "the package works with Guzzle 7.9+ or 8". The `grep` for stale constraints shows only that README line, which is the new wording. Also reworded the `RouteConnexConnectionException` rows in the README and the Boost skill table. The `RouteConnexRequestException` rows already say 4xx/5xx.
 
 **Validate:** `make test`; `grep -rn "Guzzle 7\|\^7\.9\b\|\^1\.1" README.md docs resources/boost` shows no stale constraint
 **Commit:** `Document Guzzle 8 support and the connection exception`
@@ -102,3 +104,13 @@ The outcome: the package installs and works on Guzzle 7.9+ and Guzzle 8, and the
 ## Review
 
 Findings from Phase 3 (filled in by the reviewing agent).
+
+**Validation (2026-11-25):** `make test` passes on Guzzle 8.6.0 / SDK 1.2.0 (PHPStan, Pint, 100% type coverage, 140 tests) and on Guzzle 7.15.2 (`update 'guzzlehttp/*' -W --prefer-lowest`); local install put back on 8.6.0. `make test-all`: 140 passed on SQLite, MySQL, PostgreSQL and MongoDB. CI (last criterion) can only be checked on the PR.
+
+**Checked and fine:** `composer.json` constraints; `wrap()` takes a response only from `BadResponseException`, with no version checks; the three new tests cover a plain `RequestException` (Service and token) and `TooManyRedirectsException`, and run unchanged on both majors; README, Boost skill and `sdk-layer.md` Guzzle lines; CHANGELOG has `# feature/guzzle-8` with one item and the reworded rc items; `version` is `feature/guzzle-8`; no stale Guzzle 7-only or `^1.1` wording left.
+
+**Findings (docs only, no behavior change):**
+
+1. `src/Exceptions/RouteConnexConnectionException.php` docblock still says the request "failed before the API answered". Since Step 1, a `TooManyRedirectsException` (the API answered 3xx) and Guzzle 8's `ResponseTransferException` (headers received) also become this exception. It should match the README row: the API couldn't be reached, or a request failed without a 4xx or 5xx answer.
+2. `docs/features/sdk-layer.md:90` (Scope) describes `RouteConnexRequestException` as "the API answered a Service call with an error". Step 2 asked to check it says 4xx/5xx, as the README, Boost skill and class docblock do; it doesn't.
+3. (No action: `PLAN.md` is blanked on close.) Step 1's commit left a stray `[RouteConnexExceptionsTest.php](…)` link on the Step 1 **Model** line.

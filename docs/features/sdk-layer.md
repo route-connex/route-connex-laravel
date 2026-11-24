@@ -88,7 +88,7 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - `RouteConnexClientFactory` builds each App's SDK client and is resolved from the container, so a bound subclass changes how clients are built (see [Overridable models and classes](overrides.md)).
 - Exceptions, all extending `RouteConnexException`, which wrap the SDK's and Guzzle's:
   - `RouteConnexRequestException`: the API answered a Service call with an error, including 401 and 403; carries the `RouteConnexResponse`
-  - `RouteConnexConnectionException`: the API couldn't be reached
+  - `RouteConnexConnectionException`: the API couldn't be reached, or a request failed without a 4xx or 5xx answer
   - `RouteConnexAuthenticationException`: the token request failed or issued no usable token; carries the `RouteConnexResponse` when there is one
   - `RouteConnexConfigurationException`: no default App, an unknown App, or empty Credentials, checked on first use. [Run tracking](run-tracking.md) adds its own case (a Run saved with both or neither of `app_name` and `app_id`, see [decision 0004](../decisions/0004-runs-store-app-name-or-id.md))
 - Request data that can't be encoded as JSON (invalid UTF-8 in a body, or Meta on `GET`) throws `\InvalidArgumentException`, not a package exception, with the original as `previous`. It's a bug in the calling code, so `dontReport(RouteConnexException::class)` doesn't hide it.
@@ -109,7 +109,7 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
 - **Databases:** this feature doesn't touch the database itself; storing Runs is covered in [`RouteConnexRun` tracking](run-tracking.md). It behaves the same on MySQL, PostgreSQL, MongoDB and SQLite.
 - **Laravel 12 and 13:** uses only APIs both have: `mergeConfigFrom`, container singletons, facades, `Illuminate\Http\Client\Response` (which wraps a PSR-7 response) and `withExceptions()->dontReport()` in `bootstrap/app.php`.
 - **PHP 8.3+:** the SDK requires PHP 8.1+, so it fits.
-- **Guzzle:** the SDK requires `guzzlehttp/guzzle` `^7.9`. Laravel 13 allows `^7.8.2 || ^8.0`; Laravel 12's constraint and the `prefer-lowest` lane must resolve to Guzzle 7.9 or later, which CI checks. Until the SDK allows `^8.0`, a Laravel 13 app that needs Guzzle 8 can't install the package.
+- **Guzzle:** the package and the SDK (`^1.2`) allow `guzzlehttp/guzzle` `^7.9 || ^8.0`. Laravel 12 stays on Guzzle 7 and Laravel 13 can use either. CI covers both majors through the Laravel and stability lanes.
 - **Windows:** nothing path- or shell-specific.
 
 ## Open questions

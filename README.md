@@ -22,7 +22,7 @@ Laravel plugin for route-connex
   - PostgreSQL 14+
   - MongoDB 7.0+ (requires [`mongodb/laravel-mongodb`](https://github.com/mongodb/laravel-mongodb) ^5.12 and the `mongodb` PHP extension)
   - SQLite
-- Guzzle 7 (required through the SDK, `guzzlehttp/guzzle` ^7.9): a Laravel 13 app that needs Guzzle 8 can't install the package yet
+- Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
 
 ## Installation
 
@@ -162,7 +162,7 @@ Every exception extends `RouteConnexException` and keeps the original as `getPre
 |--------------------------------------|---------------------------------------------------------------------------------------------------------|
 | `RouteConnexConfigurationException`  | no default App, an unknown App, or empty Credentials                                                    |
 | `RouteConnexAuthenticationException` | the token request failed or issued no usable token; `response()` holds the API's answer, if any        |
-| `RouteConnexConnectionException`     | the API couldn't be reached                                                                             |
+| `RouteConnexConnectionException`     | the API couldn't be reached, or a request failed without a 4xx or 5xx answer                            |
 | `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` holds the API's error body |
 
 ```php
