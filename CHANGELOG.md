@@ -25,9 +25,10 @@
 - The facade mirrors the SDK's endpoints: `routeConnex()`, `run()`, `microsoftSharepoint()` and `hpeContentManager()`.
 - Calls return a `RouteConnexResponse`, with Laravel's HTTP client helpers such as `json()` and `status()`.
 - Calls that create a Run take a `meta:` argument, sent where the API expects it.
-- `RouteConnexRequestException` for an error answer from the API, carrying the `RouteConnexResponse`.
+- `RouteConnexRequestException` for a 4xx or 5xx answer from the API, carrying the `RouteConnexResponse`.
 - `RouteConnexAuthenticationException` when the token request is rejected or issues no usable token.
-- `RouteConnexConnectionException` when the API can't be reached.
+- `RouteConnexConnectionException` when the API can't be reached or a request fails without an error answer.
 - Every package exception extends `RouteConnexException`; `RouteConnex::sdk()` still throws the SDK's own.
 - Boost skill and README document the config, the facade, Meta, responses and exceptions.
 - Project docs mark the SDK layer `in progress` and note what Apps, run tracking and overrides build on.
+- Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2.
