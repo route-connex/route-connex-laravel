@@ -8,6 +8,7 @@ use MongoDB\Laravel\MongoDBServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RouteConnex\Laravel\RouteConnexServiceProvider;
 use RouteConnex\Laravel\Tests\Fixtures\MongoRouteConnexApp;
+use RouteConnex\Laravel\Tests\Fixtures\MongoRouteConnexRun;
 
 abstract class TestCase extends Orchestra
 {
@@ -42,7 +43,15 @@ abstract class TestCase extends Orchestra
 
         if ($connection === 'mongodb') {
             $app['config']->set('route-connex-laravel.models.app', MongoRouteConnexApp::class);
+            $app['config']->set('route-connex-laravel.models.run', MongoRouteConnexRun::class);
         }
+
+        // A second database for Apps or Runs on another connection, such as a
+        // Tenant's. SQLite is always available, whatever DB_CONNECTION is.
+        $app['config']->set('database.connections.tenant', array_merge($this->laravelConnection($app, 'sqlite'), [
+            'database' => ':memory:',
+            'foreign_key_constraints' => true,
+        ]));
 
         $app['config']->set("database.connections.{$connection}", match ($connection) {
             'sqlite' => array_merge($this->laravelConnection($app, $connection), [

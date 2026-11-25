@@ -1,3 +1,12 @@
+# feature/run-tracking
+
+- `RouteConnexRun` model on a publish-only `route_connex_runs` migration, set in `models.run`.
+- `RouteConnexRunStatus` enum with `isFinished()`.
+- `$run->app` returns the config or model App that started a Run.
+- Type coverage runs with a 512M memory limit.
+
+---
+
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.

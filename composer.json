@@ -78,7 +78,7 @@
             "vendor/bin/phpstan analyse"
         ],
         "test:types": [
-            "vendor/bin/pest --type-coverage --min=100"
+            "vendor/bin/pest --type-coverage --min=100 --memory-limit=512M"
         ],
         "test:unit": [
             "vendor/bin/pest --parallel"

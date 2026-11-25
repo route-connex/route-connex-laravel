@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use RouteConnex\Laravel\Models\RouteConnexApp;
+use RouteConnex\Laravel\Models\RouteConnexRun;
 
 return [
 
@@ -61,11 +62,17 @@ return [
     | RouteConnexAppContract here, or a subclass of RouteConnexApp, such as
     | one with laravel-mongodb's DocumentModel trait.
     |
+    | The Run model, which stores the Runs the package starts. Set a subclass
+    | of RouteConnexRun here to add fields, change the table or connection,
+    | or add laravel-mongodb's DocumentModel trait.
+    |
     */
 
     'models' => [
 
         'app' => RouteConnexApp::class,
+
+        'run' => RouteConnexRun::class,
 
     ],
 

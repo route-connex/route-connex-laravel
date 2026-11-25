@@ -21,3 +21,16 @@ function fakeRouteConnexApi(): FakeApi
 
     return $api;
 }
+
+/**
+ * Run the package migrations on the extra `tenant` SQLite connection, for
+ * Apps or Runs stored away from the default connection.
+ */
+function migrateTenantConnection(): void
+{
+    test()->artisan('migrate', [
+        '--database' => 'tenant',
+        '--path' => realpath(__DIR__.'/../database/migrations'),
+        '--realpath' => true,
+    ])->assertSuccessful();
+}

@@ -1,6 +1,6 @@
 # `RouteConnexRun` tracking
 
-**Status:** planning
+**Status:** in progress
 **Branch:** `feature/run-tracking` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -11,11 +11,11 @@ claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a
 
 ## Implementation
 
-- [ ] **1. The `route_connex_runs` migration, `RouteConnexRunStatus` and the `RouteConnexRun` model**
+- [x] **1. The `route_connex_runs` migration, `RouteConnexRunStatus` and the `RouteConnexRun` model**
   - **Model:** `opus`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a` (gandalf)
   - **Why:** Database work that must pass on MySQL 8.0, PostgreSQL 14, MongoDB 7.0 and SQLite, including the MongoDB subclass and string `app_id` lookups across key types. The planning session already holds the design.
   - **Prompt:** Implement Step 1 of PLAN.md: The `route_connex_runs` migration, `RouteConnexRunStatus` and the `RouteConnexRun` model. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The design is in PLAN.md → Decisions, `docs/features/run-tracking.md` (Scope, Database & compatibility notes) and decisions 0004 and 0006. Issue #6 added `RouteConnexAppContract`, `RouteConnexConfigApp`, `RouteConnexApp` with its migration, `models.app` and the `MongoRouteConnexApp` test fixture that `TestCase` sets on MongoDB. Read them and their tests first. Use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/run-tracking`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. `RouteConnexRunRecorder`: System calls store and return the Run**
@@ -111,15 +111,17 @@ State found during planning:
 
 ### Step 1: The `route_connex_runs` migration, `RouteConnexRunStatus` and the `RouteConnexRun` model
 
-**Status:** todo
+**Status:** done
 
-- [ ] `database/migrations/2026_01_01_000001_create_route_connex_runs_table.php`, as in Decisions
-- [ ] `src/Enums/RouteConnexRunStatus.php`, with `isFinished()`
-- [ ] `src/Models/RouteConnexRun.php`: table, fillable, casts, the `saving` check for `app_name`/`app_id`, and the `app` accessor
-- [ ] `src/Exceptions/RouteConnexConfigurationException.php`: `invalidRunApp()` and `missingRunApp()`
-- [ ] `config/route-connex-laravel.php`: `models.run`, and the `models` comment mentions the Run model
-- [ ] `tests/Fixtures/MongoRouteConnexRun.php`, set in `models.run` by `tests/TestCase.php` on MongoDB
-- [ ] Tests (`tests/Feature/DatabaseTest.php` and a new `tests/Feature/RouteConnexRunModelTest.php`), always through `config('route-connex-laravel.models.run')`:
+- [x] `database/migrations/2026_01_01_000001_create_route_connex_runs_table.php`, as in Decisions
+- [x] `src/Enums/RouteConnexRunStatus.php`, with `isFinished()`
+- [x] `src/Models/RouteConnexRun.php`: table, fillable, casts, the `saving` check for `app_name`/`app_id`, and the `app` accessor
+- [x] `src/Exceptions/RouteConnexConfigurationException.php`: `invalidRunApp()` and `missingRunApp()`
+- [x] `config/route-connex-laravel.php`: `models.run`, and the `models` comment mentions the Run model
+- [x] `tests/Fixtures/MongoRouteConnexRun.php`, set in `models.run` by `tests/TestCase.php` on MongoDB
+- [x] Cross-connection setup: `tests/TestCase.php` defines an in-memory SQLite `tenant` connection on every database, `migrateTenantConnection()` in `tests/Pest.php` migrates it, and `tests/Fixtures/TenantRouteConnexApp.php` is an App model on it
+- [x] `composer.json`: `test:types` runs with `--memory-limit=512M` (added with the user's agreement, see the notes)
+- [x] Tests (`tests/Feature/DatabaseTest.php` and a new `tests/Feature/RouteConnexRunModelTest.php`), always through `config('route-connex-laravel.models.run')`:
   - the migration creates `route_connex_runs`, and the published migrations include it (`route-connex-laravel-migrations`)
   - `models.run` defaults to `RouteConnexRun` on the `route_connex_runs` table
   - `status`, `meta`, `request`, `response`, `finished_at` and `purged_at` round-trip with their casts, including nested arrays and `null`
@@ -129,6 +131,12 @@ State found during planning:
   - `$run->app` returns the config App by `app_name`, and the model App by `app_id` (an integer key on SQL, including PostgreSQL, and an ObjectId on MongoDB)
   - an unknown config App or a missing model App throws `RouteConnexConfigurationException`
   - `$run->app` loads the App from the App model's own connection, including a Run on MongoDB whose App is on SQLite (on the MongoDB job)
+
+**Notes:**
+
+- **Type coverage memory (unplanned, agreed with the user):** after this step, `composer test:types` ran past PHP's default 128M limit in the Docker image. Memory adds up across files, so no single file was at fault; with more memory coverage is 100%. The script now passes the plugin's own `--memory-limit=512M`, which exists since `pest-plugin-type-coverage` v4.0.0, so the `prefer-lowest` lane has it too.
+- **MySQL reorders JSON keys:** MySQL's `json` type stores object keys shortest first (`body` before `query`, `_meta_` before `file_name`), so a stored `request`, `response` or `meta` reads back with the same values but possibly another key order. The round-trip test compares them with `toEqual`. Step 4 should mention it where the docs describe the payload columns.
+- `$run->app` reads `models.app` with a `class-string<Model&RouteConnexAppContract>` docblock, as the tests do, rather than validating the class at runtime.
 
 **Validate:** `make test`, `make test-all`, then the minimum versions: `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`
 **Commit:** `Add the RouteConnexRun model, its status enum and the route_connex_runs migration`

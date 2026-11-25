@@ -8,7 +8,7 @@ use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 
 /**
  * The package is not configured for the call: no default App, an unknown
- * App or empty Credentials.
+ * App, empty Credentials, or a Run whose App is invalid or gone.
  */
 class RouteConnexConfigurationException extends RouteConnexException
 {
@@ -35,5 +35,21 @@ class RouteConnexConfigurationException extends RouteConnexException
         $key = $app->getRouteConnexKey();
 
         return self::missingCredentials($app::class.($key === null ? ' (unsaved)' : " #{$key}"));
+    }
+
+    /**
+     * A Run saved with both `app_name` and `app_id`, or with neither.
+     */
+    public static function invalidRunApp(): self
+    {
+        return new self('A RouteConnex Run needs exactly one of [app_name] and [app_id].');
+    }
+
+    /**
+     * The model App a Run belongs to can't be found through `models.app`.
+     */
+    public static function missingRunApp(string $model, string $id): self
+    {
+        return new self("RouteConnex App [{$model} #{$id}] of the Run can't be found.");
     }
 }
