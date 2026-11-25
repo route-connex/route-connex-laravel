@@ -33,6 +33,14 @@ claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda
   - **Why:** Documentation that must match the code exactly. A fresh session reads the code as it is instead of remembering what was intended.
   - **Prompt:** Implement Step 3 of PLAN.md: Boost skill, README and project docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 1–2 added `RouteConnexAppContract`, `InteractsWithRouteConnexApp`, `RouteConnex::app(string|RouteConnexAppContract)` with its client cache, `callback_token` and `models.app` in config, `RouteConnex::generateCallbackToken()`, the `RouteConnexApp` model and the `route_connex_apps` migration. Read them in `src/`, `config/`, `database/` and the tests before writing anything, and document what the code does. Use the `package-generate-skill` skill for the Boost skill. Never name consumer apps or private RouteConnex repos in the docs. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
+- [x] **4. Fix the review's documentation findings**
+  - **Model:** `opus`
+  - **Effort:** `low`
+  - **Session:** `same`
+  - **Resume:** `claude --ide --resume afa1e41e-c8e2-46a9-82b5-75176166c13f` (gandalf)
+  - **Why:** Three small doc edits that come straight from the review; the reviewing session already holds the findings and the code they describe.
+  - **Prompt:** Implement Step 4 of PLAN.md: Fix the review's documentation findings. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the findings are 1–3 in PLAN.md → Review. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't close the task.
+
 ## Context
 
 GitHub issue #6: named Apps in config, `RouteConnexAppContract`, the `RouteConnexApp` model with its migration and Callback token generation, `RouteConnex::app()` and the `models.app` config key. Design: [`docs/features/apps.md`](docs/features/apps.md), [decision 0003](docs/decisions/0003-apps-from-config-or-models.md), and [0004](docs/decisions/0004-runs-store-app-name-or-id.md) and [0006](docs/decisions/0006-mongodb-through-app-subclass.md) for what the App key and the MongoDB subclass must allow. It depends on #5, which is merged into `release/0.x`. The issue asks for the Boost skill and the feature doc status to be updated in this task.
@@ -193,6 +201,26 @@ Results:
 **Validate:** `make test`; the README and skill examples match the code (class names, method names, config keys, env names)
 
 **Commit:** `Document Multiple Apps in the Boost skill, README and project docs`
+
+### Step 4: Fix the review's documentation findings
+
+**Status:** done
+
+- [x] `resources/boost/skills/route-connex-laravel-development/SKILL.md`: the client rule says config Apps keep one client for the process and model Apps share an SDK client per class, key and Credentials (finding 1)
+- [x] `README.md`, the Boost skill and `docs/features/apps.md`: the MongoDB subclass example sets `protected $connection = 'mongodb'`, needed when MongoDB isn't the default connection (finding 2)
+- [x] `README.md`: the exceptions table rows line up again (finding 3)
+- [x] `CHANGELOG.md`: no new item; the existing docs item already covers these docs
+
+Notes:
+
+- The `RouteConnexAuthenticationException` row of the README table was already one character short before this task; it's left as it was.
+- The `MongoRouteConnexApp` test fixture doesn't set `$connection`, because the tests run with MongoDB as the default connection, which the example's comment allows.
+
+**Validate:** `make test`; the examples match the code and the `MongoRouteConnexApp` fixture
+
+Results: `make test` passed (PHPStan, Pint, type coverage, 171 tests).
+
+**Commit:** `Fix the Multiple Apps review's documentation findings`
 
 ## Acceptance Criteria
 

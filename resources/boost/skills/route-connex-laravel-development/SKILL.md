@@ -201,12 +201,15 @@ Set the model Callbacks will use to find Apps in `config/route-connex-laravel.ph
 ],
 ```
 
-On MongoDB (needs `mongodb/laravel-mongodb`), extend the shipped model with `DocumentModel` and set the subclass in `models.app`:
+On MongoDB (needs `mongodb/laravel-mongodb`), extend the shipped model with `DocumentModel` and set the subclass in `models.app`. Set its `$connection` when MongoDB isn't the default connection:
 
 ```php
 class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 {
     use \MongoDB\Laravel\Eloquent\DocumentModel;
+
+    // Only needed when MongoDB isn't the default connection.
+    protected $connection = 'mongodb';
 }
 ```
 
@@ -248,7 +251,7 @@ Read before executing:
 
 Rules:
 
-- one client per App is kept for the life of the PHP process; its token is reused until it is about to expire
+- a config App's client is kept for the life of the PHP process; a model App gets a new client per `RouteConnex::app()` call, around an SDK client shared per class, key and Credentials; tokens are reused until they are about to expire
 - the package works with Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
 - `RouteConnex::app()` takes a config App's name or a `RouteConnexAppContract`; never pass a model App's key
 - the client secret and Callback token of `RouteConnexApp` are encrypted with the app's `APP_KEY`

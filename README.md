@@ -177,12 +177,15 @@ Set your model (or a `RouteConnexApp` subclass) in `models.app`, so the package 
 
 SDK clients are shared per class, key and Credentials. Tenants with the same IDs and different Credentials never share a client, and a changed secret takes effect on the next call.
 
-On MongoDB, extend the model with [`mongodb/laravel-mongodb`](https://github.com/mongodb/laravel-mongodb)'s `DocumentModel` trait and set the subclass in `models.app`. The key is then a string ObjectId:
+On MongoDB, extend the model with [`mongodb/laravel-mongodb`](https://github.com/mongodb/laravel-mongodb)'s `DocumentModel` trait and set the subclass in `models.app`. Set its `$connection` when MongoDB isn't your default connection. The key is then a string ObjectId:
 
 ```php
 class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 {
     use \MongoDB\Laravel\Eloquent\DocumentModel;
+
+    // Only needed when MongoDB isn't the default connection.
+    protected $connection = 'mongodb';
 }
 ```
 
@@ -217,7 +220,7 @@ Every exception extends `RouteConnexException` and keeps the original as `getPre
 
 | Exception                            | When                                                                                                    |
 |--------------------------------------|---------------------------------------------------------------------------------------------------------|
-| `RouteConnexConfigurationException`  | no default App, an unknown App, or empty Credentials (config or model App)                                                    |
+| `RouteConnexConfigurationException`  | no default App, an unknown App, or empty Credentials (config or model App)                              |
 | `RouteConnexAuthenticationException` | the token request failed or issued no usable token; `response()` holds the API's answer, if any        |
 | `RouteConnexConnectionException`     | the API couldn't be reached, or a request failed without a 4xx or 5xx answer                            |
 | `RouteConnexRequestException`        | the API answered a call with 4xx or 5xx, including 401 and 403; `response()` holds the API's error body |

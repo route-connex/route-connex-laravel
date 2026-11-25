@@ -93,12 +93,15 @@ The consumer app's own model is set in `models.app` too, so the package can find
 ],
 ```
 
-On MongoDB, the consumer app extends the model and adds laravel-mongodb's `DocumentModel` trait, then sets it in config:
+On MongoDB, the consumer app extends the model and adds laravel-mongodb's `DocumentModel` trait (and its `$connection`, when MongoDB isn't the default connection), then sets it in config:
 
 ```php
 class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 {
     use \MongoDB\Laravel\Eloquent\DocumentModel;
+
+    // Only needed when MongoDB isn't the default connection.
+    protected $connection = 'mongodb';
 }
 ```
 
