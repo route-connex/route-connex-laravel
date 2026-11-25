@@ -1,17 +1,3 @@
-# feature/apps
-
-- `RouteConnex::app()` accepts any `RouteConnexAppContract`, such as a Tenant's App model.
-- `InteractsWithRouteConnexApp` implements the contract on an existing model from its columns.
-- Model App clients are cached per Credentials, so Tenants never share one and rotated secrets apply at once.
-- Config Apps read their Callback token from `callback_token` (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
-- `RouteConnexApp` model with a publish-only `route_connex_apps` migration, set in `models.app`.
-- `RouteConnexApp` encrypts and hides the client secret and Callback token, and generates the token on create.
-- `RouteConnex::generateCallbackToken()` returns a new 64-character hex Callback token.
-- Requires `illuminate/database`; the skeleton's placeholder migration is removed.
-- Boost skill, README and project docs describe config and model Apps, Callback tokens and MongoDB.
-
----
-
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.
@@ -46,3 +32,12 @@
 - Boost skill and README document the config, the facade, Meta, responses and exceptions.
 - Project docs mark the SDK layer `in progress` and note what Apps, run tracking and overrides build on.
 - Guzzle 8 support, with `route-connex/route-connex-sdk-php` ^1.2.
+- `RouteConnex::app()` accepts any `RouteConnexAppContract`, such as a Tenant's App model.
+- `InteractsWithRouteConnexApp` implements the contract on an existing model from its columns.
+- Model App clients are cached per Credentials, so Tenants never share one and rotated secrets apply at once.
+- Config Apps read their Callback token from `callback_token` (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
+- `RouteConnexApp` model with a publish-only `route_connex_apps` migration, set in `models.app`.
+- `RouteConnexApp` encrypts and hides the client secret and Callback token, and generates the token on create.
+- `RouteConnex::generateCallbackToken()` returns a new 64-character hex Callback token.
+- Requires `illuminate/database`; the skeleton's placeholder migration is removed.
+- Boost skill, README and project docs describe config and model Apps, Callback tokens and MongoDB.
