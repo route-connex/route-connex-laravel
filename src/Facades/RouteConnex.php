@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint microsoftSharepoint()
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint hpeContentManager()
  * @method static \RouteConnex\RouteConnexSdkPhp\ErClient sdk()
+ * @method static string generateCallbackToken()
  *
  * @see \RouteConnex\Laravel\RouteConnex
  */

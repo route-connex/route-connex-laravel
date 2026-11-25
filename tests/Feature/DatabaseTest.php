@@ -14,11 +14,16 @@ it('uses the database selected by DB_CONNECTION', function () {
 });
 
 it('runs the package migrations', function () {
-    expect(Schema::hasTable('route_connex_laravel_placeholder'))->toBeTrue();
+    expect(Schema::hasTable('route_connex_apps'))->toBeTrue();
 });
 
 it('writes and reads records on the migrated table', function () {
-    DB::table('route_connex_laravel_placeholder')->insert(['name' => 'smoke']);
+    DB::table('route_connex_apps')->insert([
+        'name' => 'smoke',
+        'client_id' => 'id',
+        'client_secret' => 'secret',
+        'callback_token' => 'token',
+    ]);
 
-    expect(DB::table('route_connex_laravel_placeholder')->where('name', 'smoke')->count())->toBe(1);
+    expect(DB::table('route_connex_apps')->where('name', 'smoke')->count())->toBe(1);
 });

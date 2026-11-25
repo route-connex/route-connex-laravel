@@ -18,11 +18,11 @@ claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda
   - **Resume:** `claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda` (gandalf)
   - **Why:** Sets the contract that run tracking, Callbacks and the commands all build on, and changes the types of a public extension point (`RouteConnexClientFactory`). The client cache has to be right for Tenants. The planning session already holds the design.
   - **Prompt:** Implement Step 1 of PLAN.md: `RouteConnexAppContract`, the trait and `RouteConnex::app()` for model Apps. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions and `docs/features/apps.md`. Issue #5 added `RouteConnex` (the facade root, with `app(string $name)` and one client per config App), `RouteConnexClient`, `RouteConnexConfigApp`, `RouteConnexClientFactory` and `RouteConnexSystemEndpoint::result()`; read them and their tests first. Use the `package-scaffold` and `package-testing` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. The `RouteConnexApp` model, its migration and Callback token generation**
+- [x] **2. The `RouteConnexApp` model, its migration and Callback token generation**
   - **Model:** `opus`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda` (gandalf)
   - **Why:** Database work that must pass on MySQL 8.0, PostgreSQL 14, MongoDB 7.0 and SQLite, including the MongoDB subclass pattern and encrypted casts. It builds directly on Step 1's contract and trait.
   - **Prompt:** Implement Step 2 of PLAN.md: The `RouteConnexApp` model, its migration and Callback token generation. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions and `docs/features/apps.md` (Database & compatibility notes) and decision 0006. Step 1 added `RouteConnexAppContract`, `InteractsWithRouteConnexApp` and `RouteConnex::app(string|RouteConnexAppContract)`. Use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [ ] **3. Boost skill, README and project docs**
@@ -125,16 +125,16 @@ Notes:
 
 ### Step 2: The `RouteConnexApp` model, its migration and Callback token generation
 
-**Status:** todo
+**Status:** done
 
-- [ ] `composer.json`: require `illuminate/database: ^12.0||^13.0`; `make composer ARGS="update"`
-- [ ] `src/RouteConnex.php`: `generateCallbackToken(): string`; `@method` on the facade
-- [ ] `src/Models/RouteConnexApp.php`, as in Decisions, generating a Callback token on `creating` when none is given
-- [ ] `phpstan.neon.dist`: remove Step 1's `trait.unused` ignore now that the model uses the trait
-- [ ] `config/route-connex-laravel.php`: `models.app`, with a comment that a consumer app's own model or a MongoDB subclass goes here
-- [ ] `database/migrations/2026_01_01_000000_create_route_connex_apps_table.php`; delete the placeholder migration
-- [ ] `tests/Fixtures/MongoRouteConnexApp.php` (extends `RouteConnexApp`, uses `DocumentModel`); `tests/TestCase.php` sets `models.app` to it when `DB_CONNECTION=mongodb`
-- [ ] Tests (`tests/Feature/RouteConnexAppModelTest.php`, updating `DatabaseTest.php` and `ExampleTest.php`), always through `config('route-connex-laravel.models.app')`:
+- [x] `composer.json`: require `illuminate/database: ^12.0||^13.0`; `make composer ARGS="update"`
+- [x] `src/RouteConnex.php`: `generateCallbackToken(): string`; `@method` on the facade
+- [x] `src/Models/RouteConnexApp.php`, as in Decisions, generating a Callback token on `creating` when none is given
+- [x] `phpstan.neon.dist`: remove Step 1's `trait.unused` ignore now that the model uses the trait
+- [x] `config/route-connex-laravel.php`: `models.app`, with a comment that a consumer app's own model or a MongoDB subclass goes here
+- [x] `database/migrations/2026_01_01_000000_create_route_connex_apps_table.php`; delete the placeholder migration
+- [x] `tests/Fixtures/MongoRouteConnexApp.php` (extends `RouteConnexApp`, uses `DocumentModel`); `tests/TestCase.php` sets `models.app` to it when `DB_CONNECTION=mongodb`, and sets a fixed `app.key` for the encrypted casts
+- [x] Tests (`tests/Feature/RouteConnexAppModelTest.php`, and `DatabaseTest.php` moved to `route_connex_apps`; `ExampleTest.php` needed no change), always through `config('route-connex-laravel.models.app')`:
   - the migration creates `route_connex_apps`
   - `create()` generates a 64-hex token when none is given and keeps a given one
   - `RouteConnex::generateCallbackToken()` returns a new 64-hex string each time
@@ -142,9 +142,16 @@ Notes:
   - they're hidden from `toArray()`
   - a model read back from the database works with `RouteConnex::app()`
   - the key is an int on SQL and a string on MongoDB
-  - `models.app` defaults to `RouteConnexApp`
-  - the migrations publish tag still publishes `database/migrations`
-- [ ] `CHANGELOG.md`: this step's items under `# feature/apps`
+  - `models.app` defaults to `RouteConnexApp` (read from the package's config file, since `TestCase` overrides it on MongoDB)
+  - the migrations publish tag still publishes `database/migrations` (the existing `ServiceProviderTest` dataset already covers it)
+- [x] `CHANGELOG.md`: this step's items under `# feature/apps`
+
+Notes:
+
+- **Test app key:** Testbench's app has no `APP_KEY`, and the `encrypted` casts need one, so `TestCase` sets a fixed test key. Consumer apps always have their own.
+- **Model:** `$fillable` and `$hidden` as planned. The casts are in `casts()`, which Laravel 12 and 13 both support. Token generation is in `booted()` on `creating`: it runs when `getRouteConnexCallbackToken()` is `null` (missing or empty) and calls `app(RouteConnex::class)->generateCallbackToken()`.
+- **Config:** Pint turned the FQCN in `models.app` into a `use` import at the top of `config/route-connex-laravel.php` (`fully_qualified_strict_types`).
+- **Raw rows:** the encryption test reads them with `DB::table()`, cast to an array, so it works the same on SQL and MongoDB.
 
 **Validate:**
 
@@ -152,6 +159,13 @@ Notes:
 - `make test-all`
 - `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql` and `MONGO_VERSION=7.0 make test-mongodb`
 - `make composer ARGS="update --prefer-lowest"`, then `make test-unit`, then `make composer ARGS="update"` again
+
+Results:
+
+- `make test`: passed (PHPStan, Pint, type coverage 100%, 171 tests)
+- `make test-all`: passed on SQLite, MySQL, PostgreSQL and MongoDB (171 tests each)
+- MySQL 8.0, PostgreSQL 14 and MongoDB 7.0: passed
+- prefer-lowest `make test-unit`: passed. Dependencies are back on stable (Laravel 13.44.1).
 
 **Commit:** `Add the RouteConnexApp model, its migration and Callback token generation`
 

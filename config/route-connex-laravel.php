@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use RouteConnex\Laravel\Models\RouteConnexApp;
+
 return [
 
     /*
@@ -46,6 +48,24 @@ return [
             'client_secret' => env('ROUTE_CONNEX_CLIENT_SECRET'),
             'callback_token' => env('ROUTE_CONNEX_CALLBACK_TOKEN'),
         ],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Models
+    |--------------------------------------------------------------------------
+    |
+    | The App model, used to find model Apps again (for example when a
+    | Callback arrives). Set the app's own model that implements
+    | RouteConnexAppContract here, or a subclass of RouteConnexApp, such as
+    | one with laravel-mongodb's DocumentModel trait.
+    |
+    */
+
+    'models' => [
+
+        'app' => RouteConnexApp::class,
 
     ],
 

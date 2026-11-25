@@ -10,9 +10,3 @@ parameters:
     # knows the app's config_path() by default).
     configDirectories:
         - %currentWorkingDirectory%/config
-    ignoreErrors:
-        # Until the RouteConnexApp model uses it (PLAN.md Step 2). Unmatched
-        # ignores fail the analysis, so this has to go once the trait is used.
-        -
-            identifier: trait.unused
-            path: src/Concerns/InteractsWithRouteConnexApp.php

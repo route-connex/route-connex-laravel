@@ -7,6 +7,7 @@ namespace RouteConnex\Laravel\Tests;
 use MongoDB\Laravel\MongoDBServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RouteConnex\Laravel\RouteConnexServiceProvider;
+use RouteConnex\Laravel\Tests\Fixtures\MongoRouteConnexApp;
 
 abstract class TestCase extends Orchestra
 {
@@ -35,7 +36,14 @@ abstract class TestCase extends Orchestra
         $username = getenv('DB_USERNAME') ?: 'testing';
         $password = getenv('DB_PASSWORD') ?: 'testing';
 
+        // The encrypted casts of RouteConnexApp need an application key.
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('k', 32)));
         $app['config']->set('database.default', $connection);
+
+        if ($connection === 'mongodb') {
+            $app['config']->set('route-connex-laravel.models.app', MongoRouteConnexApp::class);
+        }
+
         $app['config']->set("database.connections.{$connection}", match ($connection) {
             'sqlite' => array_merge($this->laravelConnection($app, $connection), [
                 'database' => ':memory:',

@@ -4,6 +4,10 @@
 - `InteractsWithRouteConnexApp` implements the contract on an existing model from its columns.
 - Model App clients are cached per Credentials, so Tenants never share one and rotated secrets apply at once.
 - Config Apps read their Callback token from `callback_token` (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
+- `RouteConnexApp` model with a publish-only `route_connex_apps` migration, set in `models.app`.
+- `RouteConnexApp` encrypts and hides the client secret and Callback token, and generates the token on create.
+- `RouteConnex::generateCallbackToken()` returns a new 64-character hex Callback token.
+- Requires `illuminate/database`; the skeleton's placeholder migration is removed.
 
 ---
 

@@ -58,6 +58,15 @@ class RouteConnex
     }
 
     /**
+     * A new random Callback token: 64 hex characters. `RouteConnexApp` uses it
+     * when an App is created without one; call it for the app's own models.
+     */
+    public function generateCallbackToken(): string
+    {
+        return bin2hex(random_bytes(32));
+    }
+
+    /**
      * The default App's `route-connex/*` services.
      *
      * @throws RouteConnexConfigurationException
