@@ -7,42 +7,12 @@ use Illuminate\Support\Facades\DB;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
 use RouteConnex\Laravel\Enums\RouteConnexRunStatus;
 use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
-use RouteConnex\Laravel\Models\RouteConnexApp;
 use RouteConnex\Laravel\Models\RouteConnexRun;
 use RouteConnex\Laravel\Tests\Fixtures\TenantRouteConnexApp;
 
 beforeEach(function () {
     $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
 });
-
-/**
- * @param  array<string, mixed>  $attributes
- */
-function createRun(array $attributes = []): RouteConnexRun
-{
-    return runModel()::create(array_merge([
-        'run_id' => 'run-1',
-        'app_name' => 'default',
-        'service' => 'POST microsoft-sharepoint/files',
-        'status' => RouteConnexRunStatus::Created,
-    ], $attributes));
-}
-
-function freshRun(RouteConnexRun $run): RouteConnexRun
-{
-    return runModel()::query()->whereKey($run->getKey())->firstOrFail();
-}
-
-/**
- * @param  array<string, mixed>  $attributes
- */
-function createModelApp(array $attributes = []): RouteConnexApp
-{
-    /** @var class-string<RouteConnexApp> $model */
-    $model = config('route-connex-laravel.models.app');
-
-    return $model::create(array_merge(['name' => 'SharePoint', 'client_id' => 'model-id', 'client_secret' => 'model-secret'], $attributes));
-}
 
 it('uses RouteConnexRun on the route_connex_runs table by default', function () {
     expect((require __DIR__.'/../../config/route-connex-laravel.php')['models']['run'])->toBe(RouteConnexRun::class)

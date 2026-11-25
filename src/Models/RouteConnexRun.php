@@ -7,9 +7,11 @@ namespace RouteConnex\Laravel\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Enums\RouteConnexRunStatus;
 use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
+use RouteConnex\Laravel\Exceptions\RouteConnexRequestException;
 use RouteConnex\Laravel\RouteConnex;
 
 /**
@@ -59,6 +61,79 @@ class RouteConnexRun extends Model
                 throw RouteConnexConfigurationException::invalidRunApp();
             }
         });
+    }
+
+    /**
+     * Get the Run from RouteConnex with the Run's own App, then update it from
+     * the answer (see `updateFromRouteConnex()`). Returns the Run.
+     *
+     * @throws RouteConnexConfigurationException When the Run's App can't be found
+     * @throws RouteConnexRequestException When the answer has no known status
+     */
+    public function refreshFromRouteConnex(): static
+    {
+        $response = app(RouteConnex::class)->app($this->app)->run()->_id_($this->run_id)->get();
+
+        $data = $response->json('data');
+        $data = is_array($data) ? $data : [];
+
+        $status = $data['status'] ?? null;
+        $status = is_array($status) ? ($status['id'] ?? null) : $status;
+
+        $this->updateFromRouteConnex(
+            (is_string($status) ? RouteConnexRunStatus::tryFrom($status) : null)
+                ?? throw RouteConnexRequestException::unknownRunStatus($response, $status),
+            $data,
+        );
+
+        return $this;
+    }
+
+    /**
+     * Update the Run with the state RouteConnex reported, from the Run's
+     * `data` as the API (or a Callback) sends it. Returns whether the status
+     * changed.
+     *
+     * A finished status is final, as it is in RouteConnex: once the Run has
+     * one, nothing is updated. A different finished status is ignored with a
+     * warning in the log; a late unfinished one is ignored silently.
+     * Otherwise the status, the type and the response are saved, and
+     * `finished_at` is set when a finished status first arrives (the API
+     * sends no finish time).
+     *
+     * @param  array<array-key, mixed>  $data
+     */
+    public function updateFromRouteConnex(RouteConnexRunStatus $status, array $data): bool
+    {
+        if ($this->status->isFinished()) {
+            if ($status->isFinished() && $status !== $this->status) {
+                Log::warning("RouteConnex Run [{$this->run_id}] is already {$this->status->value}; ignored the status {$status->value}.");
+            }
+
+            return false;
+        }
+
+        $changed = $status !== $this->status;
+
+        $type = is_array($data['type'] ?? null) ? ($data['type']['name'] ?? null) : null;
+
+        $this->status = $status;
+
+        if (is_string($type) && $type !== '') {
+            $this->type = $type;
+        }
+
+        if (config('route-connex-laravel.runs.store_response', true)) {
+            $this->response = $data;
+        }
+
+        if ($status->isFinished()) {
+            $this->finished_at = now();
+        }
+
+        $this->save();
+
+        return $changed;
     }
 
     /**

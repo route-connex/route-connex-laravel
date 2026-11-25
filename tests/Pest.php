@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use RouteConnex\Laravel\Enums\RouteConnexRunStatus;
+use RouteConnex\Laravel\Models\RouteConnexApp;
 use RouteConnex\Laravel\Models\RouteConnexRun;
 use RouteConnex\Laravel\RouteConnexClientFactory;
 use RouteConnex\Laravel\Tests\Fixtures\FakeApi;
@@ -46,4 +48,33 @@ function runModel(): string
 {
     /** @var class-string<RouteConnexRun> */
     return config('route-connex-laravel.models.run');
+}
+
+/**
+ * @param  array<string, mixed>  $attributes
+ */
+function createRun(array $attributes = []): RouteConnexRun
+{
+    return runModel()::create(array_merge([
+        'run_id' => 'run-1',
+        'app_name' => 'default',
+        'service' => 'POST microsoft-sharepoint/files',
+        'status' => RouteConnexRunStatus::Created,
+    ], $attributes));
+}
+
+function freshRun(RouteConnexRun $run): RouteConnexRun
+{
+    return runModel()::query()->whereKey($run->getKey())->firstOrFail();
+}
+
+/**
+ * @param  array<string, mixed>  $attributes
+ */
+function createModelApp(array $attributes = []): RouteConnexApp
+{
+    /** @var class-string<RouteConnexApp> $model */
+    $model = config('route-connex-laravel.models.app');
+
+    return $model::create(array_merge(['name' => 'SharePoint', 'client_id' => 'model-id', 'client_secret' => 'model-secret'], $attributes));
 }

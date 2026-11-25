@@ -11,6 +11,8 @@
 - System calls fail before sending when a model App has no key.
 - `RouteConnexRequestException` for answers without a Run ID or with an unknown Run status.
 - Requires `illuminate/queue`.
+- `$run->refreshFromRouteConnex()` updates a Run from RouteConnex with the Run's own App.
+- `$run->updateFromRouteConnex()` updates a Run from RouteConnex's data; a finished status stays final.
 
 ---
 

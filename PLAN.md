@@ -25,11 +25,11 @@ claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a
   - **Resume:** `claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a` (gandalf)
   - **Why:** Changes the return type of every System endpoint and adds a public extension point. The connection rule (Run model, then the App's connection, then the default) has to be right for Tenants and across databases. It builds directly on Step 1's model.
   - **Prompt:** Implement Step 2 of PLAN.md: `RouteConnexRunRecorder`: System calls store and return the Run. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The design is in PLAN.md → Decisions and `docs/features/run-tracking.md`. Step 1 added the `route_connex_runs` migration, `RouteConnexRunStatus`, `RouteConnexRun` (with its app check and `app` accessor), `models.run` and the `MongoRouteConnexRun` fixture. Issue #5 added `RouteConnexSystemEndpoint::call()` and `result()`, which this step changes. Read them and `tests/Feature/RouteConnexEndpointsTest.php` first. Use the `package-scaffold` and `package-testing` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/run-tracking`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
-- [ ] **3. `updateFromRouteConnex()` and `refreshFromRouteConnex()`**
+- [x] **3. `updateFromRouteConnex()` and `refreshFromRouteConnex()`**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a` (gandalf)
   - **Why:** Typical feature work with tests on top of Steps 1–2. The rules are fully specified in Decisions.
   - **Prompt:** Implement Step 3 of PLAN.md: `updateFromRouteConnex()` and `refreshFromRouteConnex()`. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The rules are in PLAN.md → Decisions (Updating a Run) and `docs/features/callbacks.md` (step 5, which issue #9 will build on this method). Steps 1–2 added `RouteConnexRun`, `RouteConnexRunStatus`, `RouteConnexRunRecorder` (which already parses `data` from the API's answers) and the `RouteConnexRequestException` named constructors. Use the `package-testing` skill. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/run-tracking`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 4.
 - [ ] **4. Boost skill, README and project docs**
@@ -102,7 +102,7 @@ State found during planning:
   - If the Run's current status is finished, the status is final. Nothing is updated and it returns `false`. A **different** finished status (`failed` after `succeeded`) also logs a warning; a late unfinished one (`running` after `succeeded`) is ignored silently.
   - Otherwise it sets `status`, `type` (`data.type.name` when present), `response` (the `data` object, unless `runs.store_response` is `false`), and `finished_at = now()` the first time a finished status arrives (the API sends no finish time). Then it saves and returns whether the status changed.
   - The caller parses the status, so each caller decides how to report an unknown one.
-- **`$run->refreshFromRouteConnex(): static`**: `GET run/{run_id}` through `RouteConnex::app($this->app)`, then `updateFromRouteConnex()`. It returns `$this`, like `Model::refresh()`. A missing or unknown `data.status.id` throws `RouteConnexRequestException` and leaves the Run unchanged. API failures throw the usual package exceptions. It fires no events until #9.
+- **`$run->refreshFromRouteConnex(): static`**: `GET run/{run_id}` through `RouteConnex::app($this->app)`, then `updateFromRouteConnex()`. It returns `$this`, like `Model::refresh()`. A missing or unknown `data.status.id` throws `RouteConnexRequestException::unknownRunStatus()` and leaves the Run unchanged (unlike a create answer, where a missing status means `created`). API failures throw the usual package exceptions. It fires no events until #9.
 - **MongoDB:** the package's code never uses `DocumentModel`. A test fixture `MongoRouteConnexRun extends RouteConnexRun` uses it, and `TestCase` sets it in `models.run` when `DB_CONNECTION=mongodb`. A second fixture with `$connection = 'mongodb'` covers a Run on MongoDB whose App is on SQLite.
 - **Cross-connection tests** use an extra in-memory SQLite connection (e.g. `tenant`), migrated with `migrate --database=tenant --path=... --realpath`, so they run on every database job.
 - **Status:** `docs/features/run-tracking.md` and its roadmap theme move to `in progress`. They stay there until #8 ships the purge, and become `shipped (vX.Y.Z)` at release.
@@ -171,7 +171,7 @@ State found during planning:
 
 - **`illuminate/queue` (unplanned, agreed with the user):** the plan had `RouteConnexRunCreated` use `Dispatchable` and `SerializesModels`. `Dispatchable` is in `Illuminate\Foundation` (only in `laravel/framework`), and `SerializesModels` is in `illuminate/queue`, which wasn't required. The event now keeps `SerializesModels` (queued listeners restore the Run by key, as `callbacks.md` expects), `illuminate/queue` is required, and the recorder fires the event through the `Event` facade.
 - **`RouteConnexRequestException`'s message** is the third constructor argument, after `$previous`, not the second as planned, so `RouteConnexClient`'s `new RouteConnexRequestException($response, $e)` keeps working. The named constructors use `message:`.
-- **The recorder's protected steps** are `attributes()`, `data()`, `runId()`, `status()`, `type()`, `appAttributes()`, `newRun()`, `connection()`, `save()` and `dispatchCreated()`. A numeric `data.id` is stored as a string. Step 3 can reuse the status parsing if it is made reachable from the model; it is protected for now.
+- **The recorder's protected steps** are `attributes()`, `data()`, `runId()`, `status()`, `type()`, `appAttributes()`, `newRun()`, `connection()`, `save()` and `dispatchCreated()`. A numeric `data.id` is stored as a string. Step 3 didn't reuse the recorder's status parsing: a refresh has stricter rules (no status is an error, not `created`), so the model parses the answer itself.
 - **The MongoDB-only test** (a Run on MongoDB whose App is on SQLite) is skipped on the other databases, so SQL jobs report 1 skipped.
 - The connection test for a model App on `tenant` sets `models.run` to the plain `RouteConnexRun`: the MongoDB fixture has no connection of its own, so it would follow the App onto SQLite, which is the documented reason a split MongoDB setup sets `$connection`.
 
@@ -180,10 +180,11 @@ State found during planning:
 
 ### Step 3: `updateFromRouteConnex()` and `refreshFromRouteConnex()`
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/Models/RouteConnexRun.php`: `updateFromRouteConnex()` and `refreshFromRouteConnex()`, as in Decisions
-- [ ] Tests (in `tests/Feature/RouteConnexRunModelTest.php` or a new `RouteConnexRunRefreshTest.php`), on every database:
+- [x] `src/Models/RouteConnexRun.php`: `updateFromRouteConnex()` and `refreshFromRouteConnex()`, as in Decisions
+- [x] Test helpers: `createRun()`, `freshRun()` and `createModelApp()` moved from `RouteConnexRunModelTest.php` to `tests/Pest.php`, so the new test file can use them
+- [x] Tests (a new `tests/Feature/RouteConnexRunRefreshTest.php`), on every database:
   - `refreshFromRouteConnex()` sends `GET run/{run_id}` with the Run's own App (config and model App), then updates `status`, `type`, `response` and `finished_at`, and returns the Run
   - `finished_at` is set once, when a finished status first arrives, and isn't set for unfinished ones
   - a finished Run keeps its status, type, response and `finished_at` on a later unfinished status (no warning) or a different finished status (a warning is logged)
@@ -191,6 +192,13 @@ State found during planning:
   - `runs.store_response` set to `false` keeps `response` `null`
   - a missing or unknown status throws `RouteConnexRequestException` and leaves the stored Run unchanged
   - a Run on the `tenant` connection is updated there
+
+**Notes:**
+
+- The model parses the `GET run/{id}` answer itself (`data.status.id`, or a bare `data.status` string) instead of calling the recorder, because the recorder defaults a missing status to `created` and a refresh must throw. `updateFromRouteConnex()` takes the parsed `RouteConnexRunStatus` and the `data` array, so #9's Callback handler parses its own body and reuses it.
+- `updateFromRouteConnex()` on an unfinished Run saves even when the status didn't change, since the type and response may have: it returns whether the *status* changed, as planned.
+- A repeat of the same finished status (a duplicate Callback, say) returns `false` without a warning; only a *different* finished status warns.
+- Pint's `fully_qualified_strict_types` rule imports `GuzzleHttp\Psr7\Response` in the new test file; `make lint` fixed it.
 
 **Validate:** `make test`, `make test-all`, then the minimum versions: `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`
 **Commit:** `Update Runs from RouteConnex with refreshFromRouteConnex()`
