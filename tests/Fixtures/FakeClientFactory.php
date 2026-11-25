@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RouteConnex\Laravel\Tests\Fixtures;
 
-use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\RouteConnexClientFactory;
 use RouteConnex\RouteConnexSdkPhp\ErClient;
 
@@ -19,9 +19,9 @@ final class FakeClientFactory extends RouteConnexClientFactory
         //
     }
 
-    protected function newClient(RouteConnexConfigApp $app): ErClient
+    protected function newClient(RouteConnexAppContract $app): ErClient
     {
-        return (new FakeErClient(clientId: $app->clientId, clientSecret: $app->clientSecret))
+        return (new FakeErClient(clientId: (string) $app->getRouteConnexClientId(), clientSecret: (string) $app->getRouteConnexClientSecret()))
             ->useFakeApi($this->api);
     }
 }

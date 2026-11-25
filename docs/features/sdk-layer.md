@@ -83,7 +83,7 @@ Every exception the package throws extends `RouteConnexException`, so a consumer
   - every call returns a `RouteConnexResponse`, which extends Laravel's HTTP client `Response` (`json()`, `status()`, `successful()`); Guzzle throws on 4xx/5xx, so a returned response is always successful
   - endpoints under a System (`microsoftSharepoint()`, `hpeContentManager()`) all go through one protected step that turns the response into the call's result. It returns the response for now; [`RouteConnexRun` tracking](run-tracking.md) changes it to store and return a `RouteConnexRun`
   - full SDK signatures (`get(array $query, array $body, array $headers)`, `post(array $body, array $query, array $headers)`), plus a `meta:` argument on every call under a System
-  - `RouteConnex::app(string $name)` returns the client of a config App; [Multiple Apps](apps.md) widens it to App models
+  - `RouteConnex::app(string $name)` returns the client of a config App; [Multiple Apps](apps.md) widened it to any `RouteConnexAppContract`, such as App models
 - `RouteConnex::sdk()` returns the configured `ErClient` as a fallback; it throws the SDK's and Guzzle's own exceptions.
 - `RouteConnexClientFactory` builds each App's SDK client and is resolved from the container, so a bound subclass changes how clients are built (see [Overridable models and classes](overrides.md)).
 - Exceptions, all extending `RouteConnexException`, which wrap the SDK's and Guzzle's:

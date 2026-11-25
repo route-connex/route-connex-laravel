@@ -7,12 +7,13 @@ namespace RouteConnex\Laravel\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \RouteConnex\Laravel\RouteConnexClient app(string $name)
+ * @method static \RouteConnex\Laravel\RouteConnexClient app(string|\RouteConnex\Laravel\Contracts\RouteConnexAppContract $app)
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexRouteConnexEndpoint routeConnex()
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexRunEndpoint run()
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint microsoftSharepoint()
  * @method static \RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint hpeContentManager()
  * @method static \RouteConnex\RouteConnexSdkPhp\ErClient sdk()
+ * @method static string generateCallbackToken()
  *
  * @see \RouteConnex\Laravel\RouteConnex
  */

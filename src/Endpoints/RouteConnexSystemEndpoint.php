@@ -6,7 +6,7 @@ namespace RouteConnex\Laravel\Endpoints;
 
 use InvalidArgumentException;
 use JsonException;
-use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Http\RouteConnexResponse;
 use RouteConnex\RouteConnexSdkPhp\HttpMethod;
 
@@ -62,7 +62,7 @@ abstract class RouteConnexSystemEndpoint extends RouteConnexEndpoint
      * @param  array{query: array<string, mixed>, body: array<string, mixed>}  $request
      * @param  array<string, mixed>  $meta
      */
-    protected function result(RouteConnexConfigApp $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexResponse
+    protected function result(RouteConnexAppContract $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexResponse
     {
         return $response;
     }

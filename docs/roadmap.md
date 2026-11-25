@@ -11,7 +11,7 @@ Every theme also updates the bundled [Laravel Boost](https://github.com/laravel/
 Target: `0.1` to `0.x`. The core of the package.
 
 - **Laravel layer over the SDK**: the facade, the container binding and config, with credentials from `.env`, and package exceptions. Status: `in progress`. Target: 0.x. Feature: [sdk-layer.md](features/sdk-layer.md).
-- **Multiple Apps**: named Apps in config, like database connections, and App models (the shipped `RouteConnexApp` or the consumer app's own) for multi-tenant apps. Status: `planned`. Target: 0.x. Feature: [apps.md](features/apps.md).
+- **Multiple Apps**: named Apps in config, like database connections, and App models (the shipped `RouteConnexApp` or the consumer app's own) for multi-tenant apps. Status: `in progress`. Target: 0.x. Feature: [apps.md](features/apps.md).
 - **`RouteConnexRun` tracking**: Runs stored and kept up to date on MySQL, PostgreSQL, MongoDB and SQLite, with payloads of old successful Runs purged. Status: `planned`. Target: 0.x. Feature: [run-tracking.md](features/run-tracking.md).
 - **Callbacks as events**: the Callback route, the Callback token check and the events the consumer app listens to. Status: `planned`. Target: 0.x. Feature: [callbacks.md](features/callbacks.md).
 - **Overridable models and classes**: models set in config, and the package's replaceable classes bound in the container, including `RouteConnexTenancy` for apps with their own tenancy setup. Status: `planned`. Target: 0.x. Feature: [overrides.md](features/overrides.md).

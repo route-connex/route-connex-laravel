@@ -24,7 +24,7 @@ The package turns a Callback into Laravel events. It only acts on a Callback tha
 
 ### Callback token
 
-A random secret for an App. The package generates it for model Apps when they are created; for a config App, the admin sets it in `.env` until the Artisan commands can generate it. The consumer app's admin adds it to the App's callback configuration in RouteConnex, together with the callback URL and HTTP method; an Artisan command prints that configuration as JSON for a given App. RouteConnex sends it back in every Callback, and the package compares it in constant time before doing anything else. It is a simple check until RouteConnex authenticates Callbacks itself; the code keeps a TODO where that check will go.
+A random secret for an App. The shipped `RouteConnexApp` model generates it when an App is created without one (`RouteConnex::generateCallbackToken()`, which an app's own model can call too); for a config App, the admin sets it in `.env` until the Artisan commands can generate it. The consumer app's admin adds it to the App's callback configuration in RouteConnex, together with the callback URL and HTTP method; an Artisan command prints that configuration as JSON for a given App. RouteConnex sends it back in every Callback, and the package compares it in constant time before doing anything else. It is a simple check until RouteConnex authenticates Callbacks itself; the code keeps a TODO where that check will go.
 
 **Related:** Callback, App
 

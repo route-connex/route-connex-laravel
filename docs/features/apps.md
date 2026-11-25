@@ -1,6 +1,6 @@
 # Multiple Apps
 
-**Status:** planned
+**Status:** in progress
 **Target version:** 0.x
 
 ## Summary
@@ -93,24 +93,28 @@ The consumer app's own model is set in `models.app` too, so the package can find
 ],
 ```
 
-On MongoDB, the consumer app extends the model and adds laravel-mongodb's `DocumentModel` trait, then sets it in config:
+On MongoDB, the consumer app extends the model and adds laravel-mongodb's `DocumentModel` trait (and its `$connection`, when MongoDB isn't the default connection), then sets it in config:
 
 ```php
 class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 {
     use \MongoDB\Laravel\Eloquent\DocumentModel;
+
+    // Only needed when MongoDB isn't the default connection.
+    protected $connection = 'mongodb';
 }
 ```
 
 ## Scope
 
-- `RouteConnex::app(string|RouteConnexAppContract $app)`: a string is the name of a config App, a model is used as it is.
+- `RouteConnex::app(string|RouteConnexAppContract $app)`: a string is the name of a config App. Any other `RouteConnexAppContract` implementation is used as it is: a saved or unsaved model, or a plain object. `app()` doesn't check its class against `models.app`.
 - Calls without `app()` use the default App (`default` in config, `ROUTE_CONNEX_APP` in `.env`). If there is no default App, the default names an App that isn't configured, or its Credentials are empty, the call throws `RouteConnexConfigurationException`, so installations with only model Apps fail loudly instead of guessing.
-- `RouteConnexAppContract` (`RouteConnex\Laravel\Contracts`): the App's key (used by [`RouteConnexRun` tracking](run-tracking.md) and [Callbacks](callbacks.md) to find the App again), client ID, client secret, Callback token and optional base URL.
-- `InteractsWithRouteConnexApp` (`RouteConnex\Laravel\Concerns`): implements the contract from the `client_id`, `client_secret`, `callback_token` and `base_url` attributes; each method can be overridden.
+- `RouteConnexAppContract` (`RouteConnex\Laravel\Contracts`): the App's key (used by [`RouteConnexRun` tracking](run-tracking.md) and [Callbacks](callbacks.md) to find the App again), client ID, client secret, Callback token and optional base URL, as `getRouteConnexKey(): string|int|null` (`null` while unsaved), `getRouteConnexClientId()`, `getRouteConnexClientSecret()`, `getRouteConnexCallbackToken()` and `getRouteConnexBaseUrl()`, the last four returning `?string`. A `null` or empty client ID or secret throws `RouteConnexConfigurationException`, naming the class and key (or `(unsaved)`). A `null` Callback token means the App has none, and a `null` base URL means the global `base_url`.
+- `InteractsWithRouteConnexApp` (`RouteConnex\Laravel\Concerns`): implements the contract from the `client_id`, `client_secret`, `callback_token` and `base_url` attributes; each method can be overridden. It encrypts and generates nothing.
 - Config Apps are wrapped in a small value object that implements the same contract, so the rest of the package only works with the contract.
-- `RouteConnexApp` (`RouteConnex\Laravel\Models`): the shipped Eloquent model on the `route_connex_apps` table, with `name`, `client_id`, `client_secret`, `callback_token` and `base_url`. The secret and the Callback token use the `encrypted` cast, and a Callback token is generated when an App is created without one. Its class is set in `models.app` in config (see [Overridable models and classes](overrides.md)). A consumer app that uses its own model sets that model there instead, since Callbacks find model Apps through `models.app`.
-- **Callback token for config Apps:** nothing generates it, so the admin sets a long random value in `ROUTE_CONNEX_CALLBACK_TOKEN` (for example from `php -r 'echo bin2hex(random_bytes(32));'`) and adds the same value to the App's callback configuration in RouteConnex. The `route-connex:callback-token` command (see the Artisan commands theme) will generate and rotate it.
+- `RouteConnexApp` (`RouteConnex\Laravel\Models`): the shipped Eloquent model on the `route_connex_apps` table, with `name`, `client_id`, `client_secret`, `callback_token` and `base_url`. The secret and the Callback token use the `encrypted` cast, and a 64-hex Callback token is generated when an App is created without one. Both are also hidden from arrays and JSON. Its class is set in `models.app` in config (see [Overridable models and classes](overrides.md)). A consumer app that uses its own model sets that model there instead, since Callbacks find model Apps through `models.app`.
+- **Callback token for config Apps:** nothing generates it, so the admin sets a long random value in `ROUTE_CONNEX_CALLBACK_TOKEN` (for example from `php -r 'echo bin2hex(random_bytes(32));'`) and adds the same value to the App's callback configuration in RouteConnex. `RouteConnex::generateCallbackToken()` returns such a value (64 hex characters) and is what `RouteConnexApp` calls on create; the `route-connex:callback-token` command (see the Artisan commands theme) will generate and rotate it.
+- **Base URL:** the App's own base URL when it isn't empty, else the global `base_url`, else the SDK's default, for both kinds of App.
 - A publish-only migration for `route_connex_apps`, under the existing `route-connex-laravel-migrations` tag.
 - The bundled Laravel Boost skill shows both kinds of App and how to implement the contract on an existing model.
 
@@ -126,12 +130,12 @@ class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
 - **Migration:** `route_connex_apps` with `id`, `name` (string), `client_id` (string), `client_secret` (text), `callback_token` (text), `base_url` (nullable string) and timestamps. The encrypted columns are `text` because encrypted values are longer than 255 characters. No database-specific column types.
 - **MySQL 8.0+, PostgreSQL 14+, SQLite:** the plain migration and model work as they are.
 - **MongoDB 7.0+:** the migration creates the collection (laravel-mongodb ignores column definitions). The shipped model extends Laravel's `Model`, so the consumer app extends it with laravel-mongodb's `DocumentModel` trait and sets it in `models.app`. `mongodb/laravel-mongodb` stays a Composer suggestion: only apps that use MongoDB install it, and the package's own code never uses the trait. The key is then a string ObjectId, which the contract must accept: App keys are `string|int`.
-- **Tenancy:** the model uses its connection as usual, so on a database-per-Tenant setup it's read from and written to the Tenant's database. The package keeps no static state per App across Tenants: an SDK client cached for a model is keyed by its connection, class and key, so long-running workers (queues, Octane) don't mix Tenants.
+- **Tenancy:** the model uses its connection as usual, so on a database-per-Tenant setup it's read from and written to the Tenant's database. The package keeps no static state across Tenants. Every Tenant of a database-per-Tenant setup uses the same connection name and the same IDs, so a connection, class and key can't tell Tenants apart. The SDK client of a model App is cached in the `RouteConnex` singleton by class, key and a hash of its client ID, client secret and base URL: long-running workers (queues, Octane) never mix Tenants, a rotated secret takes effect on the next call and an unsaved model works. Each `app($model)` call returns a new `RouteConnexClient` bound to the model passed in, around the cached SDK client. Config Apps are cached by name.
 - **Laravel 12 and 13:** `encrypted` casts, `publishesMigrations` and model events exist in both.
 
 ## Already in the code
 
-[Laravel layer over the SDK](sdk-layer.md) already ships `RouteConnex::app(string $name)` for config Apps. Config Apps are held in the readonly `RouteConnexConfigApp` (name, client ID, client secret, base URL). This feature widens `app()` to `string|RouteConnexAppContract`, adds the contract and the models, and makes `RouteConnexConfigApp` implement the contract.
+All of it: `RouteConnexAppContract`, `InteractsWithRouteConnexApp`, `RouteConnex::app(string|RouteConnexAppContract)`, `RouteConnex::generateCallbackToken()`, `RouteConnexApp` with its migration, and `callback_token` and `models.app` in config. Config Apps are held in the readonly `RouteConnexConfigApp` (name, client ID, client secret, base URL, Callback token), which implements the contract with its name as key. `RouteConnexClientFactory`, `RouteConnexClient` and `RouteConnexSystemEndpoint::result()` take the contract. The callback token is stored but nothing reads it until [Callbacks](callbacks.md) ship.
 
 ## Open questions
 
