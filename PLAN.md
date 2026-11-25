@@ -1,6 +1,6 @@
 # Multiple Apps
 
-**Status:** in progress
+**Status:** in review
 **Branch:** `feature/apps` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -196,17 +196,41 @@ Results:
 
 ## Acceptance Criteria
 
-- [ ] `RouteConnex::app('name')` still returns a config App's client, and config Apps read `callback_token` from config (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
-- [ ] `RouteConnex::app($app)` accepts any `RouteConnexAppContract` (the shipped model, a consumer model with the trait, an unsaved model, a non-Eloquent object) and calls the API with its Credentials and base URL.
-- [ ] Two Apps with the same class and key but different Credentials never share an SDK client, and a changed secret takes effect on the next call.
-- [ ] Missing Credentials on a model App throw `RouteConnexConfigurationException`.
-- [ ] `RouteConnexApp` stores Apps in `route_connex_apps`, encrypts and hides the secret and the Callback token, and generates a 64-hex Callback token on create when none is given.
-- [ ] `RouteConnex::generateCallbackToken()` returns a new 64-hex token.
-- [ ] `models.app` defaults to `RouteConnexApp`, and a MongoDB subclass set there works.
-- [ ] The migration publishes under `route-connex-laravel-migrations` and runs on MySQL 8.0+, PostgreSQL 14+, MongoDB 7.0+ and SQLite. The tests pass on all four, at their minimum versions, and on Laravel 12's `prefer-lowest` lane.
-- [ ] The Boost skill, README and `docs/` describe both kinds of App as implemented. `apps.md` and its roadmap theme are `in progress`.
-- [ ] `CHANGELOG.md` lists the task's items under `# feature/apps`, and `version` is `feature/apps`.
+- [x] `RouteConnex::app('name')` still returns a config App's client, and config Apps read `callback_token` from config (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
+- [x] `RouteConnex::app($app)` accepts any `RouteConnexAppContract` (the shipped model, a consumer model with the trait, an unsaved model, a non-Eloquent object) and calls the API with its Credentials and base URL.
+- [x] Two Apps with the same class and key but different Credentials never share an SDK client, and a changed secret takes effect on the next call.
+- [x] Missing Credentials on a model App throw `RouteConnexConfigurationException`.
+- [x] `RouteConnexApp` stores Apps in `route_connex_apps`, encrypts and hides the secret and the Callback token, and generates a 64-hex Callback token on create when none is given.
+- [x] `RouteConnex::generateCallbackToken()` returns a new 64-hex token.
+- [x] `models.app` defaults to `RouteConnexApp`, and a MongoDB subclass set there works.
+- [x] The migration publishes under `route-connex-laravel-migrations` and runs on MySQL 8.0+, PostgreSQL 14+, MongoDB 7.0+ and SQLite. The tests pass on all four, at their minimum versions, and on Laravel 12's `prefer-lowest` lane.
+- [x] The Boost skill, README and `docs/` describe both kinds of App as implemented. `apps.md` and its roadmap theme are `in progress`.
+- [x] `CHANGELOG.md` lists the task's items under `# feature/apps`, and `version` is `feature/apps`.
 
 ## Review
 
-Findings from Phase 3 (filled in by the reviewing agent).
+Phase 3 review on `gandalf`, in a session that didn't implement the steps. Every step and acceptance criterion was checked against the code, tests and docs (`git diff 01f8528 HEAD`), not against the ticked boxes.
+
+**Verdict:** the task is implemented as planned. No blocking findings.
+
+Checked:
+
+- **Step 1:** the contract, the trait, `RouteConnexConfigApp` (key = name, `callback_token`, empty = unset), the widened types in `RouteConnexClientFactory`, `RouteConnexClient` and `RouteConnexSystemEndpoint::result()`, the factory's base URL fallback, and `RouteConnex::app(string|RouteConnexAppContract)`. Config Apps keep the cache by name; other Apps get a new `RouteConnexClient` around an SDK client cached by class, key and a sha256 of the client ID, secret and base URL. The SDK token lives in `ErClient`, so a new `RouteConnexClient` per call doesn't lose it. The `trait.unused` ignore is gone from `phpstan.neon.dist`.
+- **Step 2:** `illuminate/database` required; `RouteConnexApp` with the planned table, fillable, `$hidden`, `encrypted` casts in `casts()` and token generation on `creating`; `models.app`; the migration (no database-specific types, placeholder deleted); the MongoDB fixture subclass set by `TestCase`; the tests go through `models.app`.
+- **Step 3:** README, Boost skill, `apps.md`, `concepts.md`, `sdk-layer.md` and the roadmap match the code: class, method, config and env names, nullable types, the `(unsaved)` message, the cache and the base URL order. `overrides.md`, `run-tracking.md` and `callbacks.md` hold nothing this task made untrue. No consumer apps or private repos are named.
+- **`CHANGELOG.md`:** the task's items are under `# feature/apps`, above `---` and `# v0.1.0-rc`, one short line each. `version` is `feature/apps`.
+- **Branch:** `release/0.x` is an ancestor of `HEAD`.
+
+Validation:
+[PLAN.md](PLAN.md)
+- `make test`: passed (PHPStan, Pint, type coverage, 171 tests)
+- `make test-all`: passed on SQLite, MySQL 8.4, PostgreSQL 18 and MongoDB 8 (171 tests each)
+- Not re-run: the minimum database versions and the `prefer-lowest` lane. Step 2 ran them, and Step 3 changed no file in `src`, `config`, `database`, `tests`, `composer.json` or `phpstan.neon.dist` (`git diff 429614e HEAD`).
+
+Non-blocking findings (no fix planned unless the user asks for one):
+
+1. **Boost skill rule out of date:** the rule "one client per App is kept for the life of the PHP process" is only true for config Apps. A model App gets a new `RouteConnexClient` on every call, around an SDK client shared per class, key and Credentials (step 6 of the skill says this correctly).
+2. **MongoDB subclass docs:** the README, the Boost skill and `apps.md` don't say that the subclass needs `protected $connection = 'mongodb'` when MongoDB isn't the app's default connection. The tests only run with MongoDB as the default.
+3. **README exceptions table:** the `RouteConnexConfigurationException` row's padding no longer lines up with the other rows. It renders correctly.
+4. **SDK client cache growth (by design):** `RouteConnex::$sdkClients` is never pruned, so a long-running worker keeps one SDK client per Tenant App and per rotated secret. It's bounded by the number of Apps and rotations, and is the cache the user chose in Decisions.
+5. **Whitespace Credentials:** `RouteConnex::app($model)` uses `blank()`, so a whitespace-only client ID or secret throws, while a config App only rejects empty strings. Stricter on model Apps, harmless.
