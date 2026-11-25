@@ -8,6 +8,7 @@
 - `RouteConnexApp` encrypts and hides the client secret and Callback token, and generates the token on create.
 - `RouteConnex::generateCallbackToken()` returns a new 64-character hex Callback token.
 - Requires `illuminate/database`; the skeleton's placeholder migration is removed.
+- Boost skill, README and project docs describe config and model Apps, Callback tokens and MongoDB.
 
 ---
 

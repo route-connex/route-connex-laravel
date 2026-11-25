@@ -1,7 +1,7 @@
 ---
 name: route-connex-laravel-development
 description: >
-  Configure and apply the RouteConnex package in Laravel applications: Credentials in .env, the RouteConnex facade, named Apps, Meta, responses and exceptions.
+  Configure and apply the RouteConnex package in Laravel applications: Credentials in .env, the RouteConnex facade, config and model Apps, Callback tokens, Meta, responses and exceptions.
 license: MIT
 metadata:
   author: Leo Oberle
@@ -28,6 +28,8 @@ ROUTE_CONNEX_CLIENT_SECRET=your-client-secret
 ROUTE_CONNEX_BASE_URL=https://app.routeconnex.com/api
 # Optional: the App used when a call doesn't name one (default "default")
 ROUTE_CONNEX_APP=default
+# Optional: the default App's Callback token, a long random value (see step 6)
+ROUTE_CONNEX_CALLBACK_TOKEN=
 ```
 
 Publish the config only to add more Apps or change it:
@@ -36,27 +38,29 @@ Publish the config only to add more Apps or change it:
 php artisan vendor:publish --tag="route-connex-laravel-config"
 ```
 
-`config/route-connex-laravel.php` has `base_url`, `default` (the default App's name) and `apps`, a list of named Apps, each with `client_id`, `client_secret` and an optional `base_url` that wins over the global one:
+`config/route-connex-laravel.php` has `base_url`, `default` (the default App's name) and `apps`, a list of named Apps, each with `client_id`, `client_secret`, a `callback_token` and an optional `base_url` that wins over the global one:
 
 ```php
 'apps' => [
     'default' => [
         'client_id' => env('ROUTE_CONNEX_CLIENT_ID'),
         'client_secret' => env('ROUTE_CONNEX_CLIENT_SECRET'),
+        'callback_token' => env('ROUTE_CONNEX_CALLBACK_TOKEN'),
     ],
     'hpe' => [
         'client_id' => env('ROUTE_CONNEX_HPE_CLIENT_ID'),
         'client_secret' => env('ROUTE_CONNEX_HPE_CLIENT_SECRET'),
+        'callback_token' => env('ROUTE_CONNEX_HPE_CALLBACK_TOKEN'),
         'base_url' => env('ROUTE_CONNEX_HPE_BASE_URL'),
     ],
 ],
 ```
 
-The config is checked when an App is first used, not at boot.
+Empty values count as unset. The config is checked when an App is first used, not at boot. The Callback token is only stored for now: nothing reads it until Callbacks ship.
 
 ### 2. Call the API through the facade
 
-The facade mirrors the SDK's endpoints with the SDK's own names. Calls go to the default App; `RouteConnex::app('hpe')` returns the same API for another config App.
+The facade mirrors the SDK's endpoints with the SDK's own names. Calls go to the default App; `RouteConnex::app('hpe')` returns the same API for another config App, and `RouteConnex::app($model)` for an App model (step 6).
 
 ```php
 use RouteConnex\Laravel\Facades\RouteConnex;
@@ -138,11 +142,81 @@ To silence them all in the app's `bootstrap/app.php`:
 })
 ```
 
-### 6. Use the SDK client for anything else
+### 6. Use Apps stored in the database (multi-tenant apps)
+
+`RouteConnex::app()` also takes any `RouteConnex\Laravel\Contracts\RouteConnexAppContract`: a model, an unsaved model or any object that implements it. The package doesn't find Tenants or resolve Apps; load the model (from the Tenant's database, say) and pass it in:
+
+```php
+RouteConnex::app($app)->microsoftSharepoint()->files()->post($body, meta: [...]);
+```
+
+With the shipped model, publish and run its migration (creates `route_connex_apps`: `name`, `client_id`, `client_secret`, `callback_token`, `base_url`):
+
+```bash
+php artisan vendor:publish --tag="route-connex-laravel-migrations"
+php artisan migrate
+```
+
+```php
+use RouteConnex\Laravel\Models\RouteConnexApp;
+
+$app = RouteConnexApp::create([
+    'name' => 'SharePoint',
+    'client_id' => $clientId,
+    'client_secret' => $clientSecret, // encrypted and hidden, like callback_token
+]);
+
+$app->callback_token; // a 64-character hex token, generated on create when none is given
+```
+
+With the app's own model, use the trait. It reads `client_id`, `client_secret`, `callback_token` and `base_url`; override a method to read another column. The trait doesn't encrypt or generate anything:
+
+```php
+use RouteConnex\Laravel\Concerns\InteractsWithRouteConnexApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
+use RouteConnex\Laravel\Facades\RouteConnex;
+
+class Integration extends Model implements RouteConnexAppContract
+{
+    use InteractsWithRouteConnexApp;
+
+    public function getRouteConnexClientId(): ?string
+    {
+        return $this->settings['route_connex_client_id'] ?? null;
+    }
+}
+
+RouteConnex::app($integration)->hpeContentManager()->records()->get();
+```
+
+The contract's methods are `getRouteConnexKey()` (`string|int|null`, `null` while unsaved), `getRouteConnexClientId()`, `getRouteConnexClientSecret()`, `getRouteConnexCallbackToken()` and `getRouteConnexBaseUrl()`, all nullable strings. A `null` or empty client ID or secret throws `RouteConnexConfigurationException`, naming the class and key. An App's own base URL wins over the global `base_url`.
+
+`RouteConnex::generateCallbackToken()` returns a new random 64-hex Callback token, for own models or to fill `ROUTE_CONNEX_CALLBACK_TOKEN`.
+
+Set the model Callbacks will use to find Apps in `config/route-connex-laravel.php` (publish the config first). It defaults to `RouteConnexApp`:
+
+```php
+'models' => [
+    'app' => \App\Models\Integration::class,
+],
+```
+
+On MongoDB (needs `mongodb/laravel-mongodb`), extend the shipped model with `DocumentModel` and set the subclass in `models.app`:
+
+```php
+class RouteConnexApp extends \RouteConnex\Laravel\Models\RouteConnexApp
+{
+    use \MongoDB\Laravel\Eloquent\DocumentModel;
+}
+```
+
+Each `RouteConnex::app($model)` call returns a client bound to that model. Clients are shared per class, key and Credentials, so Tenants with the same IDs never share one and a rotated secret applies on the next call.
+
+### 7. Use the SDK client for anything else
 
 `RouteConnex::sdk()` (or `RouteConnex::app('hpe')->sdk()`) returns the configured SDK `ErClient` as it is. Calls made through it return raw PSR-7 responses and throw the SDK's and Guzzle's own exceptions, not the package's.
 
-### 7. Test code that calls the API
+### 8. Test code that calls the API
 
 `Http::fake()` doesn't see these calls, because the SDK sends them with its own Guzzle client. Mock the facade instead, with the chained method names:
 
@@ -155,7 +229,7 @@ RouteConnex::shouldReceive('microsoftSharepoint->files->post')
     ->andReturn(new RouteConnexResponse(new Response(200, [], '{"data":"ok"}')));
 ```
 
-### 8. Change how SDK clients are built
+### 9. Change how SDK clients are built
 
 Extend `RouteConnex\Laravel\RouteConnexClientFactory` and bind it in a service provider, for example to add a proxy. The factory is resolved from the container each time an App's client is first built:
 
@@ -163,7 +237,7 @@ Extend `RouteConnex\Laravel\RouteConnexClientFactory` and bind it in a service p
 $this->app->bind(RouteConnexClientFactory::class, MyClientFactory::class);
 ```
 
-Override its protected `newClient()` or `configure()` steps. It receives a `RouteConnexConfigApp` with `name`, `clientId`, `clientSecret` and `baseUrl`.
+Override its protected `newClient()` or `configure()` steps. It receives a `RouteConnexAppContract` (a config App or a model); read its Credentials and base URL through the contract's getters.
 
 ## Rules, References, and Templates
 
@@ -176,7 +250,8 @@ Rules:
 
 - one client per App is kept for the life of the PHP process; its token is reused until it is about to expire
 - the package works with Guzzle 7.9+ or 8 (`guzzlehttp/guzzle` `^7.9 || ^8.0`)
-- Apps are config-only for now; do not pass models or objects to `RouteConnex::app()`
+- `RouteConnex::app()` takes a config App's name or a `RouteConnexAppContract`; never pass a model App's key
+- the client secret and Callback token of `RouteConnexApp` are encrypted with the app's `APP_KEY`
 - the package does not store Runs or handle Callbacks yet
 
 ## Examples
@@ -184,10 +259,12 @@ Rules:
 - Check the Credentials work: `RouteConnex::routeConnex()->testAuth()->get()->successful()`
 - Upload a file with Meta: see step 3
 - Use a second App: `RouteConnex::app('hpe')->hpeContentManager()->records()->get()`
+- Use a Tenant's App: `RouteConnex::app($tenantApp)->hpeContentManager()->records()->get()`
 
 ## Anti-patterns
 
 - do not build an `ErClient` by hand or call the API with `Http::`; use the facade
 - do not catch Guzzle exceptions around facade calls; catch the package's exceptions
 - do not read the Credentials with `env()` outside config files
+- do not store a model App's Credentials in config or cache a client for it yourself; pass the model to `RouteConnex::app()`
 - do not document package internals here; keep the skill focused on adoption in Laravel apps

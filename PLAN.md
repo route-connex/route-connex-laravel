@@ -25,11 +25,11 @@ claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda
   - **Resume:** `claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda` (gandalf)
   - **Why:** Database work that must pass on MySQL 8.0, PostgreSQL 14, MongoDB 7.0 and SQLite, including the MongoDB subclass pattern and encrypted casts. It builds directly on Step 1's contract and trait.
   - **Prompt:** Implement Step 2 of PLAN.md: The `RouteConnexApp` model, its migration and Callback token generation. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions and `docs/features/apps.md` (Database & compatibility notes) and decision 0006. Step 1 added `RouteConnexAppContract`, `InteractsWithRouteConnexApp` and `RouteConnex::app(string|RouteConnexAppContract)`. Use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
-- [ ] **3. Boost skill, README and project docs**
+- [x] **3. Boost skill, README and project docs**
   - **Model:** `sonnet`
   - **Effort:** `medium`
   - **Session:** `new`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 452ef0e2-6d03-44bc-9021-01396eeea73b` (gandalf)
   - **Why:** Documentation that must match the code exactly. A fresh session reads the code as it is instead of remembering what was intended.
   - **Prompt:** Implement Step 3 of PLAN.md: Boost skill, README and project docs. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. Steps 1–2 added `RouteConnexAppContract`, `InteractsWithRouteConnexApp`, `RouteConnex::app(string|RouteConnexAppContract)` with its client cache, `callback_token` and `models.app` in config, `RouteConnex::generateCallbackToken()`, the `RouteConnexApp` model and the `route_connex_apps` migration. Read them in `src/`, `config/`, `database/` and the tests before writing anything, and document what the code does. Use the `package-generate-skill` skill for the Boost skill. Never name consumer apps or private RouteConnex repos in the docs. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start the review.
 
@@ -171,24 +171,24 @@ Results:
 
 ### Step 3: Boost skill, README and project docs
 
-**Status:** todo
+**Status:** done
 
-- [ ] `resources/boost/skills/route-connex-laravel-development/SKILL.md` (with the `package-generate-skill` skill):
+- [x] `resources/boost/skills/route-connex-laravel-development/SKILL.md` (with the `package-generate-skill` skill):
   - config Apps with `callback_token`
   - `RouteConnexApp` with the migration publish tag
   - implementing the contract on an existing model, with the trait and overrides
   - `models.app`, the MongoDB subclass and `RouteConnex::generateCallbackToken()`
   - remove the "Apps are config-only" rule
-- [ ] `README.md`: Configuration (`ROUTE_CONNEX_CALLBACK_TOKEN`, `models.app`), the migrations section (what it creates), and a Multiple Apps usage section covering config Apps, `RouteConnexApp`, the consumer app's own model and MongoDB
-- [ ] `docs/features/apps.md`:
+- [x] `README.md`: Configuration (`ROUTE_CONNEX_CALLBACK_TOKEN`, `models.app`), the migrations section (what it creates), and a Multiple Apps usage section covering config Apps, `RouteConnexApp`, the consumer app's own model and MongoDB
+- [x] `docs/features/apps.md`:
   - status `in progress`
   - the contract's nullable return types and `null` key
   - `RouteConnex::generateCallbackToken()`
   - the client cache by class, key and Credentials hash, replacing "keyed by its connection, class and key"
   - `RouteConnex::app()` accepts any contract implementation
   - "Already in the code" updated
-- [ ] `docs/roadmap.md`: Multiple Apps `in progress`. Check `docs/concepts.md` (Callback token), `docs/features/overrides.md`, `docs/features/run-tracking.md` and `docs/features/callbacks.md` for statements this task made untrue, and fix them.
-- [ ] `CHANGELOG.md`: this step's items under `# feature/apps`
+- [x] `docs/roadmap.md`: Multiple Apps `in progress`. Check `docs/concepts.md` (Callback token), `docs/features/overrides.md`, `docs/features/run-tracking.md` and `docs/features/callbacks.md` for statements this task made untrue, and fix them.
+- [x] `CHANGELOG.md`: this step's items under `# feature/apps`
 
 **Validate:** `make test`; the README and skill examples match the code (class names, method names, config keys, env names)
 
