@@ -1,6 +1,6 @@
 # Multiple Apps
 
-**Status:** planning
+**Status:** in progress
 **Branch:** `feature/apps` → **Target:** `release/0.x`
 **Planned on:** `gandalf`
 **Planning session:**
@@ -11,11 +11,11 @@ claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda
 
 ## Implementation
 
-- [ ] **1. `RouteConnexAppContract`, the trait and `RouteConnex::app()` for model Apps**
+- [x] **1. `RouteConnexAppContract`, the trait and `RouteConnex::app()` for model Apps**
   - **Model:** `opus`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume 3230ebb2-8ff3-485a-b267-2eb2a11bacda` (gandalf)
   - **Why:** Sets the contract that run tracking, Callbacks and the commands all build on, and changes the types of a public extension point (`RouteConnexClientFactory`). The client cache has to be right for Tenants. The planning session already holds the design.
   - **Prompt:** Implement Step 1 of PLAN.md: `RouteConnexAppContract`, the trait and `RouteConnex::app()` for model Apps. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md; the design is in PLAN.md → Decisions and `docs/features/apps.md`. Issue #5 added `RouteConnex` (the facade root, with `app(string $name)` and one client per config App), `RouteConnexClient`, `RouteConnexConfigApp`, `RouteConnexClientFactory` and `RouteConnexSystemEndpoint::result()`; read them and their tests first. Use the `package-scaffold` and `package-testing` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/apps`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
 - [ ] **2. The `RouteConnexApp` model, its migration and Callback token generation**
@@ -86,18 +86,19 @@ State found during planning:
 
 ### Step 1: `RouteConnexAppContract`, the trait and `RouteConnex::app()` for model Apps
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/Contracts/RouteConnexAppContract.php`, as in Decisions
-- [ ] `src/Concerns/InteractsWithRouteConnexApp.php`, as in Decisions
-- [ ] `src/Apps/RouteConnexConfigApp.php`: implements the contract (key = name), adds `callbackToken` read from `callback_token`
-- [ ] `config/route-connex-laravel.php`: `apps.default.callback_token` from `ROUTE_CONNEX_CALLBACK_TOKEN`, with its comment
-- [ ] `src/RouteConnexClientFactory.php`, `src/RouteConnexClient.php`, `src/Endpoints/RouteConnexSystemEndpoint.php`: types widened to the contract. The factory falls back to the global `base_url` in a protected step.
-- [ ] `src/RouteConnex.php`: `app(string|RouteConnexAppContract $app)`. Model Apps get the Credentials check and the SDK client cache by class, key and Credentials hash, with a new `RouteConnexClient` bound to the App passed in on every call.
-- [ ] `src/Exceptions/RouteConnexConfigurationException.php`: a missing-Credentials case for contract Apps, naming the class and key
-- [ ] `src/Facades/RouteConnex.php`: `@method` for `app(string|\RouteConnex\Laravel\Contracts\RouteConnexAppContract $app)`
-- [ ] `tests/Fixtures/FakeClientFactory.php`: follows the new `newClient()` type
-- [ ] Tests (a new `tests/Feature/RouteConnexModelAppsTest.php`, plus updates to `RouteConnexAppsTest.php` and `ExampleTest.php`), with unsaved Eloquent fixtures using the trait (one overriding a method to read another column) and a plain object implementing the contract, so no table is needed:
+- [x] `src/Contracts/RouteConnexAppContract.php`, as in Decisions
+- [x] `src/Concerns/InteractsWithRouteConnexApp.php`, as in Decisions
+- [x] `src/Apps/RouteConnexConfigApp.php`: implements the contract (key = name), adds `callbackToken` read from `callback_token`
+- [x] `config/route-connex-laravel.php`: `apps.default.callback_token` from `ROUTE_CONNEX_CALLBACK_TOKEN`, with its comment
+- [x] `src/RouteConnexClientFactory.php`, `src/RouteConnexClient.php`, `src/Endpoints/RouteConnexSystemEndpoint.php`: types widened to the contract. The factory falls back to the global `base_url` in a protected step.
+- [x] `src/RouteConnex.php`: `app(string|RouteConnexAppContract $app)`. Model Apps get the Credentials check and the SDK client cache by class, key and Credentials hash, with a new `RouteConnexClient` bound to the App passed in on every call.
+- [x] `src/Exceptions/RouteConnexConfigurationException.php`: `missingAppCredentials()` for contract Apps, naming the class and key (`App\Models\Integration #5`) or `(unsaved)`
+- [x] `src/Facades/RouteConnex.php`: `@method` for `app(string|\RouteConnex\Laravel\Contracts\RouteConnexAppContract $app)`
+- [x] `tests/Fixtures/FakeClientFactory.php` and `tests/Fixtures/RecordingFilesEndpoint.php`: follow the new `newClient()` and `result()` types
+- [x] `phpstan.neon.dist`: ignore `trait.unused` for `InteractsWithRouteConnexApp` until Step 2's model uses it
+- [x] Tests (a new `tests/Feature/RouteConnexModelAppsTest.php`, plus updates to `RouteConnexAppsTest.php` and `ExampleTest.php`), with unsaved Eloquent fixtures using the trait (one overriding a method to read another column) and a plain object implementing the contract, so no table is needed:
   - `app($model)` builds the SDK client from the model's Credentials
   - the base URL comes from the model, then the global one, then the SDK's default
   - `getApp()` returns the model passed in
@@ -109,9 +110,16 @@ State found during planning:
   - a bound factory subclass receives the contract
   - config Apps implement the contract (key = name) and read `callback_token`; empty counts as unset
   - `config('route-connex-laravel.apps.default')` includes `callback_token`
-- [ ] `CHANGELOG.md`: create `# feature/apps` above `---` and `# v0.1.0-rc`, with this step's items
+- [x] `CHANGELOG.md`: create `# feature/apps` above `---` and `# v0.1.0-rc`, with this step's items
 
-**Validate:** `make test`
+Notes:
+
+- **Unplanned files:** PHPStan won't analyse a trait that nothing in `src/` uses (`trait.unused`). The ignore in `phpstan.neon.dist` is limited to that file and that error. Step 2 must remove it: PHPStan fails on unmatched ignores, so the build breaks as soon as `RouteConnexApp` uses the trait and the ignore is still there. `RecordingFilesEndpoint` (a test fixture overriding `result()`) also needed the new type.
+- **Fixtures:** `tests/Fixtures/IntegrationApp.php` (an Eloquent model with the trait, never saved), `SettingsIntegrationApp.php` (overrides `getRouteConnexClientId()` to read a `settings` array) and `PlainApp.php` (not a model).
+- **Cache key:** `RouteConnex::appCacheKey()` is `class|key|sha256(serialize([client ID, secret, App base URL]))`. Config Apps passed in as objects use the same cache; by name they keep the cache by name.
+- The trait treats empty strings as `null`, like `RouteConnexConfigApp`. Its key is `null` unless `getKey()` is a string or an int.
+
+**Validate:** `make test`: passed (PHPStan, Pint, type coverage 100%, 162 tests).
 
 **Commit:** `Accept App models in RouteConnex::app() through RouteConnexAppContract`
 
@@ -122,6 +130,7 @@ State found during planning:
 - [ ] `composer.json`: require `illuminate/database: ^12.0||^13.0`; `make composer ARGS="update"`
 - [ ] `src/RouteConnex.php`: `generateCallbackToken(): string`; `@method` on the facade
 - [ ] `src/Models/RouteConnexApp.php`, as in Decisions, generating a Callback token on `creating` when none is given
+- [ ] `phpstan.neon.dist`: remove Step 1's `trait.unused` ignore now that the model uses the trait
 - [ ] `config/route-connex-laravel.php`: `models.app`, with a comment that a consumer app's own model or a MongoDB subclass goes here
 - [ ] `database/migrations/2026_01_01_000000_create_route_connex_apps_table.php`; delete the placeholder migration
 - [ ] `tests/Fixtures/MongoRouteConnexApp.php` (extends `RouteConnexApp`, uses `DocumentModel`); `tests/TestCase.php` sets `models.app` to it when `DB_CONNECTION=mongodb`

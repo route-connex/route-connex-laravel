@@ -9,7 +9,7 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\InvalidArgumentException as GuzzleInvalidArgumentException;
 use InvalidArgumentException;
-use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint;
 use RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint;
 use RouteConnex\Laravel\Endpoints\RouteConnexRouteConnexEndpoint;
@@ -36,13 +36,13 @@ class RouteConnexClient
     protected int $tokenRefreshMargin = 30;
 
     public function __construct(
-        protected RouteConnexConfigApp $app,
+        protected RouteConnexAppContract $app,
         protected ErClient $sdk,
     ) {
         //
     }
 
-    public function getApp(): RouteConnexConfigApp
+    public function getApp(): RouteConnexAppContract
     {
         return $this->app;
     }

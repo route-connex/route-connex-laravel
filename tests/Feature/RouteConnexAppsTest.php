@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
 use RouteConnex\Laravel\Exceptions\RouteConnexException;
 use RouteConnex\Laravel\Facades\RouteConnex;
@@ -48,6 +49,25 @@ it('returns the client of an App by name', function () {
         ->and(sdkProperty($client->sdk(), 'clientId'))->toBe('hpe-id');
 });
 
+it('implements the App contract for config Apps, keyed by name', function () {
+    config()->set('route-connex-laravel.apps.hpe.callback_token', 'hpe-token');
+
+    $app = RouteConnex::app('hpe')->getApp();
+
+    expect($app)->toBeInstanceOf(RouteConnexAppContract::class)
+        ->and($app->getRouteConnexKey())->toBe('hpe')
+        ->and($app->getRouteConnexClientId())->toBe('hpe-id')
+        ->and($app->getRouteConnexClientSecret())->toBe('hpe-secret')
+        ->and($app->getRouteConnexCallbackToken())->toBe('hpe-token')
+        ->and($app->getRouteConnexBaseUrl())->toBe('https://hpe.example.com/api');
+});
+
+it('has no Callback token when the config App\'s is empty', function (mixed $token) {
+    config()->set('route-connex-laravel.apps.hpe.callback_token', $token);
+
+    expect(RouteConnex::app('hpe')->getApp()->getRouteConnexCallbackToken())->toBeNull();
+})->with(['null' => null, 'empty' => '']);
+
 it('lets an App override the global base URL', function () {
     config()->set('route-connex-laravel.base_url', 'https://global.example.com/api');
 
@@ -80,9 +100,9 @@ it('builds SDK clients with the factory bound in the container', function () {
         /** @var list<string> */
         public array $built = [];
 
-        protected function configure(ErClient $client, RouteConnexConfigApp $app): ErClient
+        protected function configure(ErClient $client, RouteConnexAppContract $app): ErClient
         {
-            $this->built[] = $app->name;
+            $this->built[] = (string) $app->getRouteConnexKey();
 
             return parent::configure($client, $app)->setBaseUrl('https://proxy.example.com/api');
         }

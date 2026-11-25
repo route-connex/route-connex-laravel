@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RouteConnex\Laravel;
 
-use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\RouteConnexSdkPhp\ErClient;
 
 /**
@@ -13,25 +13,44 @@ use RouteConnex\RouteConnexSdkPhp\ErClient;
  */
 class RouteConnexClientFactory
 {
-    public function make(RouteConnexConfigApp $app): ErClient
+    public function make(RouteConnexAppContract $app): ErClient
     {
         return $this->configure($this->newClient($app), $app);
     }
 
-    protected function newClient(RouteConnexConfigApp $app): ErClient
+    protected function newClient(RouteConnexAppContract $app): ErClient
     {
         return new ErClient(
-            clientId: $app->clientId,
-            clientSecret: $app->clientSecret,
+            clientId: (string) $app->getRouteConnexClientId(),
+            clientSecret: (string) $app->getRouteConnexClientSecret(),
         );
     }
 
-    protected function configure(ErClient $client, RouteConnexConfigApp $app): ErClient
+    protected function configure(ErClient $client, RouteConnexAppContract $app): ErClient
     {
-        if ($app->baseUrl !== null) {
-            $client->setBaseUrl($app->baseUrl);
+        $baseUrl = $this->baseUrl($app);
+
+        if ($baseUrl !== null) {
+            $client->setBaseUrl($baseUrl);
         }
 
         return $client;
+    }
+
+    /**
+     * The App's own base URL, else the global `base_url`, else `null` (the
+     * SDK's default).
+     */
+    protected function baseUrl(RouteConnexAppContract $app): ?string
+    {
+        $baseUrl = $app->getRouteConnexBaseUrl();
+
+        if ($baseUrl !== null && $baseUrl !== '') {
+            return $baseUrl;
+        }
+
+        $global = config('route-connex-laravel.base_url');
+
+        return is_string($global) && $global !== '' ? $global : null;
     }
 }

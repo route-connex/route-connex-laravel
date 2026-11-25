@@ -7,6 +7,7 @@ namespace RouteConnex\Laravel;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Container\Container;
 use RouteConnex\Laravel\Apps\RouteConnexConfigApp;
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Endpoints\RouteConnexHpeContentManagerEndpoint;
 use RouteConnex\Laravel\Endpoints\RouteConnexMicrosoftSharepointEndpoint;
 use RouteConnex\Laravel\Endpoints\RouteConnexRouteConnexEndpoint;
@@ -21,9 +22,18 @@ use RouteConnex\RouteConnexSdkPhp\ErClient;
 class RouteConnex
 {
     /**
+     * Config Apps' clients, by App name.
+     *
      * @var array<string, RouteConnexClient>
      */
     protected array $clients = [];
+
+    /**
+     * Other Apps' SDK clients, by `appCacheKey()`.
+     *
+     * @var array<string, ErClient>
+     */
+    protected array $sdkClients = [];
 
     public function __construct(
         protected Container $container,
@@ -33,13 +43,18 @@ class RouteConnex
     }
 
     /**
-     * The client of a config App, by name.
+     * The client of an App: a config App by name, or any App passed in, such
+     * as a model loaded from the Tenant's database.
      *
      * @throws RouteConnexConfigurationException
      */
-    public function app(string $name): RouteConnexClient
+    public function app(string|RouteConnexAppContract $app): RouteConnexClient
     {
-        return $this->clients[$name] ??= $this->makeClient($this->configApp($name));
+        if (is_string($app)) {
+            return $this->clients[$app] ??= $this->makeClient($this->configApp($app));
+        }
+
+        return $this->contractClient($app);
     }
 
     /**
@@ -120,6 +135,36 @@ class RouteConnex
         $baseUrl = $this->config->get('route-connex-laravel.base_url');
 
         return RouteConnexConfigApp::fromConfig($name, $config, is_string($baseUrl) ? $baseUrl : null);
+    }
+
+    /**
+     * A client bound to the App passed in, around an SDK client shared by
+     * every App with the same class, key and Credentials. The Credentials are
+     * part of the cache key, so Tenants whose Apps share a connection name and
+     * a key never share a client, and a rotated secret takes effect at once.
+     *
+     * @throws RouteConnexConfigurationException
+     */
+    protected function contractClient(RouteConnexAppContract $app): RouteConnexClient
+    {
+        if (blank($app->getRouteConnexClientId()) || blank($app->getRouteConnexClientSecret())) {
+            throw RouteConnexConfigurationException::missingAppCredentials($app);
+        }
+
+        $sdk = $this->sdkClients[$this->appCacheKey($app)] ??= $this->container
+            ->make(RouteConnexClientFactory::class)
+            ->make($app);
+
+        return new RouteConnexClient($app, $sdk);
+    }
+
+    protected function appCacheKey(RouteConnexAppContract $app): string
+    {
+        return $app::class.'|'.$app->getRouteConnexKey().'|'.hash('sha256', serialize([
+            $app->getRouteConnexClientId(),
+            $app->getRouteConnexClientSecret(),
+            $app->getRouteConnexBaseUrl(),
+        ]));
     }
 
     protected function makeClient(RouteConnexConfigApp $app): RouteConnexClient

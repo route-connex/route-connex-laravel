@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace RouteConnex\Laravel\Apps;
 
+use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Exceptions\RouteConnexConfigurationException;
 
 /**
- * An App from the `apps` list in the package config.
+ * An App from the `apps` list in the package config. Its key is its name.
  */
-final readonly class RouteConnexConfigApp
+final readonly class RouteConnexConfigApp implements RouteConnexAppContract
 {
     public function __construct(
         public string $name,
         public string $clientId,
         public string $clientSecret,
         public ?string $baseUrl = null,
+        public ?string $callbackToken = null,
     ) {
         //
     }
@@ -42,7 +44,33 @@ final readonly class RouteConnexConfigApp
             clientId: $clientId,
             clientSecret: $clientSecret,
             baseUrl: self::string($config['base_url'] ?? null) ?? self::string($globalBaseUrl),
+            callbackToken: self::string($config['callback_token'] ?? null),
         );
+    }
+
+    public function getRouteConnexKey(): string
+    {
+        return $this->name;
+    }
+
+    public function getRouteConnexClientId(): string
+    {
+        return $this->clientId;
+    }
+
+    public function getRouteConnexClientSecret(): string
+    {
+        return $this->clientSecret;
+    }
+
+    public function getRouteConnexCallbackToken(): ?string
+    {
+        return $this->callbackToken;
+    }
+
+    public function getRouteConnexBaseUrl(): ?string
+    {
+        return $this->baseUrl;
     }
 
     private static function string(mixed $value): ?string

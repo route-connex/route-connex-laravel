@@ -1,3 +1,12 @@
+# feature/apps
+
+- `RouteConnex::app()` accepts any `RouteConnexAppContract`, such as a Tenant's App model.
+- `InteractsWithRouteConnexApp` implements the contract on an existing model from its columns.
+- Model App clients are cached per Credentials, so Tenants never share one and rotated secrets apply at once.
+- Config Apps read their Callback token from `callback_token` (`ROUTE_CONNEX_CALLBACK_TOKEN` for the default App).
+
+---
+
 # v0.1.0-rc
 
 - Docker toolchain for PHP 8.4, driven by `make` targets, so no local PHP is needed.

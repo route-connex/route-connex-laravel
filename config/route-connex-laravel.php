@@ -33,7 +33,9 @@ return [
     |--------------------------------------------------------------------------
     |
     | The RouteConnex API clients this app uses, by name. Each App has its own
-    | Credentials (client ID and secret) and may override the base URL.
+    | Credentials (client ID and secret), may override the base URL, and has
+    | the Callback token RouteConnex sends back in its Callbacks: a long
+    | random value, also set in the App's callback configuration in RouteConnex.
     |
     */
 
@@ -42,6 +44,7 @@ return [
         'default' => [
             'client_id' => env('ROUTE_CONNEX_CLIENT_ID'),
             'client_secret' => env('ROUTE_CONNEX_CLIENT_SECRET'),
+            'callback_token' => env('ROUTE_CONNEX_CALLBACK_TOKEN'),
         ],
 
     ],
