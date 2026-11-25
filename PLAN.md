@@ -18,11 +18,11 @@ claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a
   - **Resume:** `claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a` (gandalf)
   - **Why:** Database work that must pass on MySQL 8.0, PostgreSQL 14, MongoDB 7.0 and SQLite, including the MongoDB subclass and string `app_id` lookups across key types. The planning session already holds the design.
   - **Prompt:** Implement Step 1 of PLAN.md: The `route_connex_runs` migration, `RouteConnexRunStatus` and the `RouteConnexRun` model. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The design is in PLAN.md → Decisions, `docs/features/run-tracking.md` (Scope, Database & compatibility notes) and decisions 0004 and 0006. Issue #6 added `RouteConnexAppContract`, `RouteConnexConfigApp`, `RouteConnexApp` with its migration, `models.app` and the `MongoRouteConnexApp` test fixture that `TestCase` sets on MongoDB. Read them and their tests first. Use the `package-scaffold`, `package-testing` and `package-compatibility` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/run-tracking`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 2.
-- [ ] **2. `RouteConnexRunRecorder`: System calls store and return the Run**
+- [x] **2. `RouteConnexRunRecorder`: System calls store and return the Run**
   - **Model:** `opus`
   - **Effort:** `medium`
   - **Session:** `same`
-  - **Resume:** –
+  - **Resume:** `claude --ide --resume b904391f-1524-465a-86b7-0df02ed3d82a` (gandalf)
   - **Why:** Changes the return type of every System endpoint and adds a public extension point. The connection rule (Run model, then the App's connection, then the default) has to be right for Tenants and across databases. It builds directly on Step 1's model.
   - **Prompt:** Implement Step 2 of PLAN.md: `RouteConnexRunRecorder`: System calls store and return the Run. Follow AGENTS.md (Task Plan Workflow) and the step's section in PLAN.md. The design is in PLAN.md → Decisions and `docs/features/run-tracking.md`. Step 1 added the `route_connex_runs` migration, `RouteConnexRunStatus`, `RouteConnexRun` (with its app check and `app` accessor), `models.run` and the `MongoRouteConnexRun` fixture. Issue #5 added `RouteConnexSystemEndpoint::call()` and `result()`, which this step changes. Read them and `tests/Feature/RouteConnexEndpointsTest.php` first. Use the `package-scaffold` and `package-testing` skills. Tick the step's boxes as you go, update the plan if the implementation differs from it, and ask before any unplanned change. Before changing any code, fill this entry's Resume item with `claude --ide --resume <this session's ID>` followed by this computer's hostname in parentheses. Add the step's items to `CHANGELOG.md` under `# feature/run-tracking`. Run its Validate commands, set this entry's Done to [x], then stop and give a suggested commit message. Don't start Step 3.
 - [ ] **3. `updateFromRouteConnex()` and `refreshFromRouteConnex()`**
@@ -83,20 +83,20 @@ State found during planning:
   - `record(RouteConnexAppContract $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexRun`, in small `protected` steps that a subclass can override one at a time, for example to fill extra columns: read `data`, the Run ID, the status and the type; build the attributes; pick the connection; save; fire `RouteConnexRunCreated`.
 - **What `record()` stores:**
   - `run_id`: `data.id`, as a string. If it's missing or empty, nothing is stored and it throws `RouteConnexRequestException` with the response (user's choice). #13 (Sync calls) will change this path.
-  - `status`: `data.status.id`. When the create answer has no status, it's `created`. A value the enum doesn't know throws `RouteConnexRequestException` and nothing is stored (user's choice). A new RouteConnex status is a package release (a new enum case), with no migration.
+  - `status`: `data.status.id`. When the create answer has no `status` at all, it's `created`; a `status` without a known `id` is unknown. A value the enum doesn't know throws `RouteConnexRequestException` and nothing is stored (user's choice). A new RouteConnex status is a package release (a new enum case), with no migration.
   - `type`: `data.type.name`, or `null` (user's choice).
   - `app_name` (the name of a `RouteConnexConfigApp`) or `app_id` (the string key of any other App). They're told apart with `instanceof RouteConnexConfigApp`.
   - `service` and `meta`, as received.
   - `request`: `['query' => ..., 'body' => ...]` exactly as sent, `_meta_` included (user's choice). `null` when `runs.store_request` is `false`.
   - `response`: the answer's `data` object (user's choice). `null` when `runs.store_response` is `false`.
-- **`RouteConnexRequestException`** gains an optional message (a `?string $message = null` constructor argument after the response, keeping the current message as the default) and named constructors, e.g. `noRunId(RouteConnexResponse)` and `unknownRunStatus(RouteConnexResponse, mixed $status)`, so these failures carry the response like an error answer does.
+- **`RouteConnexRequestException`** gains an optional message (a `?string $message = null` constructor argument after `$previous`, so existing `new RouteConnexRequestException($response, $e)` calls keep working, and the current message stays the default) and named constructors, e.g. `noRunId(RouteConnexResponse)` and `unknownRunStatus(RouteConnexResponse, mixed $status)`, so these failures carry the response like an error answer does.
 - **Connection** (as in `run-tracking.md`):
   - A Run model that sets its own connection (`getConnectionName()` on a new instance isn't `null`) always uses it.
   - Otherwise, a Run of an App that is an Eloquent model goes on that App's connection, so a Tenant's Runs stay in the Tenant's database.
   - Otherwise (a config App, or an App that isn't a model), the default connection.
   - On MongoDB, a Run subclass for a split setup must set `$connection` (as the docs' example does), or the rule would put it on the App's SQL connection.
 - **Endpoints:** `RouteConnexSystemEndpoint::call()` and `result()` return `RouteConnexRun`. `result()` hands everything to the recorder. The public `get()`/`post()` of the files, drive columns and records endpoints return `RouteConnexRun` (the base class in the signature; the instance is the `models.run` class). Nothing has been released yet (`v0.1.0-rc`), so the type change is allowed. `run()->_id_()->get()`, `about` and `test-auth` keep returning `RouteConnexResponse`.
-- **`RouteConnexRunCreated`** (`RouteConnex\Laravel\Events`): `Dispatchable` and `SerializesModels`, with a public `RouteConnexRun $run`. It fires once the Run is saved.
+- **`RouteConnexRunCreated`** (`RouteConnex\Laravel\Events`): `SerializesModels`, with a public `RouteConnexRun $run`, fired through the `Event` facade once the Run is saved. It doesn't use `Dispatchable`, which only ships with `laravel/framework`; `illuminate/queue` is required for `SerializesModels` (user's choice, during Step 2).
 - **Config:** `models.run` (Step 1), and a `runs` section with `store_request` and `store_response`, both `true` (Step 2). `purge_after_days` comes with #8.
 - **Updating a Run** (user's choice: the same rule as Callbacks). `RouteConnexRun::updateFromRouteConnex(RouteConnexRunStatus $status, array $data): bool` is public, so #9's `updateRun()` step reuses it:
   - If the Run's current status is finished, the status is final. Nothing is updated and it returns `false`. A **different** finished status (`failed` after `succeeded`) also logs a warning; a late unfinished one (`running` after `succeeded`) is ignored silently.
@@ -143,18 +143,20 @@ State found during planning:
 
 ### Step 2: `RouteConnexRunRecorder`: System calls store and return the Run
 
-**Status:** todo
+**Status:** done
 
-- [ ] `src/Runs/RouteConnexRunRecorder.php`: `checkApp()` and `record()` with protected steps, as in Decisions
-- [ ] `src/Events/RouteConnexRunCreated.php`
-- [ ] `src/Exceptions/RouteConnexRequestException.php`: optional message, `noRunId()` and `unknownRunStatus()`
-- [ ] `src/Exceptions/RouteConnexConfigurationException.php`: `appWithoutKey()`
-- [ ] `src/Endpoints/RouteConnexSystemEndpoint.php`: `checkApp()` before sending, and `call()`/`result()` return `RouteConnexRun` through the recorder
-- [ ] `src/Endpoints/MicrosoftSharepoint/RouteConnexFilesEndpoint.php`, `RouteConnexDriveColumnsEndpoint.php` and `src/Endpoints/HpeContentManager/RouteConnexRecordsEndpoint.php`: return `RouteConnexRun`
-- [ ] `src/Facades/RouteConnex.php`: check the `@method` docblocks still match
-- [ ] `config/route-connex-laravel.php`: `runs.store_request` and `runs.store_response`, with their comment
-- [ ] `tests/Fixtures/RecordingFilesEndpoint.php` and `tests/Feature/RouteConnexEndpointsTest.php`: follow the new return type. The System calls answer with a Run ID and run with the migrations.
-- [ ] Tests (a new `tests/Feature/RouteConnexRunRecorderTest.php`), through the facade and `FakeApi`, on every database:
+- [x] `src/Runs/RouteConnexRunRecorder.php`: `checkApp()` and `record()` with protected steps, as in Decisions
+- [x] `src/Events/RouteConnexRunCreated.php`, with `SerializesModels`, fired through the `Event` facade
+- [x] `composer.json`: require `illuminate/queue: ^12.0||^13.0` (agreed with the user, see the notes)
+- [x] `src/Exceptions/RouteConnexRequestException.php`: optional message, `noRunId()` and `unknownRunStatus()`
+- [x] `src/Exceptions/RouteConnexConfigurationException.php`: `appWithoutKey()`
+- [x] `src/Endpoints/RouteConnexSystemEndpoint.php`: `checkApp()` before sending, and `call()`/`result()` return `RouteConnexRun` through the recorder
+- [x] `src/Endpoints/MicrosoftSharepoint/RouteConnexFilesEndpoint.php`, `RouteConnexDriveColumnsEndpoint.php` and `src/Endpoints/HpeContentManager/RouteConnexRecordsEndpoint.php`: return `RouteConnexRun`
+- [x] `src/Facades/RouteConnex.php`: check the `@method` docblocks still match (they return the endpoint groups, so nothing changed)
+- [x] `config/route-connex-laravel.php`: `runs.store_request` and `runs.store_response`, with their comment
+- [x] `tests/Fixtures/RecordingFilesEndpoint.php` and `tests/Feature/RouteConnexEndpointsTest.php`: follow the new return type. The System calls answer with a Run ID and run with the migrations.
+- [x] Test helpers: `FakeApi::run()` answers with a Run ID, `runModel()` moved from `RouteConnexRunModelTest.php` to `tests/Pest.php` so every test file can use it, and two Run fixtures with their own connection: `TenantRouteConnexRun` (`tenant`) and `MongoConnectionRouteConnexRun` (`DocumentModel`, `mongodb`)
+- [x] Tests (a new `tests/Feature/RouteConnexRunRecorderTest.php`), through the facade and `FakeApi`, on every database:
   - a System call (`GET` and `POST`) stores one Run and returns it: `run_id`, `status` (`created` when the answer has none), `type` from `data.type.name`, `service`, `meta`, `request` as sent with `_meta_`, `response` as the answer's `data`
   - a config App sets `app_name`, a model App (the shipped model and a consumer model with the trait) sets `app_id`, and a non-model App with a key sets `app_id` on the default connection
   - `RouteConnexRunCreated` fires once with the stored Run
@@ -164,6 +166,14 @@ State found during planning:
   - an unsaved model App throws `RouteConnexConfigurationException` before any request is sent (`FakeApi` saw no request), while `test-auth` still works with it
   - connection: a Run of a model App on the `tenant` SQLite connection is stored there; a Run model with its own connection wins; a config App's Run uses the default connection
   - a bound `RouteConnexRunRecorder` subclass overriding one step (e.g. filling an extra attribute) is used
+
+**Notes:**
+
+- **`illuminate/queue` (unplanned, agreed with the user):** the plan had `RouteConnexRunCreated` use `Dispatchable` and `SerializesModels`. `Dispatchable` is in `Illuminate\Foundation` (only in `laravel/framework`), and `SerializesModels` is in `illuminate/queue`, which wasn't required. The event now keeps `SerializesModels` (queued listeners restore the Run by key, as `callbacks.md` expects), `illuminate/queue` is required, and the recorder fires the event through the `Event` facade.
+- **`RouteConnexRequestException`'s message** is the third constructor argument, after `$previous`, not the second as planned, so `RouteConnexClient`'s `new RouteConnexRequestException($response, $e)` keeps working. The named constructors use `message:`.
+- **The recorder's protected steps** are `attributes()`, `data()`, `runId()`, `status()`, `type()`, `appAttributes()`, `newRun()`, `connection()`, `save()` and `dispatchCreated()`. A numeric `data.id` is stored as a string. Step 3 can reuse the status parsing if it is made reachable from the model; it is protected for now.
+- **The MongoDB-only test** (a Run on MongoDB whose App is on SQLite) is skipped on the other databases, so SQL jobs report 1 skipped.
+- The connection test for a model App on `tenant` sets `models.run` to the plain `RouteConnexRun`: the MongoDB fixture has no connection of its own, so it would follow the App onto SQLite, which is the documented reason a split MongoDB setup sets `$connection`.
 
 **Validate:** `make test`, `make test-all`, then the minimum versions: `MYSQL_VERSION=8.0 make test-mysql`, `POSTGRES_VERSION=14 make test-pgsql`, `MONGO_VERSION=7.0 make test-mongodb`
 **Commit:** `Store a RouteConnexRun for every System call and return it`

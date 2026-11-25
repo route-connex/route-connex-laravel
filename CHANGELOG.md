@@ -4,6 +4,13 @@
 - `RouteConnexRunStatus` enum with `isFinished()`.
 - `$run->app` returns the config or model App that started a Run.
 - Type coverage runs with a 512M memory limit.
+- System calls store a `RouteConnexRun` and return it instead of the response.
+- `RouteConnexRunRecorder` stores Runs on the right connection and can be replaced in the container.
+- `RouteConnexRunCreated` fires once a Run is stored.
+- `runs.store_request` and `runs.store_response` turn off storing either payload.
+- System calls fail before sending when a model App has no key.
+- `RouteConnexRequestException` for answers without a Run ID or with an unknown Run status.
+- Requires `illuminate/queue`.
 
 ---
 

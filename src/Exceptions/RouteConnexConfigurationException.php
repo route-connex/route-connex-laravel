@@ -38,6 +38,15 @@ class RouteConnexConfigurationException extends RouteConnexException
     }
 
     /**
+     * An App with no key (an unsaved model, say) calling a System Service:
+     * its Run couldn't be stored, so the request isn't sent.
+     */
+    public static function appWithoutKey(RouteConnexAppContract $app): self
+    {
+        return new self('RouteConnex App ['.$app::class.'] has no key, so its Runs can\'t be stored. Save it before calling a System Service.');
+    }
+
+    /**
      * A Run saved with both `app_name` and `app_id`, or with neither.
      */
     public static function invalidRunApp(): self

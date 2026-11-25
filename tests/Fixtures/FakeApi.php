@@ -90,6 +90,17 @@ final class FakeApi
     }
 
     /**
+     * The answer to a System call that started a Run: `data.id` and any
+     * other `data` fields (`status`, `type`, ...).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public static function run(string $id = 'run-1', array $data = []): Response
+    {
+        return self::json(['data' => array_merge(['id' => $id], $data)]);
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public static function json(array $data = [], int $status = 200): Response

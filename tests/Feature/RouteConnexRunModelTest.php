@@ -16,18 +16,6 @@ beforeEach(function () {
 });
 
 /**
- * The configured Run model class: `RouteConnexRun`, or its MongoDB subclass
- * when the tests run on MongoDB.
- *
- * @return class-string<RouteConnexRun>
- */
-function runModel(): string
-{
-    /** @var class-string<RouteConnexRun> */
-    return config('route-connex-laravel.models.run');
-}
-
-/**
  * @param  array<string, mixed>  $attributes
  */
 function createRun(array $attributes = []): RouteConnexRun
@@ -42,7 +30,7 @@ function createRun(array $attributes = []): RouteConnexRun
 
 function freshRun(RouteConnexRun $run): RouteConnexRun
 {
-    return runModel()::query()->findOrFail($run->getKey());
+    return runModel()::query()->whereKey($run->getKey())->firstOrFail();
 }
 
 /**

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use RouteConnex\Laravel\Models\RouteConnexRun;
 use RouteConnex\Laravel\RouteConnexClientFactory;
 use RouteConnex\Laravel\Tests\Fixtures\FakeApi;
 use RouteConnex\Laravel\Tests\Fixtures\FakeClientFactory;
@@ -33,4 +34,16 @@ function migrateTenantConnection(): void
         '--path' => realpath(__DIR__.'/../database/migrations'),
         '--realpath' => true,
     ])->assertSuccessful();
+}
+
+/**
+ * The configured Run model class: `RouteConnexRun`, or its MongoDB subclass
+ * when the tests run on MongoDB.
+ *
+ * @return class-string<RouteConnexRun>
+ */
+function runModel(): string
+{
+    /** @var class-string<RouteConnexRun> */
+    return config('route-connex-laravel.models.run');
 }

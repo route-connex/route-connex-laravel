@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace RouteConnex\Laravel\Tests\Fixtures;
 
-use GuzzleHttp\Psr7\Response;
 use RouteConnex\Laravel\Contracts\RouteConnexAppContract;
 use RouteConnex\Laravel\Endpoints\MicrosoftSharepoint\RouteConnexFilesEndpoint;
 use RouteConnex\Laravel\Http\RouteConnexResponse;
+use RouteConnex\Laravel\Models\RouteConnexRun;
 
 /**
- * A `files` endpoint that records what `result()` receives and returns a
- * marker instead of the response.
+ * A `files` endpoint that records what `result()` receives and returns an
+ * unsaved marker Run instead of storing one.
  */
 final class RecordingFilesEndpoint extends RouteConnexFilesEndpoint
 {
@@ -20,12 +20,12 @@ final class RecordingFilesEndpoint extends RouteConnexFilesEndpoint
      */
     public array $received = [];
 
-    public static function marker(): RouteConnexResponse
+    public static function marker(): RouteConnexRun
     {
-        return new RouteConnexResponse(new Response(200, [], 'marker'));
+        return new RouteConnexRun(['run_id' => 'marker']);
     }
 
-    protected function result(RouteConnexAppContract $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexResponse
+    protected function result(RouteConnexAppContract $app, string $service, array $request, array $meta, RouteConnexResponse $response): RouteConnexRun
     {
         $this->received[] = compact('app', 'service', 'request', 'meta', 'response');
 

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use RouteConnex\Laravel\Facades\RouteConnex;
 use RouteConnex\Laravel\Http\RouteConnexResponse;
+use RouteConnex\Laravel\Models\RouteConnexRun;
 use RouteConnex\Laravel\Tests\Fixtures\FakeApi;
 use RouteConnex\Laravel\Tests\Fixtures\RecordingFilesEndpoint;
 
 beforeEach(function () {
+    $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+
     config()->set('route-connex-laravel.apps', [
         'default' => ['client_id' => 'default-id', 'client_secret' => 'default-secret'],
         'hpe' => ['client_id' => 'hpe-id', 'client_secret' => 'hpe-secret', 'base_url' => 'https://hpe.example.com/api'],
@@ -17,28 +20,28 @@ beforeEach(function () {
 });
 
 dataset('endpoints', [
-    'about' => [fn () => RouteConnex::routeConnex()->about()->get(), 'GET', '/api/v1/route-connex/about', false],
-    'test-auth' => [fn () => RouteConnex::routeConnex()->testAuth()->get(), 'GET', '/api/v1/route-connex/test-auth', true],
-    'run by ID' => [fn () => RouteConnex::run()->_id_('run-123')->get(), 'GET', '/api/v1/run/run-123', true],
-    'sharepoint files GET' => [fn () => RouteConnex::microsoftSharepoint()->files()->get(), 'GET', '/api/v1/microsoft-sharepoint/files', true],
-    'sharepoint files POST' => [fn () => RouteConnex::microsoftSharepoint()->files()->post(), 'POST', '/api/v1/microsoft-sharepoint/files', true],
-    'sharepoint drive columns' => [fn () => RouteConnex::microsoftSharepoint()->driveColumns()->get(), 'GET', '/api/v1/microsoft-sharepoint/drive-columns', true],
-    'content manager records GET' => [fn () => RouteConnex::hpeContentManager()->records()->get(), 'GET', '/api/v1/hpe-content-manager/records', true],
-    'content manager records POST' => [fn () => RouteConnex::hpeContentManager()->records()->post(), 'POST', '/api/v1/hpe-content-manager/records', true],
+    'about' => [fn () => RouteConnex::routeConnex()->about()->get(), 'GET', '/api/v1/route-connex/about', false, RouteConnexResponse::class],
+    'test-auth' => [fn () => RouteConnex::routeConnex()->testAuth()->get(), 'GET', '/api/v1/route-connex/test-auth', true, RouteConnexResponse::class],
+    'run by ID' => [fn () => RouteConnex::run()->_id_('run-123')->get(), 'GET', '/api/v1/run/run-123', true, RouteConnexResponse::class],
+    'sharepoint files GET' => [fn () => RouteConnex::microsoftSharepoint()->files()->get(), 'GET', '/api/v1/microsoft-sharepoint/files', true, RouteConnexRun::class],
+    'sharepoint files POST' => [fn () => RouteConnex::microsoftSharepoint()->files()->post(), 'POST', '/api/v1/microsoft-sharepoint/files', true, RouteConnexRun::class],
+    'sharepoint drive columns' => [fn () => RouteConnex::microsoftSharepoint()->driveColumns()->get(), 'GET', '/api/v1/microsoft-sharepoint/drive-columns', true, RouteConnexRun::class],
+    'content manager records GET' => [fn () => RouteConnex::hpeContentManager()->records()->get(), 'GET', '/api/v1/hpe-content-manager/records', true, RouteConnexRun::class],
+    'content manager records POST' => [fn () => RouteConnex::hpeContentManager()->records()->post(), 'POST', '/api/v1/hpe-content-manager/records', true, RouteConnexRun::class],
 ]);
 
-it('sends each endpoint\'s request to the right URI', function (Closure $call, string $method, string $path, bool $authenticated) {
+it('sends each endpoint\'s request to the right URI and returns its result', function (Closure $call, string $method, string $path, bool $authenticated, string $returns) {
     if ($authenticated) {
         $this->api->queue(FakeApi::token('abc'));
     }
 
-    $this->api->queue(FakeApi::json(['data' => 'ok']));
+    $this->api->queue(FakeApi::run());
 
     $response = $call();
 
     [$request] = $this->api->serviceRequests();
 
-    expect($response)->toBeInstanceOf(RouteConnexResponse::class)
+    expect($response)->toBeInstanceOf($returns)
         ->and($request->getMethod())->toBe($method)
         ->and((string) $request->getUri()->withQuery(''))->toBe("https://app.routeconnex.com{$path}")
         ->and($this->api->tokenRequests())->toHaveCount($authenticated ? 1 : 0)
@@ -56,7 +59,7 @@ it('exposes the response with Laravel\'s HTTP client helpers', function () {
 });
 
 it('sends the query, JSON body and headers', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run());
 
     RouteConnex::microsoftSharepoint()->files()->post(
         body: ['site_name' => 'Finance'],
@@ -84,7 +87,7 @@ it('sends the query of GET calls on endpoints without Meta', function () {
 });
 
 it('puts Meta as JSON in the query of GET calls', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run());
 
     RouteConnex::hpeContentManager()->records()->get(query: ['query' => 'invoices'], meta: ['invoice_id' => 42]);
 
@@ -96,7 +99,7 @@ it('puts Meta as JSON in the query of GET calls', function () {
 });
 
 it('puts Meta as an array in the body of POST calls', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run());
 
     RouteConnex::microsoftSharepoint()->files()->post(body: ['file_name' => 'invoice.pdf'], meta: ['invoice_id' => 42]);
 
@@ -108,7 +111,7 @@ it('puts Meta as an array in the body of POST calls', function () {
 });
 
 it('replaces a _meta_ already in the data when Meta is given', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run(), FakeApi::run());
 
     RouteConnex::hpeContentManager()->records()->get(query: ['_meta_' => '{"old":true}'], meta: ['new' => true]);
     RouteConnex::hpeContentManager()->records()->post(body: ['_meta_' => ['old' => true]], meta: ['new' => true]);
@@ -121,7 +124,7 @@ it('replaces a _meta_ already in the data when Meta is given', function () {
 });
 
 it('leaves the data alone when Meta is empty', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run(), FakeApi::run());
 
     RouteConnex::hpeContentManager()->records()->get(query: ['_meta_' => '{"mine":true}']);
     RouteConnex::hpeContentManager()->records()->post(body: ['_meta_' => ['mine' => true]], meta: []);
@@ -134,7 +137,7 @@ it('leaves the data alone when Meta is empty', function () {
 });
 
 it('adds nothing to the request without Meta', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run(), FakeApi::run());
 
     RouteConnex::microsoftSharepoint()->files()->get();
     RouteConnex::microsoftSharepoint()->files()->post();
@@ -163,7 +166,7 @@ it('requests one token per App across calls', function () {
 });
 
 it('sends requests with the Credentials and base URL of the App', function () {
-    $this->api->queue(FakeApi::token(), FakeApi::json(), FakeApi::token(), FakeApi::json());
+    $this->api->queue(FakeApi::token(), FakeApi::run(), FakeApi::token(), FakeApi::run());
 
     RouteConnex::app('hpe')->hpeContentManager()->records()->get();
     RouteConnex::hpeContentManager()->records()->get();
@@ -193,7 +196,7 @@ it('hands the App, Service, request, Meta and response to result() and returns w
 
     $received = $endpoint->received[0];
 
-    expect($returned->body())->toBe('marker')
+    expect($returned->run_id)->toBe('marker')
         ->and($received['app']->name)->toBe('default')
         ->and($received['service'])->toBe($service)
         ->and($received['request'])->toBe($request)

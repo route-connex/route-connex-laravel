@@ -76,4 +76,23 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Runs
+    |--------------------------------------------------------------------------
+    |
+    | Every System call stores its Run. Turn off storing the request sent
+    | or the response received (the Run's `data` from RouteConnex), for
+    | example when they're large or hold data that shouldn't be kept.
+    |
+    */
+
+    'runs' => [
+
+        'store_request' => true,
+
+        'store_response' => true,
+
+    ],
+
 ];
